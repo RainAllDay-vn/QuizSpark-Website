@@ -2,21 +2,28 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Menu } from "lucide-react"
-import { getAuth, signOut, onAuthStateChanged,type User } from "firebase/auth"
+import { getAuth, signOut, onAuthStateChanged, type User } from "firebase/auth"
 import { app } from "../../firebase"
-import { useNavigate } from "react-router-dom"
-
+import { Link, useNavigate } from "react-router-dom"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function MyHeader() {
   const navigate = useNavigate()
   const auth = getAuth(app)
   const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
+      setLoading(false)
     })
     return () => unsubscribe()
   }, [auth])
@@ -24,25 +31,46 @@ export default function MyHeader() {
   const handleSignOut = async () => {
     try {
       await signOut(auth)
+      navigate("/")
     } catch (err) {
       console.error("Sign out error:", err)
     }
-    navigate("/")
+  }
+
+  if (loading) {
+    return (
+      <header className="flex items-center justify-between px-6 py-3 shadow-sm">
+        <Skeleton className="h-6 w-32" />
+        <div className="flex gap-3">
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-6 w-20" />
+        </div>
+      </header>
+    )
   }
 
   return (
     <header className="flex items-center justify-between px-6 py-3 shadow-sm">
-      
       <div className="flex items-center gap-8">
         <h1 className="text-xl font-semibold">
-          <a href={user? "/home" : "/"}>MyApp</a>
+          <Link to={user ? "/home" : "/"}>MyApp</Link>
         </h1>
 
         <nav className="hidden md:flex space-x-4">
-          <Button className={user? "visible" : "hidden" } asChild variant="link"><a href="/home">Home</a></Button>
-          <Button asChild variant="link"><a href="/quizz">Quizz</a></Button>
-          <Button asChild variant="link"><a href="/leaderboard">Leaderboard</a></Button>
-          <Button asChild variant="link"><a href="/about">About</a></Button>
+          {user && (
+            <Button asChild variant="link">
+              <Link to="/home">Home</Link>
+            </Button>
+          )}
+          <Button asChild variant="link">
+            <Link to="/quizz">Quizz</Link>
+          </Button>
+          <Button asChild variant="link">
+            <Link to="/leaderboard">Leaderboard</Link>
+          </Button>
+          <Button asChild variant="link">
+            <Link to="/about">About</Link>
+          </Button>
         </nav>
       </div>
 
@@ -52,7 +80,9 @@ export default function MyHeader() {
             Sign Out
           </Button>
         ) : (
-          <Button className="hidden md:block" variant="link"><a href="/login">Join</a></Button>
+          <Button className="hidden md:block" variant="link" asChild>
+            <Link to="/login">Join</Link>
+          </Button>
         )}
 
         <div className="md:hidden">
@@ -63,14 +93,26 @@ export default function MyHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem className={user? "visible" : "hidden" } asChild><a href="/home">Home</a></DropdownMenuItem>
-              <DropdownMenuItem asChild><a href="/about">About</a></DropdownMenuItem>
-              <DropdownMenuItem asChild><a href="/quizz">Quizzes</a></DropdownMenuItem>
-              <DropdownMenuItem asChild><a href="/leaderboard">Leaderboard</a></DropdownMenuItem>
+              {user && (
+                <DropdownMenuItem asChild>
+                  <Link to="/home">Home</Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
+                <Link to="/about">About</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/quizz">Quizzes</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/leaderboard">Leaderboard</Link>
+              </DropdownMenuItem>
               {user ? (
                 <DropdownMenuItem onSelect={handleSignOut}>Sign Out</DropdownMenuItem>
               ) : (
-                <DropdownMenuItem asChild><a href="/login">Join</a></DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login">Join</Link>
+                </DropdownMenuItem>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
