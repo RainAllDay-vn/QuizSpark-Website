@@ -35,7 +35,11 @@ const AccountTypeButton = ({ type, currentType, icon, title, description, onClic
     );
 };
 
-
+/*TO-DO:
+* Reduce the number of props passed into LogInPanel
+* Rename to LogInFormSection for consistences
+* Disable logging in with Teacher role, using Google and Facebook
+* */
 export default function LogInPanel({
     fullName,
     setFullName,

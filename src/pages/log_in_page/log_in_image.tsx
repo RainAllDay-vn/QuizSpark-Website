@@ -5,6 +5,7 @@ const gridStyle = {
     backgroundBlendMode: 'overlay',
 };
 
+/*TO_DO: Replace image with Pattern.png*/
 export default function LogInImage() {
     return (
         <div
