@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Menu } from "lucide-react"
 import { getAuth, signOut, onAuthStateChanged, type User } from "firebase/auth"
-import { app } from "../../../firebase"
+import { app } from "@/firebase.tsx"
 import { Link, useNavigate } from "react-router-dom"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -37,6 +37,7 @@ export default function MyHeader() {
     }
   }
 
+  /*TO-DO: Check the color of the skeleton*/
   if (loading) {
     return (
       <header className="flex items-center justify-between px-6 py-3 bg-black">
@@ -49,6 +50,7 @@ export default function MyHeader() {
     )
   }
 
+  /*TO-DO: Fix centering Nav element*/
   return (
     <header className="w-full flex items-center justify-between px-8 py-4 bg-black border-b border-white/10">
       {/* === Logo & Nav === */}
@@ -58,7 +60,7 @@ export default function MyHeader() {
             to={user ? "/home" : "/"}
             className="bg-gradient-to-r from-[#7B3FE4] via-[#A134C7] to-[#E04646] bg-clip-text text-transparent hover:opacity-80 transition"
           >
-            Quizzy
+            QuizSpark
           </Link>
         </h1>
 
@@ -68,7 +70,7 @@ export default function MyHeader() {
               <Link to="/home">Home</Link>
             </Button>
           )}
-          <Button asChild variant="link" className="text-gray-300 hover:text-white">
+          <Button asChild variant="destructive" className="text-gray-300 hover:text-white">
             <Link to="/quizz">Quizzes</Link>
           </Button>
           <Button asChild variant="link" className="text-gray-300 hover:text-white">

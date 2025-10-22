@@ -53,7 +53,7 @@ export default function FeaturesSection() {
         <h2 className="mt-4 text-3xl md:text-4xl font-bold">
           Why{" "}
           <span className="bg-gradient-to-r from-[#7B3FE4] via-[#A134C7] to-[#E04646] bg-clip-text text-transparent">
-            Quizzy
+            QuizSpark
           </span>
         </h2>
         <p className="mt-2 text-gray-400 text-sm md:text-base">

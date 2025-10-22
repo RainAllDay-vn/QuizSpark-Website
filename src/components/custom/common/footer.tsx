@@ -14,6 +14,7 @@ export default function MyFooter() {
   }, [])
 
   if (loading) {
+    /*TO-DO: Check the color of the skeleton*/
     return (
       <footer className="py-10 px-6 mt-10 border-t border-white/10 bg-black">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -28,19 +29,20 @@ export default function MyFooter() {
     )
   }
 
+  /*TO-DO: Fix Font Awesome*/
   return (
     <footer className="relative flex flex-col justify-between px-12 py-12 bg-[#0D0F1A] text-gray-300 border-t border-white/10 h-[66.67vh]">
   <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
     {/* Brand */}
     <div className="flex flex-col gap-6">
       <h2 className="text-4xl font-bold bg-gradient-to-r from-[#7B3FE4] via-[#A134C7] to-[#E04646] bg-clip-text text-transparent">
-        Quizzy
+        QuizSpark
       </h2>
       <p className="text-lg text-gray-400">
         The ultimate quiz platform for students and teachers. Learn, compete, and earn rewards.
       </p>
       <div className="flex gap-4 text-2xl text-[#7B3FE4]">
-        <i className="fab fa-facebook-f hover:text-white transition-colors"></i>
+        <i className="fa-brands fa-facebook"></i>
         <i className="fab fa-twitter hover:text-white transition-colors"></i>
         <i className="fab fa-instagram hover:text-white transition-colors"></i>
         <i className="fab fa-linkedin-in hover:text-white transition-colors"></i>
@@ -85,7 +87,7 @@ export default function MyFooter() {
   {/* Bottom note */}
   <div className="mt-12 text-center text-lg text-gray-400">
     <p>
-      © 2025 <span className="text-white font-medium">StuQuiz</span>. All Rights Reserved |{" "}
+      © 2025 <span className="text-white font-medium">QuizSpark</span>. All Rights Reserved |{" "}
       <Link to="/terms" className="text-[#A134C7] hover:underline">Terms & Conditions</Link> |{" "}
       <Link to="/privacy" className="text-[#A134C7] hover:underline">Privacy Policy</Link>
     </p>

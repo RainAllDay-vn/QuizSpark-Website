@@ -4,6 +4,11 @@ import { ArrowRight, Sparkles } from "lucide-react";
 
 
 export default function HeroSection() {
+  /*TO-DO:
+  * Fix right soft glow
+  * Insert avatars
+  * */
+
   return (
     <section className="relative flex items-center justify-center min-h-screen w-screen overflow-hidden bg-black text-white">
   {/* === Gradient backdrop === */}
