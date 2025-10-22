@@ -1,9 +1,9 @@
-import HeroSection from "@/components/custom/main_page/hero_section";
-import CategoriesSection from "@/components/custom/main_page/category_section";
-import FeaturesSection from "@/components/custom/main_page/feature_section";
-import EndHeroSection from "@/components/custom/main_page/end_hero_section";
-import MyHeader from "@/components/custom/common/header";
-import MyFooter from "@/components/custom/common/footer";
+import HeroSection from "@/pages/main_page/hero_section.tsx";
+import CategoriesSection from "@/pages/main_page/category_section.tsx";
+import FeaturesSection from "@/pages/main_page/feature_section.tsx";
+import EndHeroSection from "@/pages/main_page/end_hero_section.tsx";
+import MyHeader from "@/components/custom/header.tsx";
+import MyFooter from "@/components/custom/footer.tsx";
 
 export function MainPage() {
   return (

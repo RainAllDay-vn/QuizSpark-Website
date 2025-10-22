@@ -1,18 +1,18 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button.tsx"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu.tsx"
 import { Menu } from "lucide-react"
 import { getAuth, signOut, onAuthStateChanged, type User } from "firebase/auth"
 import { app } from "@/firebase.tsx"
 import { Link, useNavigate } from "react-router-dom"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton.tsx"
 
 export default function MyHeader() {
   const navigate = useNavigate()

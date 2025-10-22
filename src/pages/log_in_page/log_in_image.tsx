@@ -1,5 +1,4 @@
-
-import login_frame from '../../../assets/img/Login Frame.png';
+import login_frame from '../../assets/img/Login Frame.png';
 const gridStyle = {
     background: 'repeating-linear-gradient(0deg, #370068 0px, #370068 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #370068 0px, #370068 1px, transparent 1px, transparent 40px)',
     backgroundColor: '#000000',

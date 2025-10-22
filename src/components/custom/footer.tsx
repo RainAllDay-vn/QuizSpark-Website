@@ -1,7 +1,7 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button.tsx"
+import { Skeleton } from "@/components/ui/skeleton.tsx"
 import { Link } from "react-router-dom"
 import { useState, useEffect } from "react"
 

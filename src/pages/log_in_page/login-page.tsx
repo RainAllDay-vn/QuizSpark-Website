@@ -11,8 +11,8 @@ import {
     type User as FirebaseUser
 } from 'firebase/auth';
 import { app } from "../../firebase";
-import LogInPanel from '@/components/custom/log_in_page/log_in_panel';
-import LogInImage from '@/components/custom/log_in_page/log_in_image';
+import LogInPanel from '@/pages/log_in_page/log_in_panel.tsx';
+import LogInImage from '@/pages/log_in_page/log_in_image.tsx';
 
 
 

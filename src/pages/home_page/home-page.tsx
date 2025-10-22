@@ -1,5 +1,5 @@
-import MyHeader from "@/components/custom/common/header";
-import MyFooter from "@/components/custom/common/footer";
+import MyHeader from "@/components/custom/header.tsx";
+import MyFooter from "@/components/custom/footer.tsx";
 
 
 

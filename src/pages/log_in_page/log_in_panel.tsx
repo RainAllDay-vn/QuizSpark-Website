@@ -1,7 +1,5 @@
 import { User, Mail, Lock } from 'lucide-react';
 
-
-
 const InputWithIcon = ({ Icon, label, className = "", ...props }: any) => (
     <div className={`space-y-1 ${className}`}>
         <label className="text-sm font-semibold text-gray-700">{label}</label>
