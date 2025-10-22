@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="globals.css" />
+    <link rel="stylesheet" href="styleguide.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      /** @type {import('tailwindcss').Config} */
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              infomain: "var(--infomain)",
+              "neutral-10": "var(--neutral-10)",
+              "neutral-60": "var(--neutral-60)",
+              successmain: "var(--successmain)",
+            },
+            boxShadow: {
+              "shadow-xs": "var(--shadow-xs)",
+            },
+          },
+        },
+        plugins: [],
+      };
+    </script>
+  </head>
+  <body>
+    <div class="bg-white grid justify-items-center [align-items:start] w-screen">
+      <div class="bg-white w-[1440px] flex items-start gap-[138px]">
+        <div class="w-[765px] h-[776px] flex items-start bg-black">
+          <div class="w-[765px] h-[775px] relative">
+            <div class="absolute h-[78px] top-[349px] left-[285px] flex items-start min-w-[198px]">
+              <div
+                class="min-h-[78px] [background:linear-gradient(180deg,rgb(88,19,193)_0%,rgb(196,80,55)_100%)] [-webkit-background-clip:text] bg-clip-text [-webkit-text-fill-color:transparent] [text-fill-color:transparent] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-transparent text-6xl tracking-[-0.29px] leading-[normal]"
+              >
+                Quizzy
+              </div>
+            </div>
+            <img class="h-[371px] top-[404px] absolute w-[765px] left-0" src="img/pattern.png" />
+            <img class="h-[489px] top-0 absolute w-[765px] left-0" src="img/image.png" />
+          </div>
+        </div>
+        <div class="w-[404px] mt-[51px] items-center min-h-[675px] flex flex-col">
+          <div class="w-[404px] flex flex-col items-start min-h-[55px] gap-1.5">
+            <div
+              class="min-h-[31px] [font-family:'Geist-Regular',Helvetica] font-normal text-black text-2xl tracking-[-0.24px] leading-[normal]"
+            >
+              Create Account
+            </div>
+            <p
+              class="w-[400px] min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#667084] text-sm tracking-[-0.14px] leading-[normal]"
+            >
+              Choose your account type and start your journey with us
+            </p>
+          </div>
+          <div class="mt-4 mr-[4.0px] flex items-start min-w-[400px] gap-[18px]">
+            <div
+              class="w-[191px] h-[133px] px-3 py-0 items-center bg-[#ac63e633] border-[#ac63e6] flex rounded overflow-hidden border border-solid"
+            >
+              <div class="w-[163px] ml-1 items-center min-h-[93px] gap-[5px] flex flex-col">
+                <img class="w-[30px] mr-[3.0px]" src="img/ph-student-bold.svg" />
+                <div
+                  class="min-h-[21px] mr-[3.0px] min-w-[62px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-[#667084] text-base tracking-[0] leading-[normal]"
+                >
+                  Student
+                </div>
+                <p
+                  class="w-[159px] min-h-8 mr-[4.0px] [font-family:'Geist-Regular',Helvetica] font-normal text-black text-xs text-center tracking-[0] leading-[normal]"
+                >
+                  Take quizzes and track your progress
+                </p>
+              </div>
+            </div>
+            <div
+              class="w-[191px] h-[133px] flex px-3 py-0 items-center rounded overflow-hidden border border-solid border-[#cbcbd9]"
+            >
+              <div class="w-[163px] ml-1 items-center min-h-[93px] gap-[5px] flex flex-col">
+                <img class="w-[30px] mr-[3.0px]" src="img/mdi-teacher.svg" />
+                <div
+                  class="min-h-[21px] mr-[3.0px] min-w-[62px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-[#667084] text-base tracking-[0] leading-[normal]"
+                >
+                  Teacher
+                </div>
+                <p
+                  class="w-[159px] min-h-8 mr-[4.0px] [font-family:'Geist-Regular',Helvetica] font-normal text-black text-xs text-center tracking-[0] leading-[normal]"
+                >
+                  Create quizzes and manage students
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-[22px] mr-[4.0px] flex items-start min-w-[400px] gap-[18px]">
+            <div
+              class="w-[191px] h-10 flex px-[59px] py-0 items-center rounded overflow-hidden border border-solid border-[#cbcbd9]"
+            >
+              <div class="h-[22px] flex items-center min-w-[72px] gap-[7px]">
+                <img class="w-[19px] h-[19px] mt-[1.0px]" src="img/devicon-google.svg" />
+                <div
+                  class="min-h-[18px] mb-[2.0px] min-w-[46px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#667084] text-sm tracking-[0] leading-[normal]"
+                >
+                  Google
+                </div>
+              </div>
+            </div>
+            <div
+              class="w-[191px] h-10 flex px-[51px] py-0 items-center rounded overflow-hidden border border-solid border-[#cbcbd9]"
+            >
+              <div class="h-[22px] flex items-center min-w-[89px] gap-[7px]">
+                <img class="w-[19px] h-[19px] mt-[1.0px]" src="img/logos-facebook.svg" />
+                <div
+                  class="min-h-[18px] mb-[2.0px] min-w-16 [font-family:'Geist-Regular',Helvetica] font-normal text-[#667084] text-sm tracking-[0] leading-[normal]"
+                >
+                  Facebook
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="h-[18px] mt-5 mr-[4.0px] flex items-center min-w-[400px]">
+            <div class="w-[177px] h-px mt-[1.0px] bg-[#d9d9d9]"></div>
+            <div
+              class="min-h-[18px] ml-3 min-w-5 [font-family:'Geist-Regular',Helvetica] font-normal text-[#667085] text-sm tracking-[0] leading-[normal]"
+            >
+              OR
+            </div>
+            <div class="ml-3.5 w-[177px] h-px mt-[1.0px] bg-[#d9d9d9]"></div>
+          </div>
+          <div class="w-[400px] mt-[19px] mr-[4.0px] items-start min-h-[249px] gap-[18px] flex flex-col">
+            <div class="h-[71px] flex items-start min-w-[402px] gap-4">
+              <div class="w-[193px] flex flex-col items-start min-h-[71px] gap-2.5">
+                <div
+                  class="min-h-[21px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#0f0f0f] text-base tracking-[-0.16px] leading-[normal]"
+                >
+                  Full Name
+                </div>
+                <div
+                  class="w-[191px] h-10 flex px-3 py-0 items-center rounded overflow-hidden border border-solid border-[#cbcbd9]"
+                >
+                  <div class="inline-flex relative items-center gap-1">
+                    <img class="relative w-[22px] h-[22px]" src="img/mdi-user-outline.svg" />
+                    <div
+                      class="relative w-fit [font-family:'Geist-Regular',Helvetica] font-normal text-[#667084] text-sm tracking-[0] leading-[normal]"
+                    >
+                      John Doe
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="w-[193px] flex flex-col items-start min-h-[71px] gap-2.5">
+                <div
+                  class="min-h-[21px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#0f0f0f] text-base tracking-[-0.16px] leading-[normal]"
+                >
+                  Username
+                </div>
+                <div
+                  class="w-[191px] h-10 flex px-3 py-0 items-center rounded overflow-hidden border border-solid border-[#cbcbd9]"
+                >
+                  <div class="inline-flex relative items-center gap-1">
+                    <img class="relative w-[22px] h-[22px]" src="img/mdi-user-outline.svg" />
+                    <div
+                      class="relative w-fit [font-family:'Geist-Regular',Helvetica] font-normal text-[#667084] text-sm tracking-[0] leading-[normal]"
+                    >
+                      John Doe
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="w-[402px] flex flex-col items-start min-h-[71px] gap-2.5">
+              <div
+                class="min-h-[21px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#0f0f0f] text-base tracking-[-0.16px] leading-[normal]"
+              >
+                Email
+              </div>
+              <div
+                class="w-[400px] h-10 px-3 py-[9px] items-start border-[#cbcbd9] flex rounded overflow-hidden border border-solid"
+              >
+                <div class="inline-flex relative items-center gap-2 px-0 py-px">
+                  <img class="relative w-[17.5px] h-3.5" src="img/vector.svg" />
+                  <div
+                    class="mt-[-1.00px] relative w-fit [font-family:'Geist-Regular',Helvetica] font-normal text-[#667084] text-sm tracking-[0] leading-[normal]"
+                  >
+                    name @example.com
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="w-[402px] flex flex-col items-start min-h-[71px] gap-2.5">
+              <div
+                class="min-h-[21px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#0f0f0f] text-base tracking-[-0.16px] leading-[normal]"
+              >
+                Passsword
+              </div>
+              <div
+                class="w-[400px] h-10 px-2.5 py-[9px] items-start border-[#cbcbd9] flex rounded overflow-hidden border border-solid"
+              >
+                <div class="inline-flex relative items-end justify-center gap-3">
+                  <img class="relative w-[21px] h-[21px]" src="img/uil-lock.svg" />
+                  <div
+                    class="text-[#667084] text-center leading-[normal] relative w-fit [font-family:'Geist-Regular',Helvetica] font-normal text-sm tracking-[0]"
+                  >
+                    ***********
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="all-[unset] box-border mt-[27px] mr-[4.0px] items-start flex relative w-[400px] rounded-lg">
+            <button
+              class="all-[unset] box-border items-center justify-center gap-2 px-4 py-2.5 bg-[#9722f4] overflow-hidden shadow-shadow-xs flex relative w-[400px] rounded-lg"
+            >
+              <div
+                class="mt-[-1.00px] text-white leading-5 whitespace-nowrap relative w-fit [font-family:'Geist-Regular',Helvetica] font-normal text-sm tracking-[0]"
+              >
+                Sign Up
+              </div>
+            </button>
+          </button>
+          <img class="w-[207px] mt-[22px] mr-[4.8px]" src="img/already-have-an-account-sign-in.svg" />
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

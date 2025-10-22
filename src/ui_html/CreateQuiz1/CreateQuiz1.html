@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="globals.css" />
+    <link rel="stylesheet" href="styleguide.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      /** @type {import('tailwindcss').Config} */
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              infomain: "var(--infomain)",
+              "neutral-10": "var(--neutral-10)",
+              "neutral-60": "var(--neutral-60)",
+              successmain: "var(--successmain)",
+            },
+            boxShadow: {
+              "shadow-xs": "var(--shadow-xs)",
+            },
+          },
+        },
+        plugins: [],
+      };
+    </script>
+  </head>
+  <body>
+    <div class="bg-[#0f0f0f] grid justify-items-center [align-items:start] w-screen">
+      <div class="bg-[#0f0f0f] overflow-hidden w-[808px] h-[603px] flex flex-col items-center">
+        <img class="w-10 mt-[-270px] self-start ml-[-372px]" src="img/frame-1321315126.svg" />
+        <div class="h-[45px] mt-[262px] ml-[62.0px] flex items-center min-w-[682px]">
+          <div class="w-[407px] flex flex-col items-start min-h-[45px] gap-1">
+            <div
+              class="[font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-2xl tracking-[0] leading-5 whitespace-nowrap"
+            >
+              Create New Quiz
+            </div>
+            <p
+              class="h-[21px] flex items-center justify-center [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccccc] text-base tracking-[0] leading-[normal]"
+            >
+              Add questions, set answers and configure quiz settings
+            </p>
+          </div>
+          <div
+            class="flex relative ml-[78px] mt-[2.0px] w-[94px] h-[37px] items-center justify-center gap-2 px-[9px] py-2 bg-[#0f0f0f] rounded-[10px] overflow-hidden border border-solid border-[#cccccc4c]"
+          >
+            <div
+              class="relative flex items-center justify-center w-fit [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+            >
+              Save Draft
+            </div>
+          </div>
+          <div
+            class="relative ml-3 mt-[2.0px] w-[91px] h-[37px] items-center justify-center gap-2 px-[9px] py-2 bg-violet-600 rounded-[10px] flex overflow-hidden"
+          >
+            <div
+              class="relative w-fit [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+            >
+              Preview
+            </div>
+          </div>
+        </div>
+        <div class="mt-[34px] flex items-start min-w-[744px] gap-[27px]">
+          <div
+            class="w-[420px] h-[403px] flex flex-col px-[22px] py-[23px] items-end bg-[#151518] rounded-lg overflow-hidden border border-solid border-zinc-800"
+          >
+            <div
+              class="min-h-[26px] self-start ml-0.5 [font-family:'Geist-SemiBold',Helvetica] font-semibold text-xl text-white tracking-[0] leading-[normal]"
+            >
+              Quiz Details
+            </div>
+            <p
+              class="min-h-[18px] self-start ml-0.5 [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccccc] text-sm tracking-[0] leading-[normal]"
+            >
+              Basic information about your quiz
+            </p>
+            <div class="w-[374px] mt-[21px] flex flex-col items-start min-h-16 gap-1.5">
+              <div
+                class="min-h-[18px] [font-family:'Geist-Medium',Helvetica] font-medium text-sm text-white tracking-[0] leading-[normal]"
+              >
+                Quiz Title
+              </div>
+              <div
+                class="w-[372px] h-10 px-3 py-2.5 items-start bg-[#1f1f20] rounded-lg border border-solid border-zinc-800 flex overflow-hidden"
+              >
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                >
+                  Introduction to Environmental Science
+                </div>
+              </div>
+            </div>
+            <div class="w-[374px] mt-5 flex flex-col items-start min-h-[124px] gap-1.5">
+              <div
+                class="min-h-[18px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+              >
+                Description
+              </div>
+              <div
+                class="w-[372px] h-[100px] px-3 py-2.5 items-start bg-[#1f1f20] rounded-lg border border-solid border-zinc-800 flex overflow-hidden"
+              >
+                <p
+                  class="w-[348px] min-h-[54px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                >
+                  Test your knowledge about environmental science basics, including renewable energy, ecosystems, and
+                  sustainability.
+                </p>
+              </div>
+            </div>
+            <div class="h-16 mt-5 mr-0 flex items-start min-w-[374px] gap-[17px]">
+              <div class="w-[179px] flex flex-col items-start min-h-16 gap-1.5">
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                >
+                  Category
+                </div>
+                <div
+                  class="w-[177px] h-10 flex px-3 py-2.5 items-start gap-[81px] bg-[#1f1f20] rounded-lg overflow-hidden border border-solid border-zinc-800"
+                >
+                  <div
+                    class="min-h-[18px] min-w-[53px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                  >
+                    Science
+                  </div>
+                  <img class="w-[18px] h-[18px] self-center" src="img/tabler-chevron-down.svg" />
+                </div>
+              </div>
+              <div class="w-[179px] flex flex-col px-[0.0px] py-0 items-start min-h-16 gap-1.5">
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                >
+                  Difficulty Level
+                </div>
+                <div
+                  class="w-[177px] h-10 flex px-3 py-2.5 items-start gap-[81px] bg-[#1f1f20] rounded-lg overflow-hidden border border-solid border-zinc-800"
+                >
+                  <div
+                    class="min-h-[18px] min-w-[53px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                  >
+                    Medium
+                  </div>
+                  <img class="w-[18px] h-[18px] self-center" src="img/tabler-chevron-down.svg" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="w-[297px] h-[403px] flex flex-col px-5 py-[23px] items-start bg-[#151518] rounded-lg overflow-hidden border border-solid border-zinc-800"
+          >
+            <div
+              class="min-h-[26px] ml-1 [font-family:'Geist-SemiBold',Helvetica] font-semibold text-xl text-white tracking-[0] leading-[normal]"
+            >
+              Quiz Settings
+            </div>
+            <p
+              class="min-h-[18px] ml-1 [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccccc] text-sm tracking-[0] leading-[normal]"
+            >
+              Configure how your quiz works
+            </p>
+            <div class="w-[251px] self-center mt-[21px] ml-[2.0px] flex flex-col items-start min-h-16 gap-1.5">
+              <div
+                class="min-h-[18px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+              >
+                Time Limit
+              </div>
+              <div
+                class="w-[249px] h-10 px-3 py-2.5 items-start bg-[#1f1f20] rounded-lg border border-solid border-zinc-800 flex overflow-hidden"
+              >
+                <img class="w-[18px] h-[18px] self-center" src="img/tabler-clock.svg" />
+                <div
+                  class="min-h-[18px] ml-2 min-w-[15px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                >
+                  15
+                </div>
+                <div
+                  class="min-h-[18px] ml-[131px] [font-family:'Geist-Medium',Helvetica] font-medium text-[#cccccc80] text-sm tracking-[0] leading-[normal]"
+                >
+                  minutes
+                </div>
+              </div>
+            </div>
+            <div class="w-[251px] self-center mt-5 ml-[2.0px] flex flex-col items-start min-h-16 gap-1.5">
+              <div
+                class="min-h-[18px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+              >
+                Passing Score
+              </div>
+              <div
+                class="w-[249px] h-10 px-3 py-2.5 items-start bg-[#1f1f20] rounded-lg border border-solid border-zinc-800 flex overflow-hidden"
+              >
+                <img class="w-[18px] h-[18px] self-center" src="img/lets-icons-check-fill.svg" />
+                <div
+                  class="min-h-[18px] ml-2 min-w-[17px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                >
+                  70
+                </div>
+                <div
+                  class="min-h-[18px] ml-[170px] min-w-3 [font-family:'Geist-Medium',Helvetica] font-medium text-[#cccccc80] text-sm text-right tracking-[0] leading-[normal]"
+                >
+                  %
+                </div>
+              </div>
+            </div>
+            <div class="h-[41px] self-end mt-5 flex items-center min-w-[253px] gap-8">
+              <div class="w-[182px] flex flex-col items-start min-h-[41px] gap-[7px]">
+                <div
+                  class="h-[18px] flex items-center justify-center [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                >
+                  Randomize Questions
+                </div>
+                <p
+                  class="h-4 flex items-center justify-center [font-family:'Geist-Medium',Helvetica] font-medium text-[#cccccccc] text-xs tracking-[0] leading-[normal]"
+                >
+                  Show questions in random order
+                </p>
+              </div>
+              <img class="w-[35px] h-[35px]" src="img/ion-toggle.svg" />
+            </div>
+            <div class="h-[41px] self-end mt-5 flex items-center min-w-[253px] gap-[39px]">
+              <div class="w-[175px] flex flex-col items-start min-h-[41px] gap-[7px]">
+                <div
+                  class="h-[18px] flex items-center justify-center [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+                >
+                  Immediate Results
+                </div>
+                <p
+                  class="h-4 flex items-center justify-center [font-family:'Geist-Medium',Helvetica] font-medium text-[#cccccccc] text-xs tracking-[0] leading-[normal]"
+                >
+                  Show results for each question
+                </p>
+              </div>
+              <img class="w-[35px] h-[35px]" src="img/ion-toggle.svg" />
+            </div>
+          </div>
+        </div>
+        <div class="self-end mt-5 mr-8 flex items-start min-w-[162px] gap-4">
+          <div
+            class="inline-flex relative items-center justify-center px-[9px] py-2 bg-[#0f0f0f] rounded-[10px] overflow-hidden border border-solid border-[#cccccc4c]"
+          >
+            <img class="relative w-[21px] h-[21px]" src="img/material-symbols-chevron-left-rounded.svg" />
+            <div
+              class="relative flex items-center justify-center w-fit [font-family:'Geist-Medium',Helvetica] font-medium text-[#cccccc80] text-sm tracking-[0] leading-[normal]"
+            >
+              Prev
+            </div>
+          </div>
+          <div
+            class="inline-flex relative h-[37px] items-center px-3 py-2 bg-violet-600 rounded-[10px] overflow-hidden"
+          >
+            <div
+              class="relative w-fit [font-family:'Geist-Medium',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]"
+            >
+              Next
+            </div>
+            <img class="relative w-[21px] h-[21px]" src="img/material-symbols-chevron-right-rounded.svg" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

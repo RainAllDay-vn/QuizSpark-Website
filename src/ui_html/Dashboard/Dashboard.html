@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="globals.css" />
+    <link rel="stylesheet" href="styleguide.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      /** @type {import('tailwindcss').Config} */
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              infomain: "var(--infomain)",
+              "neutral-10": "var(--neutral-10)",
+              "neutral-60": "var(--neutral-60)",
+              successmain: "var(--successmain)",
+            },
+          },
+        },
+        plugins: [],
+      };
+    </script>
+  </head>
+  <body>
+    <div class="bg-black grid justify-items-center [align-items:start] w-screen">
+      <div class="bg-black overflow-hidden w-[1440px] h-[1141px] flex items-start">
+        <div class="w-[1534px] h-[1096px] relative">
+          <div class="absolute w-[1192px] h-[383px] top-[713px] left-[342px]">
+            <div
+              class="w-[298px] h-[290px] top-[41px] left-[894px] bg-[#c45037] rounded-[149px/145px] absolute blur-[500px]"
+            ></div>
+            <div
+              class="absolute w-[1038px] h-[383px] top-0 left-0 flex px-6 py-[23px] items-center gap-[18px] bg-[#151518] rounded-lg overflow-hidden border border-solid border-zinc-800"
+            >
+              <div class="w-[318px] self-start flex flex-col items-start min-h-[336px]">
+                <div
+                  class="min-h-[31px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-2xl tracking-[-0.29px] leading-[normal]"
+                >
+                  Recent Quizzes
+                </div>
+                <div
+                  class="min-h-[18px] mt-1 [font-family:'Geist-Regular',Helvetica] font-normal text-zinc-400 text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  Your recently created quizzes
+                </div>
+                <div
+                  class="w-[318px] h-[126px] px-4 py-0 mt-[13px] flex items-center bg-[#19191b] rounded-lg overflow-hidden border border-solid border-[#ffffff1a]"
+                >
+                  <div class="w-[286px] h-[94px] relative">
+                    <div class="absolute w-[286px] top-0 left-0 flex flex-col items-start min-h-[94px] gap-[18px]">
+                      <div class="w-[252px] flex flex-col items-start min-h-[50px] gap-3">
+                        <div
+                          class="[font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[0] leading-5 whitespace-nowrap"
+                        >
+                          Introduction to Biology
+                        </div>
+                        <div class="h-[18px] flex items-start min-w-[250px] gap-[18px]">
+                          <div class="inline-flex relative items-center justify-center gap-2">
+                            <img class="relative w-[18px] h-[18px]" src="img/flowbite-book-open-outline.svg" />
+                            <div
+                              class="tracking-[0] relative w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm leading-[normal]"
+                            >
+                              15 questions
+                            </div>
+                          </div>
+                          <div class="inline-flex relative items-center justify-center gap-2">
+                            <img class="relative w-[17px] h-[17px]" src="img/mdi-users-outline.svg" />
+                            <div
+                              class="tracking-[0] relative w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm leading-[normal]"
+                            >
+                              28 completions
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="w-[290px] flex flex-col items-start min-h-[26px] gap-1">
+                        <div class="h-4 min-w-[286px] gap-[168px] flex items-start">
+                          <div
+                            class="min-h-4 min-w-[94px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-xs tracking-[0] leading-[normal]"
+                          >
+                            Completion Rate
+                          </div>
+                          <div
+                            class="min-w-6 min-h-4 [font-family:'Geist-Medium',Helvetica] font-medium text-white text-xs text-right tracking-[0] leading-[normal]"
+                          >
+                            75%
+                          </div>
+                        </div>
+                        <div class="flex items-start min-w-[286px] bg-zinc-800 rounded-[10px]">
+                          <div class="w-[182px] h-1.5 bg-violet-600 rounded-[10px_0px_0px_10px]"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <img
+                      class="absolute w-[22px] h-[22px] top-0 left-[262px]"
+                      src="img/material-symbols-chevron-right-rounded.svg"
+                    />
+                  </div>
+                </div>
+                <div
+                  class="w-[318px] h-[126px] mt-[18px] flex px-[47px] py-0 items-center rounded-lg overflow-hidden border border-dashed border-[#cccccc4c]"
+                >
+                  <div class="w-[221px] ml-[3px] flex flex-col items-center min-h-[90px]">
+                    <img class="w-9 mr-[3.0px]" src="img/frame-1321315173.svg" />
+                    <div
+                      class="min-h-[21px] mt-[11px] mr-[4.0px] min-w-[127px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-base text-center tracking-[0] leading-[normal]"
+                    >
+                      Create New Quiz
+                    </div>
+                    <p
+                      class="min-h-4 mt-1.5 mr-[4.0px] min-w-[217px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-xs text-center tracking-[0] leading-[normal]"
+                    >
+                      Add questions, set time limits and more
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="w-[318px] h-[126px] mb-[79.0px] flex px-4 py-0 items-center bg-[#19191b] rounded-lg overflow-hidden border border-solid border-[#ffffff1a]"
+              >
+                <div class="w-[286px] h-[94px] relative">
+                  <div class="absolute w-[286px] top-0 left-0 flex flex-col items-start min-h-[94px] gap-[18px]">
+                    <div class="w-[252px] flex flex-col items-start min-h-[50px] gap-3">
+                      <div
+                        class="[font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[0] leading-5 whitespace-nowrap"
+                      >
+                        Introduction to Biology
+                      </div>
+                      <div class="h-[18px] flex items-start min-w-[250px] gap-[18px]">
+                        <div class="inline-flex relative items-center justify-center gap-2">
+                          <img class="relative w-[18px] h-[18px]" src="img/flowbite-book-open-outline.svg" />
+                          <div
+                            class="tracking-[0] relative w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm leading-[normal]"
+                          >
+                            15 questions
+                          </div>
+                        </div>
+                        <div class="inline-flex relative items-center justify-center gap-2">
+                          <img class="relative w-[17px] h-[17px]" src="img/mdi-users-outline.svg" />
+                          <div
+                            class="tracking-[0] relative w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm leading-[normal]"
+                          >
+                            28 completions
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="w-[290px] flex flex-col items-start min-h-[26px] gap-1">
+                      <div class="h-4 flex items-start min-w-[286px] gap-[166px]">
+                        <div
+                          class="min-h-4 min-w-[94px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-xs tracking-[0] leading-[normal]"
+                        >
+                          Completion Rate
+                        </div>
+                        <div
+                          class="min-w-[26px] min-h-4 [font-family:'Geist-Medium',Helvetica] font-medium text-white text-xs text-right tracking-[0] leading-[normal]"
+                        >
+                          40%
+                        </div>
+                      </div>
+                      <div class="flex items-start min-w-[286px] bg-zinc-800 rounded-[10px]">
+                        <div class="w-28 h-1.5 bg-violet-600 rounded-[10px_0px_0px_10px]"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <img
+                    class="absolute w-[22px] h-[22px] top-0 left-[262px]"
+                    src="img/material-symbols-chevron-right-rounded.svg"
+                  />
+                </div>
+              </div>
+              <div
+                class="w-[318px] h-[126px] mb-[79.0px] flex px-4 py-0 items-center bg-[#19191b] rounded-lg overflow-hidden border border-solid border-[#ffffff1a]"
+              >
+                <div class="w-[286px] h-[94px] relative">
+                  <div class="absolute w-[286px] top-0 left-0 flex flex-col items-start min-h-[94px] gap-[18px]">
+                    <div class="w-[252px] flex flex-col items-start min-h-[50px] gap-3">
+                      <div
+                        class="[font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[0] leading-5 whitespace-nowrap"
+                      >
+                        Introduction to Biology
+                      </div>
+                      <div class="h-[18px] flex items-start min-w-[250px] gap-[18px]">
+                        <div class="inline-flex relative items-center justify-center gap-2">
+                          <img class="relative w-[18px] h-[18px]" src="img/flowbite-book-open-outline.svg" />
+                          <div
+                            class="tracking-[0] relative w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm leading-[normal]"
+                          >
+                            15 questions
+                          </div>
+                        </div>
+                        <div class="inline-flex relative items-center justify-center gap-2">
+                          <img class="relative w-[17px] h-[17px]" src="img/mdi-users-outline.svg" />
+                          <div
+                            class="tracking-[0] relative w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm leading-[normal]"
+                          >
+                            28 completions
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="w-[290px] flex flex-col items-start min-h-[26px] gap-1">
+                      <div class="h-4 flex items-start min-w-[286px] gap-[166px]">
+                        <div
+                          class="min-h-4 min-w-[94px] [font-family:'Geist-Medium',Helvetica] font-medium text-white text-xs tracking-[0] leading-[normal]"
+                        >
+                          Completion Rate
+                        </div>
+                        <div
+                          class="min-w-[26px] min-h-4 [font-family:'Geist-Medium',Helvetica] font-medium text-white text-xs text-right tracking-[0] leading-[normal]"
+                        >
+                          90%
+                        </div>
+                      </div>
+                      <div class="flex items-start min-w-[286px] bg-zinc-800 rounded-[10px]">
+                        <div class="w-[253px] h-1.5 bg-violet-600 rounded-[10px_0px_0px_10px]"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <img
+                    class="absolute w-[22px] h-[22px] top-0 left-[262px]"
+                    src="img/material-symbols-chevron-right-rounded.svg"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="absolute w-[1440px] h-[1096px] top-0 left-0">
+            <div
+              class="w-[327px] h-[318px] top-[45px] left-[52px] bg-[#ac63e6b2] rounded-[163.5px/159px] absolute blur-[500px]"
+            ></div>
+            <div
+              class="flex flex-col w-[310px] h-[1096px] items-start gap-6 px-4 py-3 absolute top-0 left-0 bg-[#0f0f0f]"
+            >
+              <div class="items-center flex relative self-stretch w-full flex-[0_0_auto]">
+                <div class="relative w-[118px] h-[50px]">
+                  <div class="relative w-[116px] h-[50px]">
+                    <img
+                      class="absolute w-[50px] h-[50px] top-0 left-0 object-cover"
+                      src="img/whatsapp-image-2025-04-20-at-8-28-38-AM-removebg-preview-1.png"
+                    />
+                    <div
+                      class="absolute top-[11px] left-[45px] [background:linear-gradient(180deg,rgb(88,19,193)_0%,rgb(196,80,55)_100%)] [-webkit-background-clip:text] bg-clip-text [-webkit-text-fill-color:transparent] [text-fill-color:transparent] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-transparent text-[22px] tracking-[-0.29px] leading-[normal]"
+                    >
+                      Quizzy
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="flex items-center gap-3 px-3 py-2 relative self-stretch w-full flex-[0_0_auto] bg-[#0f0f0f] rounded-md border border-solid border-[#87878780]"
+              >
+                <img class="relative w-5 h-5" src="img/icon-2.svg" />
+                <input
+                  class="relative flex-1 mt-[-1.00px] tracking-[0] leading-6 [font-family:'Geist-Regular',Helvetica] font-normal text-[#878787] text-base [background:transparent] border-[none] p-0"
+                  placeholder="Search"
+                  type="text"
+                />
+              </div>
+              <div class="flex-col items-start flex relative self-stretch w-full flex-[0_0_auto]">
+                <div
+                  class="gap-3 px-3 py-2 bg-violet-600 flex items-center relative self-stretch w-full flex-[0_0_auto] rounded overflow-hidden"
+                >
+                  <div class="flex items-center gap-1 relative flex-1 grow">
+                    <div class="flex items-center gap-2 relative flex-1 grow">
+                      <img class="relative w-6 h-6" src="img/icon.svg" />
+                      <div
+                        class="relative flex-1 mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-white text-base tracking-[0] leading-6"
+                      >
+                        Dashboard
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center gap-3 pl-3.5 pr-3 py-2 relative self-stretch w-full flex-[0_0_auto] bg-[#0f0f0f] rounded overflow-hidden"
+                >
+                  <div class="flex items-center gap-1 relative flex-1 grow">
+                    <div class="gap-2.5 flex items-center relative flex-1 grow">
+                      <img class="relative w-[21px] h-[21px]" src="img/lucide-book-open.svg" />
+                      <div
+                        class="relative flex-1 mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-base tracking-[0] leading-6"
+                      >
+                        Quizzes
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="gap-2 pl-3.5 pr-3 py-2 bg-[#0f0f0f] flex items-center relative self-stretch w-full flex-[0_0_auto] rounded overflow-hidden"
+                >
+                  <div class="flex items-center gap-2 relative flex-1 grow">
+                    <img class="relative w-[22px] h-[22px]" src="img/uil-calendar.svg" />
+                    <div class="gap-2 flex items-center relative flex-1 grow">
+                      <div
+                        class="relative flex-1 mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-base tracking-[0] leading-6"
+                      >
+                        Events
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center gap-3 pl-3.5 pr-3 py-2 relative self-stretch w-full flex-[0_0_auto] bg-[#0f0f0f] rounded overflow-hidden"
+                >
+                  <div class="flex items-center gap-1 relative flex-1 grow">
+                    <div class="gap-2 flex items-center relative flex-1 grow">
+                      <img class="relative w-[22px] h-[22px]" src="img/tabler-users.svg" />
+                      <div
+                        class="relative flex-1 mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] text-[#cccccc] text-base leading-6 font-normal tracking-[0]"
+                      >
+                        Students
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-col items-start flex relative self-stretch w-full flex-[0_0_auto]">
+                <div class="flex items-start p-2 relative self-stretch w-full flex-[0_0_auto]">
+                  <div
+                    class="flex-1 leading-[21px] relative mt-[-1.00px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-sm tracking-[0]"
+                  >
+                    Manage
+                  </div>
+                </div>
+                <div
+                  class="gap-3 px-3 py-2 bg-[#0f0f0f] flex items-center relative self-stretch w-full flex-[0_0_auto] rounded overflow-hidden"
+                >
+                  <div class="flex items-center gap-1 relative flex-1 grow">
+                    <div class="gap-2 flex items-center relative flex-1 grow">
+                      <img class="relative w-6 h-6" src="img/ic-outline-settings.svg" />
+                      <div
+                        class="relative flex-1 mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-base tracking-[0] leading-6"
+                      >
+                        Settings
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="absolute w-[1130px] h-16 top-0 left-[310px] flex px-[31px] py-0 items-center gap-[657px] bg-[#0f0f0f]"
+            >
+              <div class="w-64 h-10 flex px-4 py-2 items-start gap-2 bg-[#18181a] rounded-[10px] overflow-hidden">
+                <img class="w-[22px] h-[22px] self-center" src="img/mingcute-search-line.svg" />
+                <div
+                  class="min-h-[21px] min-w-[59px] text-center tracking-[-0.29px] leading-[normal] [font-family:'Geist-Regular',Helvetica] font-normal text-[#878787] text-base"
+                >
+                  Search...
+                </div>
+              </div>
+              <div
+                class="inline-flex relative h-10 items-center gap-2 px-2.5 py-2 rounded-[10px] overflow-hidden border border-solid border-[#ffffff1a]"
+              >
+                <img class="relative w-[21px] h-[21px]" src="img/ic-round-plus.svg" />
+                <div
+                  class="relative w-fit [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-sm text-center tracking-[-0.29px] leading-[normal]"
+                >
+                  Create Quiz
+                </div>
+              </div>
+            </div>
+            <div
+              class="absolute top-[87px] left-[340px] [font-family:'Geist-Bold',Helvetica] font-bold text-white text-2xl text-center tracking-[-0.29px] leading-[normal]"
+            >
+              Dashboard
+            </div>
+            <p
+              class="absolute top-[126px] left-[342px] [font-family:'Geist-Regular',Helvetica] font-normal text-zinc-400 text-base tracking-[-0.29px] leading-[normal]"
+            >
+              Welcome back, Sarah! Here&#39;s what&#39;s happening with your quizzes
+            </p>
+            <div class="absolute h-[108px] top-[178px] left-[341px] flex items-end min-w-[1039px] gap-5">
+              <div
+                class="w-[245px] h-[108px] flex px-5 py-[22px] items-start bg-[#151518] rounded-lg overflow-hidden border border-solid border-zinc-800"
+              >
+                <div class="w-[92px] flex-col min-h-[62px] gap-[9px] flex items-start">
+                  <div
+                    class="min-h-[17px] [font-family:'Inter-Regular',Helvetica] font-normal text-zinc-500 text-sm tracking-[0] leading-[normal]"
+                  >
+                    Total Quizzes
+                  </div>
+                  <div
+                    class="min-h-9 text-white text-3xl whitespace-nowrap [font-family:'Inter-Regular',Helvetica] font-normal tracking-[0] leading-[normal]"
+                  >
+                    2,543
+                  </div>
+                </div>
+                <div
+                  class="min-h-[15px] self-end ml-1 mb-1.5 min-w-11 text-green-500 text-xs [font-family:'Inter-Regular',Helvetica] font-normal tracking-[0] leading-[normal]"
+                >
+                  +12.5%
+                </div>
+                <img class="w-9 h-9 ml-7 mt-px" src="img/frame-1000001783-2.svg" />
+              </div>
+              <div
+                class="w-[245px] h-[108px] mb-0 flex px-5 py-[22px] items-start bg-[#151518] rounded-lg overflow-hidden border border-solid border-zinc-800"
+              >
+                <div class="w-[93px] flex flex-col items-start min-h-[62px] gap-[9px]">
+                  <div
+                    class="min-h-[17px] [font-family:'Inter-Regular',Helvetica] font-normal text-zinc-500 text-sm tracking-[0] leading-[normal]"
+                  >
+                    Active Events
+                  </div>
+                  <div
+                    class="min-h-9 text-white text-3xl whitespace-nowrap [font-family:'Inter-Regular',Helvetica] font-normal tracking-[0] leading-[normal]"
+                  >
+                    2,543
+                  </div>
+                </div>
+                <div
+                  class="min-h-[15px] self-end ml-[3px] mb-1.5 min-w-11 text-green-500 text-xs [font-family:'Inter-Regular',Helvetica] font-normal tracking-[0] leading-[normal]"
+                >
+                  +12.5%
+                </div>
+                <img class="w-9 h-9 ml-7 mt-px" src="img/frame-1000001783.svg" />
+              </div>
+              <div
+                class="w-[245px] h-[108px] mb-0 flex px-5 py-[22px] items-start bg-[#151518] rounded-lg overflow-hidden border border-solid border-zinc-800"
+              >
+                <div class="w-[88px] flex flex-col items-start min-h-[62px] gap-[9px]">
+                  <div
+                    class="min-h-[17px] [font-family:'Inter-Regular',Helvetica] text-zinc-500 text-sm leading-[normal] font-normal tracking-[0]"
+                  >
+                    Students
+                  </div>
+                  <div
+                    class="min-h-9 text-white text-3xl whitespace-nowrap [font-family:'Inter-Regular',Helvetica] font-normal tracking-[0] leading-[normal]"
+                  >
+                    2,543
+                  </div>
+                </div>
+                <div
+                  class="min-h-[15px] self-end ml-2 mb-1.5 min-w-11 text-green-500 text-xs [font-family:'Inter-Regular',Helvetica] font-normal tracking-[0] leading-[normal]"
+                >
+                  +12.5%
+                </div>
+                <img class="w-9 h-9 ml-7 mt-px" src="img/image.svg" />
+              </div>
+              <div
+                class="w-[245px] h-[108px] mb-0 flex px-5 py-[22px] items-start gap-[31px] bg-[#151518] rounded-lg overflow-hidden border border-solid border-zinc-800"
+              >
+                <div class="w-[137px] flex flex-col items-start min-h-[62px] gap-[9px]">
+                  <div
+                    class="min-h-[17px] [font-family:'Inter-Regular',Helvetica] font-normal text-zinc-500 text-sm tracking-[0] leading-[normal]"
+                  >
+                    Avg. Completion
+                  </div>
+                  <div class="h-9 flex items-end min-w-[137px] gap-2">
+                    <div
+                      class="min-h-9 min-w-[88px] text-white text-3xl whitespace-nowrap [font-family:'Inter-Regular',Helvetica] font-normal tracking-[0] leading-[normal]"
+                    >
+                      2,543
+                    </div>
+                    <div
+                      class="min-h-[15px] mb-1 min-w-[41px] text-red-500 text-xs [font-family:'Inter-Regular',Helvetica] font-normal tracking-[0] leading-[normal]"
+                    >
+                      -12.5%
+                    </div>
+                  </div>
+                </div>
+                <img class="mt-px w-9 h-9" src="img/frame-1000001783-3.svg" />
+              </div>
+            </div>
+            <div
+              class="absolute w-[620px] h-[379px] top-[310px] left-[342px] flex flex-col px-0 py-[23px] items-center bg-[#151518] rounded-lg overflow-hidden border border-solid border-zinc-800"
+            >
+              <div
+                class="self-start ml-6 min-w-[162px] text-center min-h-[31px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-2xl tracking-[-0.29px] leading-[normal]"
+              >
+                Recent Events
+              </div>
+              <p
+                class="min-h-[18px] self-start mt-1 ml-6 [font-family:'Geist-Regular',Helvetica] font-normal text-zinc-400 text-sm tracking-[-0.29px] leading-[normal]"
+              >
+                Manage your upcoming and active quiz events
+              </p>
+              <div
+                class="w-[572px] h-[78px] px-4 py-3.5 mt-[13px] flex items-center bg-[#19191b] rounded-lg overflow-hidden border border-solid border-[#ffffff1a]"
+              >
+                <img class="w-9 h-9" src="img/frame-1000001783.svg" />
+                <div class="w-[251px] self-end ml-2 flex flex-col items-start min-h-[43px] gap-1">
+                  <div
+                    class="h-[21px] flex items-center justify-center [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[-0.29px] leading-[normal]"
+                  >
+                    Science Mid-term Quiz
+                  </div>
+                  <div class="h-[18px] min-w-[249px] gap-3 flex items-start">
+                    <div class="inline-flex relative items-center justify-end gap-2">
+                      <img class="relative w-4 h-4" src="img/mdi-clock-outline.svg" />
+                      <div
+                        class="relative flex items-center justify-center w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                      >
+                        Today, 2:30 PM
+                      </div>
+                    </div>
+                    <div class="inline-flex relative items-center gap-2">
+                      <img class="relative w-4 h-4" src="img/mdi-users-outline.svg" />
+                      <div
+                        class="flex items-center justify-center tracking-[-0.29px] relative w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm leading-[normal]"
+                      >
+                        32 participants
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="flex relative ml-[158px] w-[87px] items-center justify-center gap-2 px-[9px] py-2 bg-violet-600 rounded-lg overflow-hidden"
+                >
+                  <div
+                    class="relative w-fit mt-[-1.00px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-sm tracking-[0] leading-5 whitespace-nowrap"
+                  >
+                    View Live
+                  </div>
+                </div>
+              </div>
+              <div
+                class="w-[572px] h-[78px] mt-3 flex px-4 py-3.5 items-center bg-[#19191b] rounded-lg overflow-hidden border border-solid border-[#ffffff1a]"
+              >
+                <img class="w-9 h-9" src="img/frame-1000001783.svg" />
+                <div class="w-[269px] flex-col items-start min-h-[43px] gap-1 self-end ml-2 flex">
+                  <div
+                    class="h-[21px] flex items-center justify-center [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[-0.29px] leading-[normal]"
+                  >
+                    Mathematics Weekly Test
+                  </div>
+                  <div class="flex relative w-[267px] items-center gap-2">
+                    <div class="inline-flex items-center justify-end gap-2 relative flex-[0_0_auto]">
+                      <img class="relative w-4 h-4" src="img/mdi-clock-outline.svg" />
+                      <div
+                        class="relative flex items-center justify-center w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                      >
+                        Tomorrow, 10:00 AM
+                      </div>
+                    </div>
+                    <div class="inline-flex items-center gap-2 relative flex-[0_0_auto] mr-[-9.00px]">
+                      <img class="relative w-4 h-4" src="img/mdi-users-outline.svg" />
+                      <div
+                        class="relative flex items-center justify-center w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                      >
+                        28 participants
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="relative ml-[140px] w-[87px] justify-center bg-[#0f0f0f] border border-solid border-[#cccccc4c] flex items-center gap-2 px-[9px] py-2 rounded-lg overflow-hidden"
+                >
+                  <div
+                    class="w-fit leading-5 whitespace-nowrap relative mt-[-1.00px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-sm tracking-[0]"
+                  >
+                    Manage
+                  </div>
+                </div>
+              </div>
+              <div
+                class="w-[572px] h-[78px] mt-3 flex px-4 py-3.5 items-center bg-[#19191b] rounded-lg overflow-hidden border border-solid border-[#ffffff1a]"
+              >
+                <img class="w-9 h-9" src="img/frame-1000001783.svg" />
+                <div class="h-[43px] items-end min-w-[259px] gap-0.5 self-end ml-2 flex">
+                  <div class="w-[137px] flex-col min-h-[43px] gap-1 flex items-start">
+                    <div
+                      class="h-[21px] flex items-center justify-center [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[-0.29px] leading-[normal]"
+                    >
+                      History Final Exam
+                    </div>
+                    <div class="inline-flex relative items-center justify-end gap-2">
+                      <img class="relative w-4 h-4" src="img/mdi-clock-outline.svg" />
+                      <div
+                        class="relative flex items-center justify-center w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                      >
+                        May 20, 9:00 AM
+                      </div>
+                    </div>
+                  </div>
+                  <div class="inline-flex relative items-center gap-2">
+                    <img class="relative w-4 h-4" src="img/mdi-users-outline.svg" />
+                    <div
+                      class="relative flex items-center justify-center w-fit mt-[-1.00px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                    >
+                      45 participants
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="relative ml-[150px] w-[87px] justify-center bg-[#0f0f0f] border border-solid border-[#cccccc4c] flex items-center gap-2 px-[9px] py-2 rounded-lg overflow-hidden"
+                >
+                  <div
+                    class="w-fit leading-5 whitespace-nowrap relative mt-[-1.00px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-sm tracking-[0]"
+                  >
+                    Manage
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="w-[167px] absolute top-[98px] left-[1213px] bg-violet-600 flex items-center gap-2 px-[9px] py-2 rounded-lg overflow-hidden"
+          >
+            <img class="relative w-6 h-6" src="img/ic-round-plus.svg" />
+            <div
+              class="relative w-fit [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-sm tracking-[0] leading-5 whitespace-nowrap"
+            >
+              Create New Quiz
+            </div>
+          </div>
+          <div
+            class="absolute w-[398px] h-[379px] top-[310px] left-[982px] flex flex-col px-5 py-4 items-end bg-[#151518] rounded-lg overflow-hidden border border-solid border-zinc-800"
+          >
+            <div
+              class="min-h-[31px] self-start mt-[7px] ml-1 [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-2xl tracking-[-0.29px] leading-[normal]"
+            >
+              Top Students
+            </div>
+            <p
+              class="min-h-[18px] self-start mt-1 ml-1 [font-family:'Geist-Regular',Helvetica] font-normal text-zinc-400 text-sm tracking-[-0.29px] leading-[normal]"
+            >
+              Students with highest quiz scores
+            </p>
+            <div class="mt-[23px] flex items-center min-w-[354px]">
+              <div class="w-8 h-8 flex px-[13px] py-1.5 items-start bg-zinc-800 rounded-[50px] overflow-hidden">
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-white text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  1
+                </div>
+              </div>
+              <div
+                class="w-10 h-10 ml-4 rounded-[50px] bg-[url(legacy:image:md5:c762fd3b7bce153e448ea0c5a80a6d37eb1d35bd)] bg-cover bg-[50%_50%]"
+              ></div>
+              <div class="w-[74px] ml-4 flex-col min-h-10 gap-px flex items-start">
+                <div
+                  class="min-h-[21px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[-0.29px] leading-[normal]"
+                >
+                  Alex John
+                </div>
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  Science
+                </div>
+              </div>
+              <div class="inline-flex relative ml-[110px] mt-[4.0px] items-center justify-center gap-2">
+                <img class="relative w-[22px] h-[22px]" src="img/mdi-medal-outline.svg" />
+                <div
+                  class="relative w-fit mt-[-0.50px] [font-family:'Geist-Bold',Helvetica] font-bold text-[#f47400] text-base tracking-[-0.29px] leading-[normal]"
+                >
+                  950
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center min-w-[354px]">
+              <div class="w-8 h-8 flex px-[11px] py-1.5 items-start bg-zinc-800 rounded-[50px] overflow-hidden">
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-white text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  2
+                </div>
+              </div>
+              <div
+                class="w-10 h-10 ml-4 rounded-[50px] bg-[url(legacy:image:md5:aebcb9842ac1c820e9aecd1c6de00cc1ef11014f)] bg-cover bg-[50%_50%]"
+              ></div>
+              <div class="w-[107px] ml-4 flex flex-col items-start min-h-10 gap-px">
+                <div
+                  class="min-h-[21px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[-0.29px] leading-[normal]"
+                >
+                  Emma Watson
+                </div>
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  Mathematics
+                </div>
+              </div>
+              <div class="ml-[77px] inline-flex relative mt-[4.0px] items-center justify-center gap-2">
+                <img class="relative w-[22px] h-[22px]" src="img/mdi-medal-outline.svg" />
+                <div
+                  class="relative w-fit mt-[-0.50px] [font-family:'Geist-Bold',Helvetica] font-bold text-[#f47400] text-base text-right tracking-[-0.29px] leading-[normal]"
+                >
+                  920
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center min-w-[354px]">
+              <div class="w-8 h-8 flex px-[11px] py-1.5 items-start bg-zinc-800 rounded-[50px] overflow-hidden">
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-white text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  3
+                </div>
+              </div>
+              <div
+                class="w-10 h-10 ml-4 rounded-[50px] bg-[url(legacy:image:md5:f66571b662de3941a3c12b691d9eee2c5a675597)] bg-cover bg-[50%_50%]"
+              ></div>
+              <div class="w-[102px] ml-4 flex flex-col items-start min-h-10 gap-px">
+                <div
+                  class="min-h-[21px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[-0.29px] leading-[normal]"
+                >
+                  Michael Clark
+                </div>
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  Physics
+                </div>
+              </div>
+              <div class="ml-[82px] inline-flex relative mt-[4.0px] items-center justify-center gap-2">
+                <img class="relative w-[22px] h-[22px]" src="img/mdi-medal-outline-2.svg" />
+                <div
+                  class="relative w-fit mt-[-0.50px] [font-family:'Geist-Bold',Helvetica] font-bold text-[#f47400] text-base tracking-[-0.29px] leading-[normal]"
+                >
+                  980
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center min-w-[354px]">
+              <div class="w-8 h-8 flex px-[11px] py-1.5 items-start bg-zinc-800 rounded-[50px] overflow-hidden">
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-white text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  4
+                </div>
+              </div>
+              <div
+                class="w-10 h-10 ml-4 rounded-[50px] bg-[url(legacy:image:md5:3de300aeadd6f72f5f22af3a88ade2eb6b4dfe70)] bg-cover bg-[50%_50%]"
+              ></div>
+              <div class="w-[100px] ml-4 flex flex-col items-start min-h-10 gap-px">
+                <div
+                  class="min-h-[21px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[-0.29px] leading-[normal]"
+                >
+                  Sophia Green
+                </div>
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  English
+                </div>
+              </div>
+              <div class="ml-[84px] inline-flex relative mt-[4.0px] items-center justify-center gap-2">
+                <img class="relative w-[22px] h-[22px]" src="img/mdi-medal-outline-2.svg" />
+                <div
+                  class="relative w-fit mt-[-0.50px] [font-family:'Geist-Bold',Helvetica] font-bold text-[#f47400] text-base tracking-[-0.29px] leading-[normal]"
+                >
+                  890
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center min-w-[354px]">
+              <div class="w-8 h-8 flex px-[11px] py-1.5 items-start bg-zinc-800 rounded-[50px] overflow-hidden">
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-white text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  5
+                </div>
+              </div>
+              <div
+                class="w-10 h-10 ml-4 rounded-[50px] bg-[url(legacy:image:md5:fd7ba217006201dfba7b285cafa73869a8accc01)] bg-cover bg-[50%_50%]"
+              ></div>
+              <div class="w-[86px] ml-4 flex flex-col items-start min-h-10 gap-px">
+                <div
+                  class="min-h-[21px] [font-family:'Geist-SemiBold',Helvetica] font-semibold text-white text-base tracking-[-0.29px] leading-[normal]"
+                >
+                  Lucia Wilde
+                </div>
+                <div
+                  class="min-h-[18px] [font-family:'Geist-Regular',Helvetica] font-normal text-[#cccccc] text-sm tracking-[-0.29px] leading-[normal]"
+                >
+                  Science
+                </div>
+              </div>
+              <div class="ml-[98px] inline-flex relative mt-[4.0px] items-center justify-center gap-2">
+                <img class="relative w-[22px] h-[22px]" src="img/mdi-medal-outline-2.svg" />
+                <div
+                  class="relative w-8 mt-[-0.50px] [font-family:'Geist-Bold',Helvetica] font-bold text-[#f47400] text-base text-right tracking-[-0.29px] leading-[normal]"
+                >
+                  870
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
