@@ -15,6 +15,7 @@ import {
 import { getAuth, signOut, onAuthStateChanged, type User as FirebaseUser } from "firebase/auth"
 import { app } from "../../../firebase"
 import { useNavigate } from "react-router-dom"
+import { CreateQuizDialog } from "@/pages/home_page/create-quizz-dialouge"
 
 type TopbarProps = {
   onToggleSidebar: () => void
@@ -65,9 +66,8 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
 
       {/* === Right section === */}
       <div className="flex items-center gap-4">
-        <Button className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 text-sm rounded-lg">
-          Create Quiz
-        </Button>
+        {/* 🔹 Replace old Create button with the dialog trigger */}
+        <CreateQuizDialog />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -1,87 +1,154 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function CreateQuizDialog() {
-  const [open, setOpen] = useState(false)
-  const [randomize, setRandomize] = useState(false)
-  const [immediateResults, setImmediateResults] = useState(false)
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog>
       <DialogTrigger asChild>
         <Button className="bg-violet-600 hover:bg-violet-700 text-white">
-          + Create New Quiz
+          Create Quiz
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="bg-neutral-900 text-white border border-neutral-800 sm:max-w-[500px]">
+      <DialogContent className="!max-w-fit bg-[#0f0f0f] border border-zinc-800 text-white p-8 rounded-2xl overflow-visible">
         <DialogHeader>
-          <DialogTitle>Create New Quiz</DialogTitle>
-          <DialogDescription className="text-neutral-400">
-            Fill out the details below to create a new quiz.
+          <DialogTitle className="text-2xl font-semibold">Create New Quiz</DialogTitle>
+          <DialogDescription className="text-zinc-400 mt-2 space-y-6">
+            <p>Add questions, set answers, and configure quiz settings</p>
+
+            {/* Both cards inside description */}
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Left side */}
+              <Card className="bg-[#151518] border-zinc-800 flex-1">
+                <CardHeader>
+                  <CardTitle className="text-lg">Quiz Details</CardTitle>
+                  <p className="text-sm text-zinc-400">
+                    Basic information about your quiz
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4 overflow-visible">
+                  <div>
+                    <Label>Quiz Title</Label>
+                    <Input
+                      className="bg-[#1a1a1c] border-zinc-700 mt-1 w-full"
+                      placeholder="Enter quiz title"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Description</Label>
+                    <textarea
+                      className="bg-[#1a1a1c] border border-zinc-700 w-full rounded-md p-2 mt-1 text-sm resize-none"
+                      rows={3}
+                      placeholder="Describe what your quiz is about..."
+                    />
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <Label>Category</Label>
+                      <Select>
+                        <SelectTrigger className="bg-[#1a1a1c] border-zinc-700 mt-1 w-full">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#151518] border-zinc-700 text-white">
+                          <SelectItem value="science">Science</SelectItem>
+                          <SelectItem value="math">Math</SelectItem>
+                          <SelectItem value="history">History</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex-1">
+                      <Label>Difficulty Level</Label>
+                      <Select>
+                        <SelectTrigger className="bg-[#1a1a1c] border-zinc-700 mt-1 w-full truncate">
+                          <SelectValue placeholder="Select difficulty" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#151518] border-zinc-700 text-white">
+                          <SelectItem value="easy">Easy</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="hard">Hard</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Right side */}
+              <Card className="bg-[#151518] border-zinc-800 w-full lg:w-[320px]">
+                <CardHeader>
+                  <CardTitle className="text-lg">Quiz Settings</CardTitle>
+                  <p className="text-sm text-zinc-400">
+                    Configure how your quiz works
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4 overflow-visible">
+                  <div>
+                    <Label>Time Limit</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        type="number"
+                        placeholder="15"
+                        className="bg-[#1a1a1c] border-zinc-700 w-20"
+                      />
+                      <span className="text-zinc-400 text-sm">minutes</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Passing Score</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        type="number"
+                        placeholder="70"
+                        className="bg-[#1a1a1c] border-zinc-700 w-20"
+                      />
+                      <span className="text-zinc-400 text-sm">%</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <Label className="font-medium">Randomize Questions</Label>
+                    <p className="text-sm text-zinc-400">
+                      Show questions in random order
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label className="font-medium">Immediate Results</Label>
+                    <p className="text-sm text-zinc-400">
+                      Show results after each question
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Quiz Title</Label>
-            <Input id="title" placeholder="Enter quiz title" className="bg-neutral-800 border-neutral-700 text-white" />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="desc">Description</Label>
-            <Textarea id="desc" placeholder="Short description..." className="bg-neutral-800 border-neutral-700 text-white" />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Select>
-              <SelectTrigger className="bg-neutral-800 border-neutral-700 text-white">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent className="bg-neutral-900 border-neutral-800">
-                <SelectItem value="math">Math</SelectItem>
-                <SelectItem value="science">Science</SelectItem>
-                <SelectItem value="history">History</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <Label>Randomize Questions</Label>
-            <Switch checked={randomize} onCheckedChange={setRandomize} />
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <Label>Show Immediate Results</Label>
-            <Switch checked={immediateResults} onCheckedChange={setImmediateResults} />
-          </div>
-        </div>
-
-        <DialogFooter className="pt-4">
-          <Button variant="outline" onClick={() => setOpen(false)} className="border-neutral-700 text-neutral-300">
-            Cancel
+        <div className="flex justify-end gap-3 mt-6">
+          <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-[#1a1a1c]">
+            Save Draft
           </Button>
           <Button className="bg-violet-600 hover:bg-violet-700 text-white">
-            Save Quiz
+            Preview
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )
