@@ -1,20 +1,24 @@
 "use client"
 
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { LayoutDashboard, Video, Calendar, Users, Settings } from "lucide-react"
-import { NavLink } from "react-router-dom"
+import {Input} from "@/components/ui/input.tsx"
+import {ScrollArea} from "@/components/ui/scroll-area.tsx"
+import {LayoutDashboard, Video, Calendar, Users, Settings} from "lucide-react"
+import {NavLink} from "react-router-dom"
 import clsx from "clsx"
 
+interface SideBarProps {
+  isVisible: boolean,
+}
+
 const navItems = [
-  { name: "Dashboard", icon: LayoutDashboard, to: "/home/dashboard" },
-  { name: "Quizzes", icon: Video, to: "/home/quizzes" },
-  { name: "Events", icon: Calendar, to: "/home/events" },
-  { name: "Students", icon: Users, to: "/home/students" },
-  { name: "Settings", icon: Settings, to: "/home/settings" },
+  {name: "Dashboard", icon: LayoutDashboard, to: "/home/dashboard"},
+  {name: "Quizzes", icon: Video, to: "/home/quizzes"},
+  {name: "Events", icon: Calendar, to: "/home/events"},
+  {name: "Students", icon: Users, to: "/home/students"},
+  {name: "Settings", icon: Settings, to: "/home/settings"},
 ]
 
-export function Sidebar() {
+export function SideBar({isVisible}: SideBarProps) {
   const baseLink =
     "flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white"
   const activeLink =
@@ -26,7 +30,8 @@ export function Sidebar() {
   *
   * */
   return (
-    <aside className="hidden md:flex flex-col w-64 h-screen bg-[#151518] border-r border-zinc-800 text-white" >
+    <aside
+      className={clsx("md:flex flex-col w-64 h-screen bg-[#151518] border-r border-zinc-800 text-white", isVisible ? "" : "hidden")}>
       {/* === Logo Section === */}
       <div className="p-6 text-2xl font-semibold tracking-tight text-white">
         <span className="text-violet-500">Quiz</span>Spark
@@ -47,7 +52,7 @@ export function Sidebar() {
             <NavLink
               key={name}
               to={to}
-              className={({ isActive }) => clsx(baseLink, isActive ? activeLink : inactiveLink)}
+              className={({isActive}) => clsx(baseLink, isActive ? activeLink : inactiveLink)}
             >
               <Icon className="mr-3 h-5 w-5"/>
               <span className="font-medium">{name}</span>
