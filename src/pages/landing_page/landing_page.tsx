@@ -12,7 +12,7 @@ export default function HomeSection() {
   );
 }
 
-export function HomePage() {
+export function Landing_page() {
   return (
     <div className="min-h-screen flex flex-col fill-black">
       <MyHeader/>
