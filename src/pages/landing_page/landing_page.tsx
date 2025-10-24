@@ -1,14 +1,18 @@
+import HeroSection from "@/pages/landing_page/hero_section.tsx";
+import CategoriesSection from "@/pages/landing_page/category_section.tsx";
+import FeaturesSection from "@/pages/landing_page/feature_section.tsx";
+import EndHeroSection from "@/pages/landing_page/end_hero_section.tsx";
 import MyHeader from "@/components/custom/header.tsx";
 import MyFooter from "@/components/custom/footer.tsx";
 
-export function LandingPage () {
+export function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col fill-black">
       <MyHeader/>
-      <section
-        className="relative flex items-center justify-center min-h-screen w-screen overflow-hidden bg-black text-white">
-        Home
-      </section>
+      <HeroSection/>
+      <CategoriesSection/>
+      <FeaturesSection/>
+      <EndHeroSection/>
       <MyFooter/>
     </div>
   );

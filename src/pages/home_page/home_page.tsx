@@ -3,7 +3,7 @@ import {TopBar} from "@/components/custom/top_bar"
 import {useState} from "react"
 import {Outlet} from "react-router-dom"
 
-export function Home_page() {
+export function HomePage() {
   const [sideBarVisibility, setSideBarVisibility] = useState(false)
 
   return (
