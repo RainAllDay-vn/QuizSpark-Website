@@ -27,7 +27,7 @@ export function SideBar({isVisible}: SideBarProps) {
 
   /*TO-DO:
   * Add search logic
-  *
+  * Make SideBar become an overlay drawer on small screens
   * */
   return (
     <aside

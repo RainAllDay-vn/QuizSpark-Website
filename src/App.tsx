@@ -6,7 +6,7 @@ import { AboutPage } from "./pages/about_page/about-page"
 import { LeaderboardPage } from "./pages/leaderboard_page/leaderboard-page"
 import { QuizzPage } from "./pages/quizz_page/quizz-page"
 import { LandingPage } from "@/pages/landing_page/landing_page.tsx"
-import {Sidebar} from "@/components/custom/home_page/side_bar.tsx";
+import {Home_page} from "@/pages/home_page/home_page.tsx";
 
 
 
@@ -22,7 +22,9 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<LoginPage />} />
-          <Route path="/test" element={<Sidebar />} />
+          <Route path="/test" element={<>
+            <Home_page />
+          </>} />
         </Routes>
       </div>
     </ThemeProvider>
