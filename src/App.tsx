@@ -5,7 +5,7 @@ import { LoginPage } from "./pages/log_in_page/login-page"
 import { AboutPage } from "./pages/about_page/about-page"
 import { LeaderboardPage } from "./pages/leaderboard_page/leaderboard-page"
 import { QuizzPage } from "./pages/quizz_page/quizz-page"
-import { Landing_page } from "@/pages/landing_page/landing_page.tsx"
+import { LandingPage } from "@/pages/landing_page/landing_page.tsx"
 import {Sidebar} from "@/components/custom/home_page/side_bar.tsx";
 
 
@@ -16,7 +16,7 @@ function App() {
       <div className="flex min-h-svh flex-col items-center justify-center fill-black">
         <Routes>
           <Route path="/" element={<MainPage />} />
-          <Route path="/home" element={<Landing_page />} />
+          <Route path="/home" element={<LandingPage />} />
           <Route path="/quizz" element={<QuizzPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/about" element={<AboutPage />} />
