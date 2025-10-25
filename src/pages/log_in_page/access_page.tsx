@@ -5,11 +5,16 @@ import {
   onAuthStateChanged,
   type User as FirebaseUser
 } from 'firebase/auth';
-import {app} from "../../firebase";
-import SignUpPage from '@/pages/sign_up_page/sign_up_section.tsx';
-import LogInImage from '@/pages/sign_up_page/sign_up_image_section.tsx';
+import {app} from "../../firebase.tsx";
+import LogoImageSection from '@/pages/log_in_page/logo_image_section.tsx';
+import type LogInSection from "@/pages/log_in_page/log_in_section.tsx";
+import type SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
 
-export function SignUp() {
+interface AccessPageProps {
+  Section: typeof LogInSection | typeof SignUpSection;
+}
+
+export function AccessPage({Section}: AccessPageProps) {
   const navigate = useNavigate();
   const auth = getAuth(app);
 
@@ -35,8 +40,8 @@ export function SignUp() {
 
   return (
     <div className="flex h-screen w-screen font-sans">
-      <LogInImage/>
-      <SignUpPage/>
+      <LogoImageSection/>
+      <Section />
     </div>
   );
 }

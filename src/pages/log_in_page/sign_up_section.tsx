@@ -1,7 +1,7 @@
 import {User, Mail, Lock} from 'lucide-react';
 import {type ChangeEvent, useState} from "react";
 import {createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup} from "firebase/auth";
-import {app} from "../../firebase";
+import {app} from "../../firebase.tsx";
 import {useNavigate} from "react-router-dom";
 import AccountTypeButton from "@/components/custom/account_type_button.tsx";
 import InputWithIcon from "@/components/custom/input_with_icon.tsx";
@@ -10,7 +10,7 @@ import InputWithIcon from "@/components/custom/input_with_icon.tsx";
 * Remove login logic from this page
 * Disable logging in with Teacher role
 * */
-export default function SignUpPage() {
+export default function SignUpSection() {
   const navigate = useNavigate();
   const auth = getAuth(app);
 
