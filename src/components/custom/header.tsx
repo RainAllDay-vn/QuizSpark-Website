@@ -97,7 +97,7 @@ export default function MyHeader() {
             className="hidden md:block text-white bg-gradient-to-r from-[#7B3FE4] to-[#E04646] hover:opacity-90 transition"
             asChild
           >
-            <Link to="/login">Join</Link>
+            <Link to="/signup">Join</Link>
           </Button>
         )}
 

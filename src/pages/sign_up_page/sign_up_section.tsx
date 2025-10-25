@@ -89,8 +89,8 @@ export default function SignUpPage() {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      updateAuth(credential?.idToken);
+      const token = await result.user.getIdToken();
+      updateAuth(token);
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message || "Registration failed.");
     }
