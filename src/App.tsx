@@ -8,7 +8,7 @@ import {LeaderboardPage} from "./pages/leaderboard_page/leaderboard-page"
 import {QuizzPage} from "./pages/quizz_page/quizz-page"
 import {getAuth} from "firebase/auth";
 import {app} from "@/firebase.tsx";
-import {CreateQuizDialog} from "@/components/custom/quiz_creation_dialog.tsx";
+import DashboardSection from "@/pages/home_page/dashboard_section.tsx";
 
 const ProtectedRoute = () => {
   const auth = getAuth(app);
@@ -28,10 +28,12 @@ function App() {
           <Route path="/about" element={<AboutPage/>}/>
           <Route path="/quizz" element={<QuizzPage/>}/>
           <Route path="/signup" element={<SignUp/>}/>
-          <Route path="/test" element={<CreateQuizDialog />}/>
+          <Route path="/test" element={<DashboardSection />}/>
           {/* 2. Protected Route Wrapper: Only renders children if user is logged in */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/home" element={<HomePage/>}/>
+            <Route path="/home" element={<HomePage/>}>
+              <Route path="dashboard" element={<DashboardSection />} />
+            </Route>
           </Route>
         </Routes>
       </div>

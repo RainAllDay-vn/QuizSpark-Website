@@ -13,7 +13,7 @@ export default function FeaturesSection() {
       icon: "🎁",
     },
     {
-      title: "Teacher Dashboard",
+      title: "Teacher Dashboard_section",
       desc: "Comprehensive tools for educators to create and manage quizzes",
       color: "text-blue-400 border-t-4 border-blue-500",
       icon: "👩‍🏫",
