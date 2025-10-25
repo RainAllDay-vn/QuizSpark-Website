@@ -6,7 +6,7 @@ import {
   type User as FirebaseUser
 } from 'firebase/auth';
 import {app} from "../../firebase";
-import LogInPanel from '@/pages/sign_up_page/sign_up_section.tsx';
+import SignUpPage from '@/pages/sign_up_page/sign_up_section.tsx';
 import LogInImage from '@/pages/sign_up_page/sign_up_image_section.tsx';
 
 export function SignUp() {
@@ -36,7 +36,7 @@ export function SignUp() {
   return (
     <div className="flex h-screen w-screen font-sans">
       <LogInImage/>
-      <LogInPanel/>
+      <SignUpPage/>
     </div>
   );
 }

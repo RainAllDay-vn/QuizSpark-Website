@@ -56,11 +56,10 @@ function InputWithIcon({Icon, label, type = "text", placeholder, value, onChange
 }
 
 /*TO-DO:
-* Reduce the number of props passed into LogInPanel
-* Rename to LogInFormSection for consistences
-* Disable logging in with Teacher role, using Google and Facebook
+* Remove login logic from this page
+* Disable logging in with Teacher role
 * */
-export default function LogInPanel() {
+export default function SignUpPage() {
   const navigate = useNavigate();
   const auth = getAuth(app);
 
@@ -88,7 +87,9 @@ export default function LogInPanel() {
     setError("");
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      console.log(credential?.idToken);
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message || "Registration failed.");
     }

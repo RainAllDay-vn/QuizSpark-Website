@@ -2,7 +2,7 @@ import {ThemeProvider} from "@/components/theme-provider"
 import {LandingPage} from "@/pages/landing_page/landing_page.tsx"
 import {HomePage} from "@/pages/home_page/home_page.tsx";
 import {Routes, Route} from "react-router-dom"
-import {SignUp} from "@/pages/sign_up_page/sign_up.tsx"
+import {SignUp} from "@/pages/sign_up_page/sign_up_page.tsx"
 import {AboutPage} from "./pages/about_page/about-page"
 import {LeaderboardPage} from "./pages/leaderboard_page/leaderboard-page"
 import {QuizzPage} from "./pages/quizz_page/quizz-page"
