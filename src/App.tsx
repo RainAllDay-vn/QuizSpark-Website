@@ -9,6 +9,10 @@ import {QuizzPage} from "./pages/quizz_page/quizz-page"
 import {getAuth} from "firebase/auth";
 import {app} from "@/firebase.tsx";
 import DashboardSection from "@/pages/home_page/dashboard_section.tsx";
+import QuizSection from "@/pages/home_page/quiz_section.tsx";
+import EventSection from "@/pages/home_page/event_section.tsx";
+import StudentSection from "@/pages/home_page/student_section.tsx";
+import SettingSection from "@/pages/home_page/setting_section.tsx";
 
 const ProtectedRoute = () => {
   const auth = getAuth(app);
@@ -33,6 +37,10 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<HomePage/>}>
               <Route path="dashboard" element={<DashboardSection />} />
+              <Route path="quizzes" element={<QuizSection />} />
+              <Route path="events" element={<EventSection />} />
+              <Route path="students" element={<StudentSection />} />
+              <Route path="settings" element={<SettingSection />} />
             </Route>
           </Route>
         </Routes>
