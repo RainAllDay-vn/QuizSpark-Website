@@ -3,7 +3,6 @@ import {type ChangeEvent, useState} from "react";
 import {createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup} from "firebase/auth";
 import {app} from "../../firebase";
 import {useNavigate} from "react-router-dom";
-import {updateAuth} from "@/lib/api.ts";
 
 interface AccountTypeButtonProps {
   type: string;
@@ -88,9 +87,7 @@ export default function SignUpPage() {
     setError("");
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const token = await result.user.getIdToken();
-      updateAuth(token);
+      await signInWithPopup(auth, provider);
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message || "Registration failed.");
     }
