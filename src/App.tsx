@@ -6,8 +6,6 @@ import {AccessPage} from "@/pages/log_in_page/access_page.tsx"
 import {AboutPage} from "./pages/about_page/about-page"
 import {LeaderboardPage} from "./pages/leaderboard_page/leaderboard-page"
 import {QuizzPage} from "./pages/quizz_page/quizz-page"
-import {getAuth} from "firebase/auth";
-import {app} from "@/firebase.tsx";
 import DashboardSection from "@/pages/home_page/dashboard_section.tsx";
 import QuizSection from "@/pages/home_page/quiz_section.tsx";
 import EventSection from "@/pages/home_page/event_section.tsx";
@@ -15,12 +13,20 @@ import StudentSection from "@/pages/home_page/student_section.tsx";
 import SettingSection from "@/pages/home_page/setting_section.tsx";
 import LogInSection from "@/pages/log_in_page/log_in_section.tsx";
 import SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
+import useAuthStatus from "@/lib/use_auth_hook.ts";
 
 const ProtectedRoute = () => {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
+  const {user, loading} = useAuthStatus();
 
+  if (loading) return null;
   return user ? <Outlet/> : <Navigate to="/login" replace/>;
+};
+
+const AnonymousRoute = () => {
+  const {user, loading} = useAuthStatus();
+
+  if (loading) return null;
+  return user ? <Navigate to="/home" replace/> : <Outlet/>;
 };
 
 function App() {
@@ -33,10 +39,13 @@ function App() {
           <Route path="/leaderboard" element={<LeaderboardPage/>}/>
           <Route path="/about" element={<AboutPage/>}/>
           <Route path="/quizz" element={<QuizzPage/>}/>
-          <Route path="/signup" element={<AccessPage Section={SignUpSection}/>}/>
-          <Route path="/login" element={<AccessPage Section={LogInSection}/>}/>
-          <Route path="/test" element={<QuizSection />}/>
-          {/* 2. Protected Route Wrapper: Only renders children if user is logged in */}
+          <Route path="/test" element={<QuizSection/>}/>
+          {/* 2. Anonymous routes — only for non-logged-in users */}
+          <Route element={<AnonymousRoute/>}>
+            <Route path="/signup" element={<AccessPage Section={SignUpSection}/>}/>
+            <Route path="/login" element={<AccessPage Section={LogInSection}/>}/>
+          </Route>
+          {/* 3. Protected routes — only for logged-in users */}
           <Route element={<ProtectedRoute/>}>
             <Route path="/home" element={<HomePage/>}>
               <Route path="dashboard" element={<DashboardSection/>}/>
