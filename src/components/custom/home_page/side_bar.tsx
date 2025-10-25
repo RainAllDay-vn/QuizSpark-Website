@@ -1,5 +1,3 @@
-"use client"
-
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { LayoutDashboard, Video, Calendar, Users, Settings } from "lucide-react"

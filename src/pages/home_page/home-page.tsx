@@ -1,5 +1,3 @@
-"use client"
-
 import { Sidebar } from "@/components/custom/home_page/side_bar"
 import { Topbar } from "@/components/custom/home_page/top_bar"
 import { useState } from "react"

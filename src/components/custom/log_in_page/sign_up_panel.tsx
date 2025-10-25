@@ -1,6 +1,6 @@
-import { Mail, Lock } from "lucide-react";
+import { User, Mail, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { InputWithIcon } from "./common";
+import { AccountTypeButton, InputWithIcon } from "./common";
 import { useEffect, useState } from "react";
 import {
   getAuth,
@@ -14,7 +14,8 @@ import {
 } from "firebase/auth";
 import { app } from "../../../firebase";
 
-export default function LogInPanel() {
+
+export default function SignUpPanel() {
   const navigate = useNavigate();
   const auth = getAuth(app);
 
@@ -26,6 +27,7 @@ export default function LogInPanel() {
   const [error, setError] = useState("");
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [accountType, setAccountType] = useState("student");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -94,15 +96,32 @@ export default function LogInPanel() {
   return (
     <div className="flex-1 md:w-1/3 flex items-center justify-center bg-white p-4 md:p-12">
       <div className="w-full max-w-lg space-y-6">
-        {/* Header */}
         <header className="space-y-1">
           <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
           <p className="text-gray-500 text-sm">
-            Log in to continue your journey with us
+            Choose your account type and start your journey with us
           </p>
         </header>
 
-        {/* Social Login Buttons */}
+        <div className="flex gap-4">
+          <AccountTypeButton
+            type="student"
+            currentType={accountType}
+            icon="🎓"
+            title="Student"
+            description="Take quizzes and track your progress"
+            onClick={setAccountType}
+          />
+          <AccountTypeButton
+            type="teacher"
+            currentType={accountType}
+            icon="🧑‍🏫"
+            title="Teacher"
+            description="Create quizzes and manage students"
+            onClick={setAccountType}
+          />
+        </div>
+
         <div className="flex gap-4 pt-2">
           <button
             className="flex-1 flex items-center justify-center h-10 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
@@ -125,33 +144,49 @@ export default function LogInPanel() {
           </button>
         </div>
 
-        {/* Divider */}
         <div className="flex items-center space-x-2 py-1">
           <div className="flex-grow border-t border-gray-200"></div>
           <span className="text-xs text-gray-400 font-medium">OR</span>
           <div className="flex-grow border-t border-gray-200"></div>
         </div>
 
-        {/* Input Fields */}
         <div className="space-y-4">
           <div className="flex gap-4">
             <InputWithIcon
-              label="Email"
-              Icon={Mail}
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e: any) => setEmail(e.target.value)}
+              label="Full Name"
+              Icon={User}
+              placeholder="John Doe"
+              value={fullName}
+              onChange={(e: any) => setFullName(e.target.value)}
+              className="flex-1"
             />
             <InputWithIcon
-              label="Password"
-              Icon={Lock}
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e: any) => setPassword(e.target.value)}
+              label="Username"
+              Icon={User}
+              placeholder="johndoe123"
+              value={username}
+              onChange={(e: any) => setUsername(e.target.value)}
+              className="flex-1"
             />
           </div>
+
+          <InputWithIcon
+            label="Email"
+            Icon={Mail}
+            type="email"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(e: any) => setEmail(e.target.value)}
+          />
+          <InputWithIcon
+            label="Password"
+            Icon={Lock}
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e: any) => setPassword(e.target.value)}
+          />
+
           {error && (
             <p className="text-red-500 text-sm font-medium pt-2">{error}</p>
           )}
@@ -160,18 +195,17 @@ export default function LogInPanel() {
             className="w-full h-10 px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-lg hover:bg-purple-700 transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-purple-300"
             onClick={handleSubmit}
           >
-            Log In
+            Sign Up
           </button>
         </div>
 
-        {/* Footer Switch */}
         <div className="text-center text-sm pt-2">
-          Don’t have an account?
+          Already have an account?
           <Link
             className="text-purple-600 font-semibold hover:underline ml-1"
-            to="/signup"
+            to={"/login"}
           >
-            Sign Up
+            Log In
           </Link>
         </div>
       </div>

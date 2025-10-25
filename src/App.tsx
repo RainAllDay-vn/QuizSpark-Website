@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@/components/theme-provider";
 import { MainPage } from "./pages/main_page/main-page";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { LoginPage } from "./pages/log_in_page/login-page";
+import { AuthPage } from "./pages/log_in_page/auth-page";
 import { AboutPage } from "./pages/about_page/about-page";
 import { LeaderboardPage } from "./pages/leaderboard_page/leaderboard-page";
 import { QuizzPage } from "./pages/quizz_page/quizz-page";
@@ -12,6 +12,8 @@ import Quizzes from "./pages/home_page/quizz";
 import Events from "./pages/home_page/event";
 import Students from "./pages/home_page/student";
 import Settings from "./pages/home_page/settings";
+import LogInPanel from "./components/custom/log_in_page/log_in_panel";
+import SignUpPanel from "./components/custom/log_in_page/sign_up_panel";
 
 function App() {
   return (
@@ -31,8 +33,10 @@ function App() {
           <Route path="/quizz" element={<QuizzPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<LoginPage />} />
+          <Route path="/" element= {<AuthPage/>}>
+            <Route path="/login" element={<LogInPanel/>} />
+            <Route path="/signup" element={<SignUpPanel />} />
+          </Route>
           {testRoutes}
         </Routes>
       </div>
