@@ -1,14 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { CreateQuizDialog } from "./create-quizz-dialouge"
 
 export default function Dashboard() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* === Header === */}
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-white">Dashboard</h1>
-        <p className="text-zinc-400 mt-1">Overview of your quiz system activity</p>
-      </div>
+  <div className="flex items-center justify-between">
+  <div>
+    <h1 className="text-3xl font-semibold tracking-tight text-white">Dashboard</h1>
+    <p className="text-zinc-400 mt-1">Overview of your quiz system activity</p>
+  </div>
+  <div>
+    <CreateQuizDialog />
+  </div>
+</div>
+
 
       <Separator className="bg-zinc-800" />
 

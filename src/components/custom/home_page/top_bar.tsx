@@ -65,7 +65,6 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
       {/* === Right section === */}
       <div className="flex items-center gap-4">
         {/* 🔹 Replace old Create button with the dialog trigger */}
-        <CreateQuizDialog />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

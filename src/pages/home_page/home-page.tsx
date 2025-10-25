@@ -1,3 +1,5 @@
+"use client"
+
 import { Sidebar } from "@/components/custom/home_page/side_bar"
 import { Topbar } from "@/components/custom/home_page/top_bar"
 import { useState } from "react"
@@ -24,14 +26,12 @@ export function DashboardLayout() {
       {/* Main Section */}
       <main className="flex-1 flex flex-col bg-[#0b0b0b]">
         {/* Topbar */}
-        <Topbar
-          onToggleSidebar={() => setSidebarOpen((s) => !s)}
-        />
+        <Topbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
 
         {/* Page Content */}
         <div className="flex-1 p-8 overflow-y-auto bg-gradient-to-b from-[#0b0b0b] to-[#111112]">
           <div className="max-w-[1440px] mx-auto space-y-8">
-            {/* 🔹 Routed Component (Dashboard, Quizzes, etc.) */}
+            {/* Routed content (Dashboard, Quizzes, etc.) */}
             <Outlet />
           </div>
         </div>

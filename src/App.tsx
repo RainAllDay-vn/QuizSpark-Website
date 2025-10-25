@@ -4,16 +4,15 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthPage } from "./pages/log_in_page/auth-page";
 import { AboutPage } from "./pages/about_page/about-page";
 import { LeaderboardPage } from "./pages/leaderboard_page/leaderboard-page";
-import { QuizzPage } from "./pages/quizz_page/quizz-page";
 import { HomePage } from "./pages/home_page/home-page";
 import { testRoutes } from "./test/test_route";
 import Dashboard from "./pages/home_page/dash-board";
-import Quizzes from "./pages/home_page/quizz";
 import Events from "./pages/home_page/event";
 import Students from "./pages/home_page/student";
 import Settings from "./pages/home_page/settings";
 import LogInPanel from "./components/custom/log_in_page/log_in_panel";
 import SignUpPanel from "./components/custom/log_in_page/sign_up_panel";
+import QuizLibrary from "./pages/home_page/quizz";
 
 function App() {
   return (
@@ -25,12 +24,11 @@ function App() {
           <Route path="/home" element={<HomePage />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="quizzes" element={<Quizzes />} />
+            <Route path="quizzes" element={<QuizLibrary />} />
             <Route path="events" element={<Events />} />
             <Route path="students" element={<Students />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-          <Route path="/quizz" element={<QuizzPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/" element= {<AuthPage/>}>
