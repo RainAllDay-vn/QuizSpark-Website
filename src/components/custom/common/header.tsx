@@ -69,9 +69,6 @@ export default function MyHeader() {
             </Button>
           )}
           <Button asChild variant="link" className="text-gray-300 hover:text-white">
-            <Link to="/quizz">Quizzes</Link>
-          </Button>
-          <Button asChild variant="link" className="text-gray-300 hover:text-white">
             <Link to="/leaderboard">Leaderboard</Link>
           </Button>
           <Button asChild variant="link" className="text-gray-300 hover:text-white">
