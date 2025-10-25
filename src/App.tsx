@@ -35,7 +35,7 @@ function App() {
           <Route path="/quizz" element={<QuizzPage/>}/>
           <Route path="/signup" element={<AccessPage Section={SignUpSection}/>}/>
           <Route path="/login" element={<AccessPage Section={LogInSection}/>}/>
-          <Route path="/test" element={<LogInSection/>}/>
+          <Route path="/test" element={<QuizSection />}/>
           {/* 2. Protected Route Wrapper: Only renders children if user is logged in */}
           <Route element={<ProtectedRoute/>}>
             <Route path="/home" element={<HomePage/>}>
