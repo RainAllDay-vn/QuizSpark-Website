@@ -13,7 +13,6 @@ import {
 import {getAuth, signOut, onAuthStateChanged, type User as FirebaseUser} from "firebase/auth"
 import {app} from "../../firebase.tsx"
 import {useNavigate} from "react-router-dom"
-import {CreateQuizDialog} from "@/components/custom/quiz_creation_dialog.tsx";
 
 type TopBarProps = {
   toggleSideBar: () => void
@@ -68,8 +67,6 @@ export function TopBar({toggleSideBar}: TopBarProps) {
 
       {/* === Right section === */}
       <div className="flex items-center gap-4">
-        <CreateQuizDialog/>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

@@ -1,5 +1,6 @@
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
 import {Separator} from "@/components/ui/separator"
+import {CreateQuizDialog} from "@/components/custom/quiz_creation_dialog.tsx";
 
 interface StatCardProps {
   title: string;
@@ -27,9 +28,12 @@ export default function DashboardSection() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* === Header === */}
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-white">Dashboard</h1>
-        <p className="text-zinc-400 mt-1">Overview of your quiz system activity</p>
+      <div className="flex justify-between items-center space-x-8">
+        <div className="w-fit">
+          <h1 className="text-3xl font-semibold tracking-tight text-white">Dashboard</h1>
+          <p className="text-zinc-400 mt-1">Overview of your quiz system activity</p>
+        </div>
+        <CreateQuizDialog />
       </div>
 
       <Separator className="bg-zinc-800"/>
