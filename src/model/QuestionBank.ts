@@ -1,6 +1,6 @@
-export interface Collection {
+export interface QuestionBank {
   id: string;
-  creator_id: number;
+  creator_id?: string;
   name: string;
   description?: string;
   access: string;

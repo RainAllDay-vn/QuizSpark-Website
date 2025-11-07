@@ -1,4 +1,4 @@
-import {useState} from "react"
+import {useEffect, useMemo, useState} from "react"
 import {Card, CardHeader, CardContent} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
@@ -6,48 +6,19 @@ import {Separator} from "@/components/ui/separator"
 import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu"
 import {Filter, Search} from "lucide-react"
 import {CreateQuizDialog} from "@/components/custom/quiz_creation_dialog.tsx";
-import type {Collection} from "@/model/collection.ts";
-
-/*
-* TO-DO:
-* Replace hard coded data
-* */
-const quizzesData: Collection[] = [
-  {
-    "id": "e8a2c3c3-4f74-4a4c-8b5a-77cdbad4449f",
-    "creator_id": 1,
-    "name": "Introduction to Biology",
-    "description": "Basic concepts of biology for beginners",
-    "access": "public",
-    "status": "Published"
-  },
-  {
-    "id": "2b68f6f5-4cb2-48f4-82b4-bb8a00a6f9b1",
-    "creator_id": 1,
-    "name": "Advanced Mathematics",
-    "description": "Basic concepts of biology for beginners",
-    "access": "public",
-    "status": "Published"
-  },
-  {
-    "id": "b3fdd942-8a5b-4959-a247-59c4e27ecdc4",
-    "creator_id": 1,
-    "name": "Chemistry Fundamentals",
-    "description": "Basic concepts of biology for beginners",
-    "access": "public",
-    "status": "Draft"
-  }
-]
+import type {QuestionBank} from "@/model/QuestionBank.ts";
+import {getPublicQuestionBank} from "@/lib/api.ts";
 
 interface CollectionCardProps {
-  collection: Collection;
+  questionBank: QuestionBank;
 }
 
-function CollectionCard({collection}: CollectionCardProps) {
+function CollectionCard({questionBank}: CollectionCardProps) {
+
   const statusColor =
-    collection.status === "Published"
+    questionBank.status === "PUBLISHED"
       ? "bg-green-600"
-      : collection.status === "Draft"
+      : questionBank.status === "DRAFT"
         ? "bg-amber-600"
         : "bg-gray-600"
 
@@ -55,11 +26,11 @@ function CollectionCard({collection}: CollectionCardProps) {
     <Card className="bg-[#0f0f10] border border-zinc-800 text-white hover:border-zinc-700 transition-all">
       <CardHeader className="flex flex-row justify-between items-center">
         <div>
-          <h2 className="text-lg font-semibold">{collection.name}</h2>
-          <p className="text-zinc-400 text-sm">{collection.description}</p>
+          <h2 className="text-lg font-semibold">{questionBank.name}</h2>
+          <p className="text-zinc-400 text-sm">{questionBank.description}</p>
         </div>
         <span className={`text-xs px-3 py-1 rounded-full text-white ${statusColor}`}>
-          {collection.status}
+          {questionBank.status}
         </span>
       </CardHeader>
       <CardContent className="flex justify-between items-center text-zinc-400 text-sm">
@@ -80,11 +51,20 @@ function CollectionCard({collection}: CollectionCardProps) {
 export default function QuizSection() {
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState("All Quizzes")
+  const [questionBanks, setQuestionBanks] = useState<QuestionBank[]>([])
 
-  const filtered = quizzesData.filter(q =>
-    q.name.toLowerCase().includes(search.toLowerCase()) &&
-    (filter === "All Quizzes" || q.status === filter)
-  )
+  useEffect(() => {
+    getPublicQuestionBank()
+      .then(banks => setQuestionBanks(banks))
+  }, [])
+
+  const filtered = useMemo(() => {
+    return questionBanks.filter(
+      (bank) =>
+        bank.name.toLowerCase().includes(search.toLowerCase()) &&
+        (filter === "All Quizzes" || bank.status === filter)
+    );
+  }, [questionBanks, search, filter]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -107,7 +87,7 @@ export default function QuizSection() {
               key={tab}
               variant={filter === tab ? "default" : "outline"}
               className={`text-sm ${filter === tab ? "bg-white text-black" : "text-gray-400 border-gray-700"}`}
-              onClick={() => setFilter(tab)}
+              onClick={() => setFilter(tab.toUpperCase)}
             >
               {tab}
             </Button>
@@ -143,7 +123,7 @@ export default function QuizSection() {
       {/* === Quiz List === */}
       <div className="space-y-3">
         {filtered.map((item, index) => (
-          <CollectionCard key={index} collection={item}/>
+          <CollectionCard key={index} questionBank={item}/>
         ))}
       </div>
     </div>
