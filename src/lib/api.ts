@@ -32,3 +32,13 @@ export async function getPublicQuestionBank() {
     throw error; // rethrow so the caller can handle it
   }
 }
+
+export async function getQuestions(bankId: string) {
+  try {
+    const response = await api.get('/questions', {params: {bankId}});
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch questions from bank:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}

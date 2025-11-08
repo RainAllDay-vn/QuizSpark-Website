@@ -8,12 +8,18 @@ import {Filter, Search} from "lucide-react"
 import {CreateQuizDialog} from "@/components/custom/quiz_creation_dialog.tsx";
 import type {QuestionBank} from "@/model/QuestionBank.ts";
 import {getPublicQuestionBank} from "@/lib/api.ts";
+import {useNavigate} from "react-router-dom";
 
 interface CollectionCardProps {
   questionBank: QuestionBank;
 }
 
 function CollectionCard({questionBank}: CollectionCardProps) {
+  const navigate = useNavigate();
+
+  async function handlePracticeButton() {
+    navigate('/practice/bank/'+questionBank.id);
+  }
 
   const statusColor =
     questionBank.status === "PUBLISHED"
@@ -40,8 +46,8 @@ function CollectionCard({questionBank}: CollectionCardProps) {
           <span>👥 32 completions</span>
           <span>🕒 Created just now</span>
         </div>
-        <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-white">
-          View
+        <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-white" onClick={handlePracticeButton}>
+          Practice
         </Button>
       </CardContent>
     </Card>
