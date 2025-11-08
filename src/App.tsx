@@ -14,40 +14,35 @@ import SettingSection from "@/pages/home_page/setting_section.tsx";
 import LogInSection from "@/pages/log_in_page/log_in_section.tsx";
 import SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
 import useAuthStatus from "@/lib/use_auth_hook.ts";
+import PracticePage from "@/pages/practice_page/practice_page.tsx";
+import Loader from "@/components/custom/loader.tsx";
 
 const ProtectedRoute = () => {
-  const {user, loading} = useAuthStatus();
-
-  if (loading) return (
-    <div className="flex h-screen w-screen items-center justify-center bg-black">
-      <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
-    </div>
-  );
+  const {user} = useAuthStatus();
   return user ? <Outlet/> : <Navigate to="/login" replace/>;
 };
 
 const AnonymousRoute = () => {
-  const {user, loading} = useAuthStatus();
-
-  if (loading) return (
-    <div className="flex h-screen w-screen items-center justify-center bg-black">
-      <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
-    </div>
-  );
+  const {user} = useAuthStatus();
   return user ? <Navigate to="/home" replace/> : <Outlet/>;
 };
 
 function App() {
+  const {loading} = useAuthStatus();
+
+  if (loading) return <Loader />;
+
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="flex min-h-svh flex-col items-center justify-center fill-black">
+      <div className="flex min-h-screen h-screen w-screen flex-col items-center justify-center fill-black">
         <Routes>
           {/* 1. Public Routes: Accessible to everyone */}
           <Route path="/" element={<LandingPage/>}/>
           <Route path="/leaderboard" element={<LeaderboardPage/>}/>
           <Route path="/about" element={<AboutPage/>}/>
           <Route path="/quizz" element={<QuizzPage/>}/>
-          <Route path="/test" element={<QuizSection/>}/>
+          <Route path="/practice/bank/:bankId" element={<PracticePage/>}/>
+          <Route path="/test" element={<PracticePage/>}/>
           {/* 2. Anonymous routes — only for non-logged-in users */}
           <Route element={<AnonymousRoute/>}>
             <Route path="/signup" element={<AccessPage Section={SignUpSection}/>}/>

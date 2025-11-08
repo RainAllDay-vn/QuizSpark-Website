@@ -2,6 +2,7 @@ import axios from "axios";
 import {getAuth} from "firebase/auth";
 import {app} from "../firebase.tsx";
 import type {QuestionBank} from "@/model/QuestionBank.ts";
+import type {Question} from "@/model/Question.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -33,10 +34,14 @@ export async function getPublicQuestionBank() {
   }
 }
 
-export async function getQuestions(bankId: string) {
+export async function getQuestions(bankId: string | undefined) {
   try {
+    if (!bankId) {
+      console.error('No bankId found');
+      return [];
+    }
     const response = await api.get('/questions', {params: {bankId}});
-    return response.data;
+    return response.data as Question[];
   } catch (error) {
     console.error('Failed to fetch questions from bank:', error);
     throw error; // rethrow so the caller can handle it
