@@ -1,29 +1,35 @@
-import {User, Mail, Lock} from 'lucide-react';
+import {Mail, Lock} from 'lucide-react';
 import {type ChangeEvent, useState} from "react";
 import {createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup} from "firebase/auth";
 import {app} from "../../firebase.tsx";
 import {useNavigate} from "react-router-dom";
-import AccountTypeButton from "@/components/custom/account_type_button.tsx";
 import InputWithIcon from "@/components/custom/input_with_icon.tsx";
 
-/*TO-DO:
-* Remove login logic from this page
-* Disable logging in with Teacher role
-* */
 export default function SignUpSection() {
   const navigate = useNavigate();
   const auth = getAuth(app);
 
-  const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [accountType, setAccountType] = useState<"student" | "teacher">("student");
   const [error, setError] = useState("");
+
+  const handleGoogleRegister = async () => {
+    setError("");
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message || "Registration failed.");
+    }
+  };
+
+  const handleFacebookLogin = () => {
+    alert("Facebook login feature is not ready yet.");
+  };
 
   const handleSubmit = async () => {
     setError("");
-    if (!fullName || !username || !email || !password) {
+    if (!email || !password) {
       setError("All fields are required.");
       return;
     }
@@ -34,47 +40,18 @@ export default function SignUpSection() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setError("");
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message || "Registration failed.");
-    }
-  };
-
   return (
     <div className="flex-1 md:w-1/3 flex items-center justify-center bg-white p-4 md:p-12">
       <div className="w-full max-w-lg space-y-6">
         <header className="space-y-1">
           <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-          <p className="text-gray-500 text-sm">Choose your account type and start your journey with us</p>
+          <p className="text-gray-500 text-sm">Start your journey with us</p>
         </header>
-
-        <div className="flex gap-4">
-          <AccountTypeButton
-            type="student"
-            currentType={accountType}
-            icon="🎓"
-            title="Student"
-            description="Take quizzes and track your progress"
-            onClick={() => setAccountType("student")}
-          />
-          <AccountTypeButton
-            type="teacher"
-            currentType={accountType}
-            icon="🧑‍🏫"
-            title="Teacher"
-            description="Create quizzes and manage students"
-            onClick={() => setAccountType("teacher")}
-          />
-        </div>
 
         <div className="flex gap-4 pt-2">
           <button
             className="flex-1 flex items-center justify-center h-10 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-            onClick={handleGoogleLogin}
+            onClick={handleGoogleRegister}
           >
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Google_Favicon_2025.svg/330px-Google_Favicon_2025.svg.png"
@@ -83,6 +60,7 @@ export default function SignUpSection() {
           </button>
           <button
             className="flex-1 flex items-center justify-center h-10 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+            onClick={handleFacebookLogin}
           >
             <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"
                  alt="Facebook logo" className="w-4 h-4 mr-2"/>
@@ -97,23 +75,6 @@ export default function SignUpSection() {
         </div>
 
         <div className="space-y-4">
-          <div className="flex gap-4">
-            <InputWithIcon
-              label="Full Name"
-              Icon={User}
-              placeholder="John Doe"
-              value={fullName}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
-            />
-            <InputWithIcon
-              label="Username"
-              Icon={User}
-              placeholder="johndoe123"
-              value={username}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
-            />
-          </div>
-
           <InputWithIcon
             label="Email"
             Icon={Mail}
