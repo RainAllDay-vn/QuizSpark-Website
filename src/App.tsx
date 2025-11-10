@@ -5,7 +5,7 @@ import {Routes, Route, Outlet, Navigate} from "react-router-dom"
 import {AccessPage} from "@/pages/log_in_page/access_page.tsx"
 import {AboutPage} from "./pages/about_page/about-page"
 import {LeaderboardPage} from "./pages/leaderboard_page/leaderboard-page"
-import {QuizzPage} from "./pages/quizz_page/quizz-page"
+import QuizzPage from "./pages/quizz_page/quizz_page"
 import DashboardSection from "@/pages/home_page/dashboard_section.tsx";
 import QuizSection from "@/pages/home_page/quiz_section.tsx";
 import EventSection from "@/pages/home_page/event_section.tsx";
@@ -16,6 +16,8 @@ import SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
 import useAuthStatus from "@/lib/use_auth_hook.ts";
 import PracticePage from "@/pages/practice_page/practice_page.tsx";
 import Loader from "@/components/custom/loader.tsx";
+import MyHeader from "@/components/custom/header.tsx";
+import MyFooter from "@/components/custom/footer.tsx";
 
 const ProtectedRoute = () => {
   const {user} = useAuthStatus();
@@ -34,13 +36,21 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="flex min-h-screen h-screen w-screen flex-col items-center justify-center fill-black">
+      <div className="min-h-full min-w-full flex overflow-hidden flex-col items-center justify-center bg-black">
         <Routes>
           {/* 1. Public Routes: Accessible to everyone */}
-          <Route path="/" element={<LandingPage/>}/>
+          <Route element={
+            <div className="w-full h-full">
+              <MyHeader/>
+              <Outlet/>
+              <MyFooter/>
+            </div>
+          }>
+            <Route path="/" element={<LandingPage/>}/>
+            <Route path="/quizz" element={<QuizzPage/>}/>
+          </Route>
           <Route path="/leaderboard" element={<LeaderboardPage/>}/>
           <Route path="/about" element={<AboutPage/>}/>
-          <Route path="/quizz" element={<QuizzPage/>}/>
           <Route path="/practice/bank/:bankId" element={<PracticePage/>}/>
           <Route path="/test" element={<PracticePage/>}/>
           {/* 2. Anonymous routes — only for non-logged-in users */}
