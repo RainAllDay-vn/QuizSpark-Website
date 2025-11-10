@@ -3,7 +3,7 @@
 import {Input} from "@/components/ui/input.tsx"
 import {ScrollArea} from "@/components/ui/scroll-area.tsx"
 import {LayoutDashboard, Video, Calendar, Users, Settings} from "lucide-react"
-import {NavLink} from "react-router-dom"
+import {Link, NavLink} from "react-router-dom"
 import clsx from "clsx"
 
 interface SideBarProps {
@@ -34,7 +34,7 @@ export function SideBar({isVisible}: SideBarProps) {
       className={clsx("md:flex flex-col w-64 h-screen bg-[#151518] border-r border-zinc-800 text-white", isVisible ? "" : "hidden")}>
       {/* === Logo Section === */}
       <div className="p-6 text-2xl font-semibold tracking-tight text-white">
-        <span className="text-violet-500">Quiz</span>Spark
+        <Link to="/"><span className="text-violet-500">Quiz</span>Spark</Link>
       </div>
 
       {/* === Search === */}

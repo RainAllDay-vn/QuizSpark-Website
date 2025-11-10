@@ -1,63 +1,20 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Search} from "lucide-react";
+import {useEffect, useState} from "react";
+import type {QuestionBank} from "@/model/QuestionBank.ts";
+import {getPublicQuestionBank} from "@/lib/api.ts";
+import QuestionBankCard from "@/components/custom/question_bank_card.tsx";
+import Loader from "@/components/custom/loader.tsx";
 
-/* ---------- hard-coded data ---------- */
-const quizzes = [
-  {
-    id: 1,
-    name: "Database Concepts Quiz",
-    description: "A quiz covering fundamental concepts of relational databases",
-    status: "PUBLISHED",
-    questions: 15,
-    duration: 20,
-    completions: 32,
-    created: "just now",
-  },
-  {
-    id: 2,
-    name: "React Hooks Mastery",
-    description: "Test your knowledge on useState, useEffect and custom hooks",
-    status: "PUBLISHED",
-    questions: 12,
-    duration: 15,
-    completions: 128,
-    created: "2 hours ago",
-  },
-  {
-    id: 3,
-    name: "World Geography Challenge",
-    description: "Flags, capitals and landmarks around the globe",
-    status: "PUBLISHED",
-    questions: 25,
-    duration: 30,
-    completions: 89,
-    created: "1 day ago",
-  },
-  {
-    id: 4,
-    name: "Python Basics",
-    description: "Syntax, data types and control structures",
-    status: "DRAFT",
-    questions: 10,
-    duration: 10,
-    completions: 0,
-    created: "3 days ago",
-  },
-];
-
-const statusColor = {
-  PUBLISHED: "bg-green-600",
-  DRAFT: "bg-amber-600",
-};
-
-/* ---------- UI ---------- */
 export default function QuizzPage() {
+  const [questionBanks, setQuestionBanks] = useState<QuestionBank[]>([])
+
+  useEffect(() => {
+    getPublicQuestionBank()
+      .then(banks => setQuestionBanks(banks))
+  }, [])
+
   return (
     <div className="bg-black text-white">
       {/* ------ Hero ------ */}
@@ -98,39 +55,14 @@ export default function QuizzPage() {
       </div>
 
       {/* ------ Quiz Grid ------ */}
+      {questionBanks.length===0 && <Loader/>}
       <div className="max-w-6xl mx-auto px-4 pb-16">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {quizzes.map((q) => (
-            <Card
-              key={q.id}
-              className="bg-[#0f0f10] border border-zinc-800 text-white hover:border-zinc-700 transition"
-            >
-              <CardHeader className="flex flex-row items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-lg">{q.name}</h3>
-                  <p className="text-zinc-400 text-sm mt-1">{q.description}</p>
-                </div>
-                <span
-                  className={`text-xs px-2 py-1 rounded-full ${statusColor[q.status]} text-white`}>
-                  {q.status}
-                </span>
-              </CardHeader>
-
-              <CardContent className="flex items-center justify-between text-sm text-zinc-400">
-                <div className="flex gap-4">
-                  <span>📘 {q.questions} Qs</span>
-                  <span>⏱ {q.duration} min</span>
-                  <span>👥 {q.completions}</span>
-                </div>
-              </CardContent>
-
-              <div className="px-6 pb-4">
-                <Button className="w-full bg-zinc-800 hover:bg-zinc-700 text-white">
-                  Start Quiz
-                </Button>
-              </div>
-            </Card>
-          ))}
+          <div className="space-y-3">
+            {questionBanks.map((item, index) => (
+              <QuestionBankCard key={index} questionBank={item}/>
+            ))}
+          </div>
         </div>
       </div>
     </div>

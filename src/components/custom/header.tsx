@@ -67,7 +67,7 @@ export default function MyHeader() {
         <nav className="hidden md:flex space-x-4 text-sm font-medium">
           {user && (
             <Button asChild variant="link" className="text-gray-300 hover:text-white">
-              <Link to="/home">Home</Link>
+              <Link to="/home">Dashboard</Link>
             </Button>
           )}
           <Button asChild variant="destructive" className="text-gray-300 hover:text-white">
