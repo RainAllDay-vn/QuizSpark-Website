@@ -68,3 +68,14 @@ export async function getQuestions(bankId: string | undefined) {
     throw error; // rethrow so the caller can handle it
   }
 }
+
+export async function logQuestionAnswer(questionId: string, answer: number) {
+  try {
+    const payload = {questionId: questionId, answer: answer}
+    const response = await api.post('/questions/log', payload);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to log user\'s answer:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}

@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
 import {useParams, useNavigate} from "react-router-dom";
-import {getQuestions} from "@/lib/api.ts";
+import {getQuestions, logQuestionAnswer} from "@/lib/api.ts";
 import type {Question} from "@/model/Question.ts";
 
 interface EncouragementMessage {
@@ -64,7 +64,7 @@ export default function PracticePage() {
 
   const question = questions[currentQuestionIndex];
 
-  function handleAnswerButton(answer: number) {
+  async function handleAnswerButton(answer: number) {
     if (selected === -1) {
       const isCorrect = answer === question.answer;
       if (isCorrect) {
@@ -74,6 +74,7 @@ export default function PracticePage() {
         setEncouragement(wrongMessages[Math.floor(Math.random() * wrongMessages.length)])
       }
       setSelected(answer);
+      await logQuestionAnswer(question.id, answer);
     }
   }
 
