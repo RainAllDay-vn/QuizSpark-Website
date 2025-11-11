@@ -16,13 +16,11 @@ export default function useAuthStatus() {
         try {
           await getUserInfo();
           setUser(currentUser);
-          navigate('/home')
         } catch {
           navigate('/additional-info');
         }
       } else {
         setUser(null);
-        navigate('/')
       }
       setLoading(false);
     });

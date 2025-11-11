@@ -5,6 +5,9 @@ import InputWithIcon from "@/components/custom/input_with_icon.tsx";
 import {getAuth, signOut} from "firebase/auth";
 import {app} from "../../firebase.tsx";
 import AccountTypeButton from "@/components/custom/account_type_button.tsx";
+import type UserRegistrationDAO from "@/model/UserRegistrationDAO.ts";
+import {registerNewUser} from "@/lib/api.ts";
+import {AxiosError} from 'axios';
 
 export default function AdditionalInfoSection() {
   const navigate = useNavigate();
@@ -24,9 +27,30 @@ export default function AdditionalInfoSection() {
       setError("Please filled the required fields.");
       return;
     }
-    // Here you would typically save the additional information to your database
-    // For now, we'll just navigate to the home page
-    navigate("/home");
+    
+    const payload: UserRegistrationDAO = {
+      accountType,
+      username,
+      firstName,
+      lastName,
+      dob: dob || undefined,
+      educationLevel: educationLevel || undefined
+    };
+    
+    try {
+      await registerNewUser(payload);
+      navigate("/home");
+    } catch (err: unknown) {
+      if (err instanceof AxiosError && err.response?.data) {
+        let errorMessage = ''
+        Object.values(err.response.data).forEach(value => errorMessage += value+'. ');
+        setError(errorMessage);
+      } else if (err instanceof Error) {
+        setError(err.message || "Registration failed. Please try again.");
+      } else {
+        setError("Registration failed. Please try again.");
+      }
+    }
   };
 
   const handleSignOut = async () => {
