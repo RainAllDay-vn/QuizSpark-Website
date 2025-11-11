@@ -57,7 +57,7 @@ export default function QuizzPage() {
       {/* ------ Quiz Grid ------ */}
       {questionBanks.length===0 && <Loader/>}
       <div className="max-w-6xl mx-auto px-4 pb-16">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4">
           <div className="space-y-3">
             {questionBanks.map((item, index) => (
               <QuestionBankCard key={index} questionBank={item}/>

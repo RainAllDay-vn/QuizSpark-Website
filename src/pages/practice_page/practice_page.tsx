@@ -1,16 +1,40 @@
 import {useEffect, useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
-import {useParams} from "react-router-dom";
+import {useParams, useNavigate} from "react-router-dom";
 import {getQuestions} from "@/lib/api.ts";
 import type {Question} from "@/model/Question.ts";
 
+interface EncouragementMessage {
+  message: string;
+  emoji: string;
+}
+
+const correctMessages: EncouragementMessage[] = [
+  { message: "Excellent! You got it right!", emoji: "🎉" },
+  { message: "Perfect! Well done!", emoji: "🌟" },
+  { message: "Awesome! Keep it up!", emoji: "🎊" },
+  { message: "Brilliant! You nailed it!", emoji: "✨" },
+  { message: "Fantastic! Great job!", emoji: "🏆" }
+];
+
+const wrongMessages: EncouragementMessage[] = [
+  { message: "Not quite, but keep trying!", emoji: "💪" },
+  { message: "Almost there! Don't give up!", emoji: "🌈" },
+  { message: "Learning opportunity! Try again!", emoji: "📚" },
+  { message: "Mistakes help us grow! Keep going!", emoji: "🌱" },
+  { message: "Every attempt is progress!", emoji: "💡" }
+];
+
 export default function PracticePage() {
   const {bankId} = useParams<{ bankId: string }>();
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [selected, setSelected] = useState(-1);
   const [score, setScore] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [encouragement, setEncouragement] = useState<EncouragementMessage | null>(null);
 
   useEffect(() => {
     getQuestions(bankId)
@@ -19,6 +43,19 @@ export default function PracticePage() {
       })
   }, [bankId]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSeconds(seconds => seconds + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (totalSeconds: number) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+  
   if (questions.length === 0) {
     return <div className="min-h-screen w-screen bg-black text-white flex flex-col items-center p-6">
       <h1>LOADING</h1>
@@ -29,7 +66,13 @@ export default function PracticePage() {
 
   function handleAnswerButton(answer: number) {
     if (selected === -1) {
-      if (answer === question.answer) setScore(score + 100);
+      const isCorrect = answer === question.answer;
+      if (isCorrect) {
+        setScore(score + 100);
+        setEncouragement(correctMessages[Math.floor(Math.random() * correctMessages.length)]);
+      } else {
+        setEncouragement(wrongMessages[Math.floor(Math.random() * wrongMessages.length)])
+      }
       setSelected(answer);
     }
   }
@@ -37,12 +80,31 @@ export default function PracticePage() {
   function handleNextButton() {
     setCurrentQuestionIndex(Math.min(currentQuestionIndex+1, questions.length - 1));
     setSelected(-1);
+    setEncouragement(null);
   }
 
   return (
-    <div className="min-h-screen w-screen bg-black text-white flex flex-col items-center p-6">
+    <div className="min-h-screen w-screen bg-black text-white flex flex-col items-center p-6 relative overflow-hidden">
+      {/* Background Decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/3 w-60 h-60 bg-pink-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/4 right-1/4 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
+      </div>
+
       {/* === Header === */}
-      <h1 className="text-xl font-semibold mb-6">PRACTICE</h1>
+      <div className="flex justify-between items-center w-full max-w-6xl mb-6 relative z-10">
+        <Button 
+          onClick={() => navigate("/home")}
+          variant="outline" 
+          className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+        >
+          ← Back to Home
+        </Button>
+        <h1 className="text-xl font-semibold">PRACTICE</h1>
+        <div className="w-36"></div> {/* Spacer to center the title */}
+      </div>
 
       {/* === Main content (Question + Stats) === */}
       <div className="grow"></div>
@@ -79,6 +141,19 @@ export default function PracticePage() {
                 ))}
               </div>
 
+              {/* Encouragement Message */}
+              {encouragement && (
+                <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
+                  selected === question.answer 
+                    ? "bg-green-500/20 border border-green-500/30 text-green-300" 
+                    : "bg-orange-500/20 border border-orange-500/30 text-orange-300"
+                }`}>
+                  <span className="text-2xl mr-2">{encouragement.emoji}</span>
+                  {encouragement.message}
+                  <span className="text-2xl ml-2">{encouragement.emoji}</span>
+                </div>
+              )}
+
               <div className="flex justify-between items-center mt-6">
                 <Button
                   variant="outline"
@@ -109,6 +184,10 @@ export default function PracticePage() {
                 <div className="flex justify-between">
                   <span>Progress</span>
                   <span>{currentQuestionIndex+1}/{questions.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Time</span>
+                  <span>{formatTime(seconds)}</span>
                 </div>
               </div>
             </CardContent>
