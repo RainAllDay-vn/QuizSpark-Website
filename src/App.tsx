@@ -63,6 +63,7 @@ function App() {
           <Route element={<ProtectedRoute/>}>
             <Route path="/additional-info" element={<AccessPage Section={AdditionalInfoSection}/>}/>
             <Route path="/home" element={<HomePage/>}>
+              <Route index element={<Navigate to="dashboard" replace/>}/>
               <Route path="dashboard" element={<DashboardSection/>}/>
               <Route path="quizzes" element={<QuizSection/>}/>
               <Route path="events" element={<EventSection/>}/>
