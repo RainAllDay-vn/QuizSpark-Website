@@ -56,7 +56,7 @@ export default function AdditionalInfoSection() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      navigate("/login");
+      navigate("/");
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message || "Sign out failed.");
     }
