@@ -24,6 +24,16 @@ api.interceptors.request.use(async (config) => {
   return Promise.reject(error);
 });
 
+export async function getUserInfo() {
+  try {
+    const response = await api.get('/users/me');
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch user info:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}
+
 export async function getPublicQuestionBank() {
   try {
     const response = await api.get('/banks/public');

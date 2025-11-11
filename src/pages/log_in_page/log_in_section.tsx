@@ -1,5 +1,5 @@
 import {Mail, Lock} from "lucide-react";
-import {Link, useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import InputWithIcon from "@/components/custom/input_with_icon.tsx";
 import {type ChangeEvent, useState} from "react";
 import {
@@ -11,7 +11,6 @@ import {
 import {app} from "../../firebase.tsx";
 
 export default function LogInSection() {
-  const navigate = useNavigate();
   const auth = getAuth(app);
 
   const [email, setEmail] = useState("");
@@ -22,7 +21,6 @@ export default function LogInSection() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      navigate("/home");
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message || "Login failed.");
     }
@@ -40,7 +38,6 @@ export default function LogInSection() {
     }
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/home");
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message || "Login failed.");
     }

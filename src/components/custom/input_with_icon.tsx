@@ -1,9 +1,9 @@
 import type {LucideIcon} from "lucide-react";
-import type {ChangeEvent} from "react";
+import type {ChangeEvent, ReactNode} from "react";
 
 interface InputWithIconProps {
   Icon: LucideIcon;
-  label: string;
+  label: ReactNode;
   type?: string;
   placeholder: string;
   value: string;

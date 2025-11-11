@@ -13,6 +13,7 @@ import StudentSection from "@/pages/home_page/student_section.tsx";
 import SettingSection from "@/pages/home_page/setting_section.tsx";
 import LogInSection from "@/pages/log_in_page/log_in_section.tsx";
 import SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
+import AdditionalInfoSection from "@/pages/log_in_page/additional_info_section.tsx";
 import useAuthStatus from "@/lib/use_auth_hook.ts";
 import PracticePage from "@/pages/practice_page/practice_page.tsx";
 import Loader from "@/components/custom/loader.tsx";
@@ -60,6 +61,7 @@ function App() {
           </Route>
           {/* 3. Protected routes — only for logged-in users */}
           <Route element={<ProtectedRoute/>}>
+            <Route path="/additional-info" element={<AccessPage Section={AdditionalInfoSection}/>}/>
             <Route path="/home" element={<HomePage/>}>
               <Route path="dashboard" element={<DashboardSection/>}/>
               <Route path="quizzes" element={<QuizSection/>}/>
