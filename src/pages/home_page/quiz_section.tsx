@@ -24,7 +24,7 @@ export default function QuizSection() {
     return questionBanks.filter(
       (bank) =>
         bank.name.toLowerCase().includes(search.toLowerCase()) &&
-        (filter === "All Quizzes" || bank.status === filter)
+        (filter === "All Quizzes" || bank.status === filter.toUpperCase())
     );
   }, [questionBanks, search, filter]);
 
@@ -49,7 +49,7 @@ export default function QuizSection() {
               key={tab}
               variant={filter === tab ? "default" : "outline"}
               className={`text-sm ${filter === tab ? "bg-white text-black" : "text-gray-400 border-gray-700"}`}
-              onClick={() => setFilter(tab.toUpperCase)}
+              onClick={() => setFilter(tab)}
             >
               {tab}
             </Button>
