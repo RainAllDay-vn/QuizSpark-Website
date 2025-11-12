@@ -33,6 +33,7 @@ export default function PracticePage() {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const [isFinished, setIsFinished] = useState(false);
   const [selected, setSelected] = useState(-1);
   const [score, setScore] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -46,11 +47,12 @@ export default function PracticePage() {
   }, [bankId]);
 
   useEffect(() => {
+    if (isFinished) return;
     const interval = setInterval(() => {
       setSeconds(seconds => seconds + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isFinished]);
 
   const formatTime = (totalSeconds: number) => {
     const minutes = Math.floor(totalSeconds / 60);
@@ -62,6 +64,77 @@ export default function PracticePage() {
     return <div className="min-h-screen w-screen bg-black text-white flex flex-col items-center p-6">
       <h1>LOADING</h1>
     </div>
+  }
+
+  // Show statistics page when all questions are answered
+  if (isFinished) {
+    const correctAnswers = score / 100; // Each correct answer is worth 100 points
+    const totalQuestions = questions.length;
+    const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+    
+    return (
+      <div className="min-h-screen w-screen bg-black text-white flex flex-col items-center p-6 relative overflow-hidden">
+        {/* Background Decorations */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/3 w-60 h-60 bg-pink-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/4 right-1/4 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
+        </div>
+
+        {/* === Header === */}
+        <div className="flex justify-center items-center w-full max-w-6xl mb-6 relative z-10">
+          <h1 className="text-xl font-semibold">QUIZ RESULTS</h1>
+        </div>
+
+        {/* === Main content (Statistics) === */}
+        <div className="grow"></div>
+        <div className="w-full max-w-2xl">
+          <Card className="bg-gray-900/60 border border-gray-700 text-white">
+            <CardContent className="p-8 space-y-6 text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-3xl font-bold mb-6">Quiz Completed!</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-purple-400">{score}</div>
+                  <div className="text-sm text-gray-400">Total Score</div>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-green-400">{accuracy}%</div>
+                  <div className="text-sm text-gray-400">Accuracy</div>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-blue-400">{formatTime(seconds)}</div>
+                  <div className="text-sm text-gray-400">Time Taken</div>
+                </div>
+              </div>
+              
+              <div className="text-lg mb-6">
+                You answered <span className="font-bold text-green-400">{correctAnswers}</span> out of <span className="font-bold">{totalQuestions}</span> questions correctly!
+              </div>
+              
+              <div className="flex gap-4 justify-center">
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6"
+                >
+                  Practice More
+                </Button>
+                <Button
+                  onClick={() => user ? navigate("/home") : navigate('/')}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                >
+                  Back to Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="grow"></div>
+      </div>
+    );
   }
 
   const question = questions[currentQuestionIndex];
@@ -81,7 +154,8 @@ export default function PracticePage() {
   }
 
   function handleNextButton() {
-    setCurrentQuestionIndex(Math.min(currentQuestionIndex+1, questions.length - 1));
+    setCurrentQuestionIndex(Math.min(currentQuestionIndex+1, questions.length));
+    setIsFinished(currentQuestionIndex+1 === questions.length);
     setSelected(-1);
     setEncouragement(null);
   }
@@ -159,13 +233,13 @@ export default function PracticePage() {
 
               <div className="flex justify-between items-center mt-6">
                 <Button
-                  variant="outline"
+                  variant="outline" onClick={() => setIsFinished(true)}
                   className="border-gray-600 text-gray-300"
                 >
-                  Skip
+                  End Early
                 </Button>
                 <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={handleNextButton}>
-                  Next Question →
+                  Skip →
                 </Button>
               </div>
             </CardContent>
