@@ -4,6 +4,7 @@ import {Card, CardContent} from '@/components/ui/card';
 import {useParams, useNavigate} from "react-router-dom";
 import {getQuestions, logQuestionAnswer} from "@/lib/api.ts";
 import type {Question} from "@/model/Question.ts";
+import useAuthStatus from "@/lib/use_auth_hook.ts";
 
 interface EncouragementMessage {
   message: string;
@@ -28,6 +29,7 @@ const wrongMessages: EncouragementMessage[] = [
 
 export default function PracticePage() {
   const {bankId} = useParams<{ bankId: string }>();
+  const {user} = useAuthStatus();
   const navigate = useNavigate();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
@@ -74,7 +76,7 @@ export default function PracticePage() {
         setEncouragement(wrongMessages[Math.floor(Math.random() * wrongMessages.length)])
       }
       setSelected(answer);
-      await logQuestionAnswer(question.id, answer);
+      if(user) await logQuestionAnswer(question.id, answer);
     }
   }
 
@@ -97,7 +99,7 @@ export default function PracticePage() {
       {/* === Header === */}
       <div className="flex justify-between items-center w-full max-w-6xl mb-6 relative z-10">
         <Button 
-          onClick={() => navigate("/home")}
+          onClick={() => user ? navigate("/home") : navigate('/')}
           variant="outline" 
           className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
         >

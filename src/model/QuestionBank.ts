@@ -5,4 +5,8 @@ export interface QuestionBank {
   description?: string;
   access: string;
   status: string;
+  createdAt: string;
+  rating?: number;
+  numberOfQuestions: number;
+  numberOfAttempts: number;
 }

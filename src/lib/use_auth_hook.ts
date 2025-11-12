@@ -18,7 +18,7 @@ export default function useAuthStatus() {
           await getUserInfo();
           setUser(currentUser);
         } catch (err: unknown) {
-          if (err instanceof AxiosError && err.status === 400){
+          if (err instanceof AxiosError && err.status === 404){
             navigate('/additional-info');
           } else {
             await signOut(auth);
