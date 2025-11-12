@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
 import {useParams, useNavigate} from "react-router-dom";
@@ -33,16 +33,40 @@ export default function PracticePage() {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const [question, setQuestion] = useState({} as Question);
   const [isFinished, setIsFinished] = useState(false);
   const [selected, setSelected] = useState(-1);
   const [score, setScore] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [encouragement, setEncouragement] = useState<EncouragementMessage | null>(null);
 
+  const handleAnswerButton = useCallback(async (answer: number) => {
+    if (selected === -1 && answer < question.choices.length) {
+      const isCorrect = answer === question.answer;
+      if (isCorrect) {
+        setScore(score + 100);
+        setEncouragement(correctMessages[Math.floor(Math.random() * correctMessages.length)]);
+      } else {
+        setEncouragement(wrongMessages[Math.floor(Math.random() * wrongMessages.length)])
+      }
+      setSelected(answer);
+      if(user) await logQuestionAnswer(question.id, answer);
+    }
+  }, [selected, question, user, score]);
+
+  const handleNextButton = useCallback(() => {
+    setCurrentQuestionIndex(Math.min(currentQuestionIndex+1, questions.length));
+    setQuestion(questions[currentQuestionIndex])
+    setIsFinished(currentQuestionIndex+1 === questions.length);
+    setSelected(-1);
+    setEncouragement(null);
+  }, [currentQuestionIndex, questions]);
+
   useEffect(() => {
     getQuestions(bankId)
       .then(questions => {
         setQuestions(questions);
+        setQuestion(questions[currentQuestionIndex]);
       })
   }, [bankId]);
 
@@ -53,6 +77,20 @@ export default function PracticePage() {
     }, 1000);
     return () => clearInterval(interval);
   }, [isFinished]);
+
+  useEffect(() => {
+    if (isFinished) return;
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (e.key >= '1' && e.key <= '4') {
+        const answerIndex = parseInt(e.key) - 1;
+        await handleAnswerButton(answerIndex);
+      } else if (e.key === 'Enter') {
+        handleNextButton();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleAnswerButton, handleNextButton, isFinished]);
 
   const formatTime = (totalSeconds: number) => {
     const minutes = Math.floor(totalSeconds / 60);
@@ -136,30 +174,7 @@ export default function PracticePage() {
       </div>
     );
   }
-
-  const question = questions[currentQuestionIndex];
-
-  async function handleAnswerButton(answer: number) {
-    if (selected === -1) {
-      const isCorrect = answer === question.answer;
-      if (isCorrect) {
-        setScore(score + 100);
-        setEncouragement(correctMessages[Math.floor(Math.random() * correctMessages.length)]);
-      } else {
-        setEncouragement(wrongMessages[Math.floor(Math.random() * wrongMessages.length)])
-      }
-      setSelected(answer);
-      if(user) await logQuestionAnswer(question.id, answer);
-    }
-  }
-
-  function handleNextButton() {
-    setCurrentQuestionIndex(Math.min(currentQuestionIndex+1, questions.length));
-    setIsFinished(currentQuestionIndex+1 === questions.length);
-    setSelected(-1);
-    setEncouragement(null);
-  }
-
+  
   return (
     <div className="min-h-screen w-screen bg-black text-white flex flex-col items-center p-6 relative overflow-hidden">
       {/* Background Decorations */}
