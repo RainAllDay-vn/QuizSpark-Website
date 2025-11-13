@@ -59,19 +59,8 @@ export default function HeroSection() {
         asChild
         className="text-lg font-semibold border-white/20 text-white hover:bg-white/10"
       >
-        <Link to="/explore">Explore Quizzes</Link>
+        <Link to="/quizz">Explore Quizzes</Link>
       </Button>
-    </div>
-
-    <div className="flex items-center justify-center gap-3 pt-6">
-      <div className="flex -space-x-2">
-        <img src="/avatars/avatar1.png" className="w-8 h-8 rounded-full border-2 border-black" />
-        <img src="/avatars/avatar2.png" className="w-8 h-8 rounded-full border-2 border-black" />
-        <img src="/avatars/avatar3.png" className="w-8 h-8 rounded-full border-2 border-black" />
-      </div>
-      <p className="text-sm text-gray-400">
-        <span className="text-[#7B3FE4] font-medium">5,000+</span> students joined this week
-      </p>
     </div>
   </div>
 </section>
