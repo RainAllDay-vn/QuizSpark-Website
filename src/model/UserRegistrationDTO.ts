@@ -1,4 +1,4 @@
-export default interface UserRegistrationDAO {
+export default interface UserRegistrationDTO {
   accountType: 'STUDENT' | 'TEACHER';
   username: string;
   firstName: string;

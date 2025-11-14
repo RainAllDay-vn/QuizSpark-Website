@@ -5,7 +5,7 @@ import InputWithIcon from "@/components/custom/input_with_icon.tsx";
 import {getAuth, signOut} from "firebase/auth";
 import {app} from "../../firebase.tsx";
 import AccountTypeButton from "@/components/custom/account_type_button.tsx";
-import type UserRegistrationDAO from "@/model/UserRegistrationDAO.ts";
+import type UserRegistrationDTO from "@/model/UserRegistrationDTO.ts";
 import {registerNewUser} from "@/lib/api.ts";
 import {AxiosError} from 'axios';
 
@@ -28,7 +28,7 @@ export default function AdditionalInfoSection() {
       return;
     }
     
-    const payload: UserRegistrationDAO = {
+    const payload: UserRegistrationDTO = {
       accountType,
       username,
       firstName,
