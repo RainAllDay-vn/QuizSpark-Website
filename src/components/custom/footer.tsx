@@ -31,7 +31,7 @@ export default function MyFooter() {
 
   /*TO-DO: Fix Font Awesome*/
   return (
-    <footer className="relative flex flex-col justify-between px-12 py-12 bg-[#0D0F1A] text-gray-300 border-t border-white/10 h-[66.67vh]">
+    <footer className="relative flex flex-col justify-between px-12 py-12 bg-[#0D0F1A] text-gray-300 border-t border-white/10 h-[33.33vh]">
   <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
     {/* Brand */}
     <div className="flex flex-col gap-6">
@@ -39,7 +39,7 @@ export default function MyFooter() {
         QuizSpark
       </h2>
       <p className="text-lg text-gray-400">
-        The ultimate quiz platform for students and teachers. Learn, compete, and earn rewards.
+        The ultimate questions platform for students and teachers. Learn, compete, and earn rewards.
       </p>
       <div className="flex gap-4 text-2xl text-[#7B3FE4]">
         <i className="fa-brands fa-facebook"></i>
@@ -53,7 +53,7 @@ export default function MyFooter() {
     <div className="flex flex-col gap-4">
       <h3 className="text-2xl font-semibold text-white">Quick Links</h3>
       <div className="flex flex-col gap-3 text-lg">
-        {["Home", "Quizzes", "Leaderboard", "About"].map((label, i) => (
+        {["Home", "Banks", "Leaderboard", "About"].map((label, i) => (
           <Button
             key={i}
             variant="link"
@@ -65,32 +65,6 @@ export default function MyFooter() {
         ))}
       </div>
     </div>
-
-    {/* Legal */}
-    <div className="flex flex-col gap-4">
-      <h3 className="text-2xl font-semibold text-white">Legal</h3>
-      <div className="flex flex-col gap-3 text-lg">
-        {["Privacy Policy", "Terms of Service", "Cookie Settings", "Contact Us"].map((label, i) => (
-          <Button
-            key={i}
-            variant="link"
-            className="justify-start p-0 h-auto text-gray-400 hover:text-white transition-colors"
-            asChild
-          >
-            <Link to={`/${label.toLowerCase().replace(/\s+/g, "-")}`}>{label}</Link>
-          </Button>
-        ))}
-      </div>
-    </div>
-  </div>
-
-  {/* Bottom note */}
-  <div className="mt-12 text-center text-lg text-gray-400">
-    <p>
-      © 2025 <span className="text-white font-medium">QuizSpark</span>. All Rights Reserved |{" "}
-      <Link to="/terms" className="text-[#A134C7] hover:underline">Terms & Conditions</Link> |{" "}
-      <Link to="/privacy" className="text-[#A134C7] hover:underline">Privacy Policy</Link>
-    </p>
   </div>
 </footer>
 

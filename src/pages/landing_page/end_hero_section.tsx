@@ -25,7 +25,7 @@ export default function EndHeroSection() {
               variant="outline"
               className="border-white text-white hover:bg-white/10"
             >
-              Explore Quizzes
+              Explore Questions
             </Button>
           </div>
         </div>

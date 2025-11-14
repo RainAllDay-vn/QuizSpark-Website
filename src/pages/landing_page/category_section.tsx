@@ -1,7 +1,7 @@
 const categories = [
   {
     title: "Science & Tech",
-    desc: "Test your knowledge in science & tech with our challenging quizzes",
+    desc: "Test your knowledge in science & tech with our challenging questions",
     color: "border-blue-500 text-blue-400",
     hover: "hover:border-blue-400",
     linkColor: "text-blue-400 hover:text-blue-300",
@@ -9,7 +9,7 @@ const categories = [
   },
   {
     title: "Mathematics",
-    desc: "Test your knowledge in mathematics with our challenging quizzes",
+    desc: "Test your knowledge in mathematics with our challenging questions",
     color: "border-green-500 text-green-400",
     hover: "hover:border-green-400",
     linkColor: "text-green-400 hover:text-green-300",
@@ -17,7 +17,7 @@ const categories = [
   },
   {
     title: "Chemistry",
-    desc: "Test your knowledge in chemistry with our challenging quizzes",
+    desc: "Test your knowledge in chemistry with our challenging questions",
     color: "border-purple-500 text-purple-400",
     hover: "hover:border-purple-400",
     linkColor: "text-purple-400 hover:text-purple-300",
@@ -25,7 +25,7 @@ const categories = [
   },
   {
     title: "Biology",
-    desc: "Test your knowledge in biology with our challenging quizzes",
+    desc: "Test your knowledge in biology with our challenging questions",
     color: "border-pink-500 text-pink-400",
     hover: "hover:border-pink-400",
     linkColor: "text-pink-400 hover:text-pink-300",
@@ -33,7 +33,7 @@ const categories = [
   },
   {
     title: "General Knowledge",
-    desc: "Test your knowledge in general knowledge with our challenging quizzes",
+    desc: "Test your knowledge in general knowledge with our challenging questions",
     color: "border-yellow-500 text-yellow-400",
     hover: "hover:border-yellow-400",
     linkColor: "text-yellow-400 hover:text-yellow-300",
@@ -41,7 +41,7 @@ const categories = [
   },
   {
     title: "Current Affairs",
-    desc: "Test your knowledge in current affairs with our challenging quizzes",
+    desc: "Test your knowledge in current affairs with our challenging questions",
     color: "border-red-500 text-red-400",
     hover: "hover:border-red-400",
     linkColor: "text-red-400 hover:text-red-300",

@@ -12,7 +12,7 @@ interface SideBarProps {
 
 const navItems = [
   {name: "Dashboard", icon: LayoutDashboard, to: "/home/dashboard"},
-  {name: "Quizzes", icon: Video, to: "/home/quizzes"},
+  {name: "Banks", icon: Video, to: "/home/banks"},
   {name: "Events", icon: Calendar, to: "/home/events"},
   {name: "Students", icon: Users, to: "/home/students"},
   {name: "Settings", icon: Settings, to: "/home/settings"},
@@ -60,11 +60,6 @@ export function SideBar({isVisible}: SideBarProps) {
           ))}
         </nav>
       </ScrollArea>
-
-      {/* === Footer or version info === */}
-      <div className="p-4 text-xs text-zinc-600 border-t border-zinc-800">
-        © 2025 QuizSpark GROUP
-      </div>
     </aside>
   )
 }

@@ -7,7 +7,7 @@ import {getPublicQuestionBank} from "@/lib/api.ts";
 import QuestionBankCard from "@/components/custom/question_bank_card.tsx";
 import Loader from "@/components/custom/loader.tsx";
 
-export default function QuizzPage() {
+export default function QuestionBankPage() {
   const [questionBanks, setQuestionBanks] = useState<QuestionBank[]>([])
 
   useEffect(() => {
@@ -21,10 +21,10 @@ export default function QuizzPage() {
       <div className="border-b border-zinc-800 bg-[#0f0f10]">
         <div className="max-w-6xl mx-auto px-4 py-16">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-            Explore Quizzes
+            Explore Question Collections
           </h1>
           <p className="text-zinc-400 mt-2 max-w-lg">
-            Challenge yourself with community-created quizzes. No account required.
+            Challenge yourself with community-created question banks. No account required.
           </p>
         </div>
       </div>
@@ -47,14 +47,14 @@ export default function QuizzPage() {
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500"/>
             <Input
-              placeholder="Search quizzes..."
+              placeholder="Search banks..."
               className="pl-10 bg-zinc-900 border-zinc-800 text-white"
             />
           </div>
         </div>
       </div>
 
-      {/* ------ Quiz Grid ------ */}
+      {/* ------ Bank Grid ------ */}
       {questionBanks.length===0 && <Loader/>}
       <div className="max-w-6xl mx-auto px-4 pb-16">
         <div className="grid gap-4">

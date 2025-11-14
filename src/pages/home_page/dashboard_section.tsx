@@ -1,6 +1,6 @@
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
 import {Separator} from "@/components/ui/separator"
-import {CreateQuizDialog} from "@/components/custom/quiz_creation_dialog.tsx";
+import {QuestionBankCreationDialog} from "@/components/custom/question_bank_creation_dialog.tsx";
 
 interface StatCardProps {
   title: string;
@@ -31,17 +31,17 @@ export default function DashboardSection() {
       <div className="flex justify-between items-center space-x-8">
         <div className="w-fit">
           <h1 className="text-3xl font-semibold tracking-tight text-white">Dashboard</h1>
-          <p className="text-zinc-400 mt-1">Overview of your quiz system activity</p>
+          <p className="text-zinc-400 mt-1">Overview of your activity</p>
         </div>
-        <CreateQuizDialog />
+        <QuestionBankCreationDialog />
       </div>
 
       <Separator className="bg-zinc-800"/>
 
       {/* === Stats Grid === */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <StatCard title="Total Quizzes" value="0" color="from-violet-600 to-fuchsia-500"/>
-        <StatCard title="Total Students" value="0" color="from-blue-600 to-cyan-500"/>
+        <StatCard title="Practices Completed" value="0" color="from-violet-600 to-fuchsia-500"/>
+        <StatCard title="Questions Answered" value="0" color="from-blue-600 to-cyan-500"/>
         <StatCard title="Upcoming Events" value="0" color="from-emerald-600 to-green-500"/>
       </div>
     </div>

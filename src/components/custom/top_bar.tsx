@@ -59,7 +59,7 @@ export function TopBar({toggleSideBar}: TopBarProps) {
         <div className="relative w-full max-w-xs">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500"/>
           <Input
-            placeholder="Search quizzes, events..."
+            placeholder="Search questions, events..."
             className="pl-9 bg-[#151518] border border-[#1f1f23] text-white placeholder:text-zinc-500 focus-visible:ring-violet-600"
           />
         </div>

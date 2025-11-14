@@ -15,7 +15,7 @@ export function HomePage() {
           <TopBar toggleSideBar={() => setSideBarVisibility(!sideBarVisibility)}/>
           <div className="flex-1 p-8 overflow-y-auto bg-gradient-to-b from-[#0b0b0b] to-[#111112]">
             <div className="max-w-[1440px] mx-auto space-y-8">
-              {/* Routed Component (Dashboard, Quizzes, etc.) */}
+              {/* Routed Component (Dashboard, Question Banks, etc.) */}
               <Outlet/>
             </div>
           </div>

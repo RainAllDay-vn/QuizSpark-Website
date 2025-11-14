@@ -78,7 +78,7 @@ export default function AdditionalInfoSection() {
               currentType={accountType}
               icon="🎓"
               title="Student"
-              description="Take quizzes and track your progress"
+              description="Take tests and track your progress"
               onClick={() => setAccountType("STUDENT")}
             />
             <AccountTypeButton
@@ -86,7 +86,7 @@ export default function AdditionalInfoSection() {
               currentType={accountType}
               icon="🧑‍🏫"
               title="Teacher"
-              description="Create quizzes and manage students"
+              description="Create questions and manage students"
               onClick={() => alert("Teacher account type not implemented yet")}
             />
           </div>

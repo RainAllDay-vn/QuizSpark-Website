@@ -31,14 +31,14 @@ export default function HeroSection() {
     </div>
 
     <h1 className="text-5xl md:text-6xl font-extrabold leading-tight tracking-tight">
-      Learn, Quiz,{" "}
+      Learn, Practice,{" "}
       <span className="bg-gradient-to-r from-[#7B3FE4] via-[#A134C7] to-[#E04646] text-transparent bg-clip-text">
         Earn Rewards
       </span>
     </h1>
 
     <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-      Join thousands of students and teachers on the ultimate quiz platform.
+      Join thousands of students and teachers on the ultimate Quizzing platform.
       Test your knowledge, compete with peers, and win exciting rewards.
     </p>
 
@@ -59,7 +59,7 @@ export default function HeroSection() {
         asChild
         className="text-lg font-semibold border-white/20 text-white hover:bg-white/10"
       >
-        <Link to="/quizz">Explore Quizzes</Link>
+        <Link to="/banks">Explore Questions</Link>
       </Button>
     </div>
   </div>

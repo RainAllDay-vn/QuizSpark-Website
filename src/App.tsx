@@ -5,9 +5,9 @@ import {Routes, Route, Outlet, Navigate} from "react-router-dom"
 import {AccessPage} from "@/pages/log_in_page/access_page.tsx"
 import {AboutPage} from "./pages/about_page/about-page"
 import {LeaderboardPage} from "./pages/leaderboard_page/leaderboard-page"
-import QuizzPage from "./pages/quizz_page/quizz_page"
+import QuestionBankPage from "@/pages/bank_page/bank_page.tsx"
 import DashboardSection from "@/pages/home_page/dashboard_section.tsx";
-import QuizSection from "@/pages/home_page/quiz_section.tsx";
+import QuestionBankSection from "@/pages/home_page/bank_section.tsx";
 import EventSection from "@/pages/home_page/event_section.tsx";
 import StudentSection from "@/pages/home_page/student_section.tsx";
 import SettingSection from "@/pages/home_page/setting_section.tsx";
@@ -48,7 +48,7 @@ function App() {
             </div>
           }>
             <Route path="/" element={<LandingPage/>}/>
-            <Route path="/quizz" element={<QuizzPage/>}/>
+            <Route path="/banks" element={<QuestionBankPage/>}/>
           </Route>
           <Route path="/leaderboard" element={<LeaderboardPage/>}/>
           <Route path="/about" element={<AboutPage/>}/>
@@ -65,7 +65,7 @@ function App() {
             <Route path="/home" element={<HomePage/>}>
               <Route index element={<Navigate to="dashboard" replace/>}/>
               <Route path="dashboard" element={<DashboardSection/>}/>
-              <Route path="quizzes" element={<QuizSection/>}/>
+              <Route path="banks" element={<QuestionBankSection/>}/>
               <Route path="events" element={<EventSection/>}/>
               <Route path="students" element={<StudentSection/>}/>
               <Route path="settings" element={<SettingSection/>}/>

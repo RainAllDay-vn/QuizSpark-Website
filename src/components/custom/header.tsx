@@ -70,8 +70,8 @@ export default function MyHeader() {
               <Link to="/home">Dashboard</Link>
             </Button>
           )}
-          <Button asChild variant="destructive" className="text-gray-300 hover:text-white">
-            <Link to="/quizz">Quizzes</Link>
+          <Button asChild variant="link" className="text-gray-300 hover:text-white">
+            <Link to="/banks">Public Banks</Link>
           </Button>
           <Button asChild variant="link" className="text-gray-300 hover:text-white">
             <Link to="/leaderboard">Leaderboard</Link>
@@ -119,7 +119,7 @@ export default function MyHeader() {
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem asChild>
-                <Link to="/quizz">Quizzes</Link>
+                <Link to="/banks">Public Banks</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/leaderboard">Leaderboard</Link>

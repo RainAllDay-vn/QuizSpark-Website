@@ -2,7 +2,7 @@ export default function FeaturesSection() {
   const features = [
     {
       title: "Personalized Learning",
-      desc: "Adaptive quizzes that adjust to your knowledge level and learning pace",
+      desc: "Adaptive questions that adjust to your knowledge level and learning pace",
       color: "text-purple-400 border-t-4 border-purple-500",
       icon: "🧠",
     },
@@ -14,13 +14,13 @@ export default function FeaturesSection() {
     },
     {
       title: "Teacher Dashboard_section",
-      desc: "Comprehensive tools for educators to create and manage quizzes",
+      desc: "Comprehensive tools for educators to create and manage questions",
       color: "text-blue-400 border-t-4 border-blue-500",
       icon: "👩‍🏫",
     },
     {
       title: "Progress Tracking",
-      desc: "Adaptive quizzes that adjust to your knowledge level and learning pace",
+      desc: "Adaptive questions that adjust to your knowledge level and learning pace",
       color: "text-green-400 border-t-4 border-green-500",
       icon: "📈",
     },
@@ -32,7 +32,7 @@ export default function FeaturesSection() {
     },
     {
       title: "Mobile Friendly",
-      desc: "Access quizzes anytime, anywhere on any device",
+      desc: "Access questions anytime, anywhere on any device",
       color: "text-purple-400 border-t-4 border-purple-500",
       icon: "📱",
     },
@@ -57,7 +57,7 @@ export default function FeaturesSection() {
           </span>
         </h2>
         <p className="mt-2 text-gray-400 text-sm md:text-base">
-          Discover quizzes across various subjects to test and expand your knowledge
+          Discover questions across various subjects to test and expand your knowledge
         </p>
       </div>
 

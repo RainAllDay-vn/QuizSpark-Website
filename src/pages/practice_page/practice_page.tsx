@@ -122,7 +122,7 @@ export default function PracticePage() {
 
         {/* === Header === */}
         <div className="flex justify-center items-center w-full max-w-6xl mb-6 relative z-10">
-          <h1 className="text-xl font-semibold">QUIZ RESULTS</h1>
+          <h1 className="text-xl font-semibold">PRACTICE RESULTS</h1>
         </div>
 
         {/* === Main content (Statistics) === */}
@@ -131,7 +131,7 @@ export default function PracticePage() {
           <Card className="bg-gray-900/60 border border-gray-700 text-white">
             <CardContent className="p-8 space-y-6 text-center">
               <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-3xl font-bold mb-6">Quiz Completed!</h2>
+              <h2 className="text-3xl font-bold mb-6">Practice Completed!</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <div className="bg-gray-800/50 rounded-lg p-4">
@@ -261,12 +261,12 @@ export default function PracticePage() {
           </Card>
         </div>
 
-        {/* RIGHT: Quiz Stats column */}
+        {/* RIGHT: Practice Stats column */}
         <div className="w-64">
           <Card className="bg-gray-900/60 border border-gray-700 text-white">
             <CardContent className="p-4 space-y-4">
               <h2 className="text-lg font-semibold text-gray-200">
-                Quiz Stats
+                Practice Stats
               </h2>
               <div className="space-y-3 text-gray-300 text-sm">
                 <div className="flex justify-between">
