@@ -71,6 +71,7 @@ function App() {
               <Route path="students" element={<StudentSection/>}/>
               <Route path="settings" element={<SettingSection/>}/>
             </Route>
+            <Route path="/edit/bank/:bankId" element={<BankEditPage/>}/>
           </Route>
         </Routes>
       </div>

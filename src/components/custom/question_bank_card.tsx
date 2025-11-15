@@ -55,13 +55,17 @@ export default function QuestionBankCard({questionBank}: QuestionBankCardProps) 
           {questionBank.status}
         </span>
       </CardHeader>
-      <CardContent className="flex justify-between items-center text-zinc-400 text-sm">
+      <CardContent className="flex gap-5 justify-between items-center text-zinc-400 text-sm">
         <div className="flex items-center gap-4">
           <span>📘 {questionBank.numberOfQuestions} questions</span>
           {questionBank.rating && <span>⭐ {questionBank.rating} stars</span>}
           <span>👥 {questionBank.numberOfAttempts} completions</span>
           <span>🕒 Created {formatRelativeTime(questionBank.createdAt)}</span>
         </div>
+        <div className="grow"></div>
+        <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-white" onClick={() => navigate("/edit/bank/"+questionBank.id)}>
+          Edit
+        </Button>
         <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-white" onClick={handlePracticeButton}>
           Practice
         </Button>

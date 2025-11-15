@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Save, Eye, ChevronLeft, Edit, Trash2, Check } from 'lucide-react';
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 // Sample question data
 const sampleQuestions = [
@@ -26,6 +27,7 @@ const sampleQuestions = [
 ];
 
 export default function BankEditPage() {
+  const {bankId} = useParams<{ bankId: string }>();
   const [questions, setQuestions] = useState(sampleQuestions);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState("");
