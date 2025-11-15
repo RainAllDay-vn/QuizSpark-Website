@@ -19,6 +19,7 @@ import PracticePage from "@/pages/practice_page/practice_page.tsx";
 import Loader from "@/components/custom/loader.tsx";
 import MyHeader from "@/components/custom/header.tsx";
 import MyFooter from "@/components/custom/footer.tsx";
+import BankEditPage from "./pages/bank_edit_page/bank_edit_page";
 
 const ProtectedRoute = () => {
   const {user} = useAuthStatus();
@@ -53,7 +54,7 @@ function App() {
           <Route path="/leaderboard" element={<LeaderboardPage/>}/>
           <Route path="/about" element={<AboutPage/>}/>
           <Route path="/practice/bank/:bankId" element={<PracticePage/>}/>
-          <Route path="/test" element={<PracticePage/>}/>
+          <Route path="/test" element={<BankEditPage/>}/>
           {/* 2. Anonymous routes — only for non-logged-in users */}
           <Route element={<AnonymousRoute/>}>
             <Route path="/signup" element={<AccessPage Section={SignUpSection}/>}/>
