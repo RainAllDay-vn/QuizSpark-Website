@@ -18,6 +18,7 @@ export default function QuestionEditSection({
   onQuestionsUpdated
 }: QuestionEditSectionProps) {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const handleEditQuestion = (question: Question) => {
     // If there's a current editing question, save it first
@@ -31,8 +32,31 @@ export default function QuestionEditSection({
     setEditingQuestion({...question});
   };
 
+  const validateQuestionData = (question: Question): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    if (!question.description || question.description.trim() === '') {
+      errors.description = 'Description is required and cannot be empty';
+    }
+    // Validate choices (should not be null or undefined)
+    if (question.choices.length < 2) {
+      errors.choices = 'At least 2 choices are required';
+    } else {
+      const hasEmptyChoice = question.choices.some(choice => !choice || choice.trim() === '');
+      if (hasEmptyChoice) {
+        errors.choices = 'All choices must have content';
+      }
+    }
+    return errors;
+  };
+
   const handleSaveQuestion = async () => {
     if (!editingQuestion || !questionBank) return;
+    const errors = validateQuestionData(editingQuestion);
+    setValidationErrors(errors);
+    // If there are validation errors, don't proceed with saving
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
 
     try {
       // Check if this is a new question (no id yet) or an existing one
@@ -63,14 +87,15 @@ export default function QuestionEditSection({
         onQuestionsUpdated(updatedQuestions);
       }
       setEditingQuestion(null);
+      setValidationErrors({});
     } catch (error) {
       console.error('Failed to save question:', error);
-      // Optionally show an error message to the user
     }
   };
 
   const handleCancelQuestion = () => {
     setEditingQuestion(null);
+    setValidationErrors({});
   };
 
   const handleDeleteQuestion = async (id: string) => {
@@ -82,7 +107,6 @@ export default function QuestionEditSection({
       onQuestionsUpdated(updatedQuestions);
     } catch (error) {
       console.error('Failed to delete question:', error);
-      // Optionally show an error message to the user
     }
   };
 
@@ -150,6 +174,17 @@ export default function QuestionEditSection({
         </Button>
       </div>
 
+      {/* Validation Errors Display */}
+      {Object.keys(validationErrors).length > 0 && (
+        <div className="mb-4 bg-red-900/20 border border-red-700 rounded-lg p-4">
+          <ul className="list-disc list-inside space-y-1 text-red-200">
+            {Object.entries(validationErrors).map(([field, error]) => (
+              <li key={field}>{error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Questions List */}
       <div className="space-y-4">
         {/* Show new question being edited */}
@@ -163,7 +198,9 @@ export default function QuestionEditSection({
                     <Input
                       value={editingQuestion.description}
                       onChange={(e) => handleQuestionDescriptionChange(e.target.value)}
-                      className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 mb-3"
+                      className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 mb-3 ${
+                        validationErrors.description ? 'border-red-500' : 'border-zinc-700'
+                      }`}
                       placeholder="Question text"
                     />
                     <div className="space-y-2">
@@ -179,7 +216,9 @@ export default function QuestionEditSection({
                           <Input
                             value={choice}
                             onChange={(e) => handleChoiceChange(choiceIndex, e.target.value)}
-                            className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 flex-1"
+                            className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 flex-1 ${
+                              validationErrors.choices ? 'border-red-500' : 'border-zinc-700'
+                            }`}
                             placeholder={`Option ${choiceIndex + 1}`}
                           />
                           {editingQuestion.choices.length > 2 && (
@@ -242,7 +281,9 @@ export default function QuestionEditSection({
                       <Input
                         value={editingQuestion.description}
                         onChange={(e) => handleQuestionDescriptionChange(e.target.value)}
-                        className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 mb-3"
+                        className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 mb-3 ${
+                          validationErrors.description ? 'border-red-500' : 'border-zinc-700'
+                        }`}
                         placeholder="Question text"
                       />
                       <div className="space-y-2">
@@ -258,7 +299,9 @@ export default function QuestionEditSection({
                             <Input
                               value={choice}
                               onChange={(e) => handleChoiceChange(choiceIndex, e.target.value)}
-                              className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 flex-1"
+                              className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 flex-1 ${
+                                validationErrors.choices ? 'border-red-500' : 'border-zinc-700'
+                              }`}
                               placeholder={`Option ${choiceIndex + 1}`}
                             />
                             {editingQuestion.choices.length > 2 && (

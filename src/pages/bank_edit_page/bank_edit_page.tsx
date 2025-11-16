@@ -5,7 +5,6 @@ import {Button} from '@/components/ui/button';
 import {getQuestionBank} from '@/lib/api';
 import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
-import {ChevronLeft, Eye} from 'lucide-react';
 import {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 
@@ -72,14 +71,9 @@ export default function BankEditPage() {
         />
 
         {/* Bottom Navigation */}
-        <div className="flex justify-between">
-          <Button variant="outline" className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]">
-            <ChevronLeft className="w-4 h-4 mr-2"/>
-            Back
-          </Button>
-          <Button className="bg-violet-600 hover:bg-violet-700 text-white">
-            <Eye className="w-4 h-4 mr-2"/>
-            Preview & Publish
+        <div className="flex justify-end">
+          <Button className="bg-violet-600 hover:bg-violet-700 text-white" onClick={() => navigate("/home/banks")}>
+            Finish Editing
           </Button>
         </div>
       </div>
