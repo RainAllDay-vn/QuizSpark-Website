@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Input } from "@/components/ui/input.tsx"
 import { ScrollArea } from "@/components/ui/scroll-area.tsx"
 import { LayoutDashboard, Calendar, Users, Settings, Folder, Compass } from "lucide-react"
 import { Link, NavLink } from "react-router-dom"

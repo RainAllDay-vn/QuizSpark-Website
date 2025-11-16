@@ -1,6 +1,4 @@
-import { correctMessages, wrongMessages, type EncouragementMessage } from "./practice_page_quote";
-
-type DadTone = 'impressed' | 'meh' | 'disappointed' | 'absolute_fail';
+export type DadTone = 'impressed' | 'meh' | 'disappointed' | 'absolute_fail';
 
 interface DadMessage {
   minAccuracy: number;

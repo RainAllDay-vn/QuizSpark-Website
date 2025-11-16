@@ -7,7 +7,7 @@ import useAuthStatus from '@/lib/use_auth_hook.ts';
 import PracticeResults from './practice_result';
 import { PracticeStats } from './practice_stat_prop';
 import { QuestionCard } from './question_card';
-import { correctMessages, wrongMessages, type EncouragementMessage,getEncouragementMessage } from './practice_page_quote';
+import { type EncouragementMessage,getEncouragementMessage } from './practice_page_quote';
 
 
 
