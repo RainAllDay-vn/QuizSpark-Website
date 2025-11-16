@@ -1,6 +1,7 @@
 import Loader from '@/components/custom/loader';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {getQuestionBank, updateQuestionBank} from '@/lib/api';
 import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
@@ -202,19 +203,33 @@ export default function BankEditPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">Access</label>
-                  <Input
+                  <Select
                     value={editingBank.access}
-                    onChange={(e) => handleBankFieldChange('access', e.target.value)}
-                    className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600"
-                  />
+                    onValueChange={(value) => handleBankFieldChange('access', value)}
+                  >
+                    <SelectTrigger className="bg-[#0f0f10] border border-zinc-700 text-white focus-visible:ring-violet-600">
+                      <SelectValue placeholder="Select access level" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0f0f10] border border-zinc-700 text-white">
+                      <SelectItem value="PUBLIC">Public</SelectItem>
+                      <SelectItem value="PRIVATE">Private</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">Status</label>
-                  <Input
+                  <Select
                     value={editingBank.status}
-                    onChange={(e) => handleBankFieldChange('status', e.target.value)}
-                    className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600"
-                  />
+                    onValueChange={(value) => handleBankFieldChange('status', value)}
+                  >
+                    <SelectTrigger className="bg-[#0f0f10] border border-zinc-700 text-white focus-visible:ring-violet-600">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0f0f10] border border-zinc-700 text-white">
+                      <SelectItem value="DRAFT">Draft</SelectItem>
+                      <SelectItem value="PUBLISHED">Published</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-zinc-400 mb-2">Description</label>
