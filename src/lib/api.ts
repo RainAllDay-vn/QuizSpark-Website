@@ -5,6 +5,9 @@ import type {QuestionBank} from "@/model/QuestionBank.ts";
 import type UserRegistrationDTO from "@/dtos/UserRegistrationDTO.ts";
 import type QuestionBankCreationDTO from "@/dtos/QuestionBankCreationDTO.ts";
 import type QuestionBankUpdateDTO from "@/dtos/QuestionBankUpdateDTO.ts";
+import type QuestionCreationDTO from "@/dtos/QuestionCreationDTO.ts";
+import type QuestionUpdateDTO from "@/dtos/QuestionUpdateDTO.ts";
+import type { Question } from "@/model/Question.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -86,8 +89,34 @@ export async function updateQuestionBank(bankId: string, bankData: QuestionBankU
   }
 }
 
-export async function addQuestion() {
-  
+export async function addQuestion(bankId: string, questionData: QuestionCreationDTO) {
+    try {
+    const response = await api.post(`/questions?bankId=${bankId}`, questionData);
+    return response.data as Question;
+  } catch (error) {
+    console.error('Failed to create new question:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}
+
+export async function updateQuestion(questionId: string, questionData: QuestionUpdateDTO) {
+  try {
+    const response = await api.put(`/questions/${questionId}`, questionData);
+    return response.data as Question;
+  } catch (error) {
+    console.error('Failed to update question:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}
+
+export async function deleteQuestion(questionId: string) {
+  try {
+    await api.delete(`/questions/${questionId}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to delete question:', error);
+    throw error; // rethrow so the caller can handle it
+  }
 }
 
 export async function logQuestionAnswer(questionId: string, answer: number) {
