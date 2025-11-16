@@ -5,6 +5,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {getQuestionBank, updateQuestionBank} from '@/lib/api';
 import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
+import type QuestionBankUpdateDTO from '@/model/QuestionBankUpdateDTO';
 import {Plus, Save, ChevronLeft, Edit, Trash2, Check, Eye} from 'lucide-react';
 import {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
@@ -44,7 +45,14 @@ export default function BankEditPage() {
     if (!editingBank || !bankId) return;
 
     try {
-      const updatedBank = await updateQuestionBank(bankId, editingBank);
+      const updateData: QuestionBankUpdateDTO = {
+        name: editingBank.name,
+        description: editingBank.description || '',
+        access: editingBank.access,
+        status: editingBank.status
+      };
+      
+      const updatedBank = await updateQuestionBank(bankId, updateData);
       setQuestionBank(updatedBank);
       setEditingBank(null);
     } catch (error) {

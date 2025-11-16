@@ -76,7 +76,7 @@ export default function PracticePage() {
           return;
         }
         setQuestions(bank.questions);
-        setQuestion(questions[currentQuestionIndex]);
+        setQuestion(bank.questions[currentQuestionIndex]);
       })
   }, [bankId]);
 

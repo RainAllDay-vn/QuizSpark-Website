@@ -4,6 +4,7 @@ import {app} from "../firebase.tsx";
 import type {QuestionBank} from "@/model/QuestionBank.ts";
 import type UserRegistrationDTO from "@/model/UserRegistrationDTO.ts";
 import type QuestionBankCreationDTO from "@/model/QuestionBankCreationDTO.ts";
+import type QuestionBankUpdateDTO from "@/model/QuestionBankUpdateDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -75,9 +76,9 @@ export async function getQuestionBank(bankId: string) {
   }
 }
 
-export async function updateQuestionBank(bankId: string, bankData: Partial<QuestionBank>) {
+export async function updateQuestionBank(bankId: string, bankData: QuestionBankUpdateDTO) {
   try {
-    const response = await api.put(`/banks/${bankId}`, bankData);
+    const response = await api.put(`/banks/single/${bankId}`, bankData);
     return response.data as QuestionBank;
   } catch (error) {
     console.error('Failed to update question bank:', error);
