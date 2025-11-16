@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area.tsx"
 import { LayoutDashboard, Calendar, Users, Settings, Folder, Compass } from "lucide-react"
 import { Link, NavLink } from "react-router-dom"
@@ -20,7 +19,7 @@ const navItems = [
 ]
 
 export function SideBar({ isVisible }: SideBarProps) {
-  const [collapsed, setCollapsed] = useState(false)
+  const collapsed = true
 
   const baseLink =
     "flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white"
