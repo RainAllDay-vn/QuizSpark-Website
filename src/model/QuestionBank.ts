@@ -1,3 +1,5 @@
+import type { Question } from "./Question";
+
 export interface QuestionBank {
   id: string;
   creator_id?: string;
@@ -9,4 +11,5 @@ export interface QuestionBank {
   rating?: number;
   numberOfQuestions: number;
   numberOfAttempts: number;
+  questions: Question[];
 }

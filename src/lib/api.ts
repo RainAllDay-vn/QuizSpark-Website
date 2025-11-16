@@ -66,12 +66,28 @@ export async function getPublicQuestionBank() {
   }
 }
 
-export async function getQuestions(bankId: string | undefined) {
+export async function getQuestionBank(bankId: string) {
   try {
-    if (!bankId) {
-      console.error('No bankId found');
-      return [];
-    }
+    const response = await api.get(`/banks/single/${bankId}`);
+    return response.data as QuestionBank;
+  } catch (error) {
+    console.error('Failed to fetch question bank:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}
+
+export async function updateQuestionBank(bankId: string, bankData: Partial<QuestionBank>) {
+  try {
+    const response = await api.put(`/banks/${bankId}`, bankData);
+    return response.data as QuestionBank;
+  } catch (error) {
+    console.error('Failed to update question bank:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}
+
+export async function getQuestions(bankId: string) {
+  try {
     const response = await api.get('/questions', {params: {bankId}});
     return response.data as Question[];
   } catch (error) {
