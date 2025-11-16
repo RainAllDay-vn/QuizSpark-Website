@@ -42,13 +42,6 @@ export function SideBar({ isVisible }: SideBarProps) {
             <span className="text-violet-500">Quiz</span>Spark
           </Link>
         )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-1 rounded hover:bg-zinc-700"
-          title={collapsed ? "Expand" : "Collapse"}
-        >
-          {collapsed ? "→" : "←"}
-        </button>
       </div>
 
       {/* === Navigation === */}
