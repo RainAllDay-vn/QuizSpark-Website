@@ -1,11 +1,17 @@
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {updateQuestionBank} from '@/lib/api';
-import type {QuestionBank} from '@/model/QuestionBank';
-import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
-import {Save, Edit} from 'lucide-react';
-import {useState} from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { updateQuestionBank } from "@/lib/api";
+import type { QuestionBank } from "@/model/QuestionBank";
+import type QuestionBankUpdateDTO from "@/dtos/QuestionBankUpdateDTO";
+import { Save, Edit, Trash } from "lucide-react";
+import { useState } from "react";
 
 interface BankEditSectionProps {
   questionBank: QuestionBank | null;
@@ -14,14 +20,18 @@ interface BankEditSectionProps {
 
 export default function BankEditSection({
   questionBank,
-  onBankUpdated
+  onBankUpdated,
 }: BankEditSectionProps) {
   const [editingBank, setEditingBank] = useState<QuestionBank | null>(null);
 
   const handleEditBank = () => {
     if (questionBank) {
-      setEditingBank({...questionBank});
+      setEditingBank({ ...questionBank });
     }
+  };
+  const handleDeleteBank = () => {
+    console.log("delete bank clicked");
+    // Add delete dialog or API later
   };
 
   const handleSaveBank = async () => {
@@ -30,16 +40,16 @@ export default function BankEditSection({
     try {
       const updateData: QuestionBankUpdateDTO = {
         name: editingBank.name,
-        description: editingBank.description || '',
+        description: editingBank.description || "",
         access: editingBank.access,
-        status: editingBank.status
+        status: editingBank.status,
       };
-      
+
       const updatedBank = await updateQuestionBank(questionBank.id, updateData);
       onBankUpdated(updatedBank);
       setEditingBank(null);
     } catch (error) {
-      console.error('Failed to update question bank:', error);
+      console.error("Failed to update question bank:", error);
     }
   };
 
@@ -49,12 +59,13 @@ export default function BankEditSection({
 
   const handleBankFieldChange = (field: keyof QuestionBank, value: string) => {
     if (!editingBank) return;
-    setEditingBank({...editingBank, [field]: value});
+    setEditingBank({ ...editingBank, [field]: value });
   };
   return (
     <div className="bg-[#0f0f10] border border-zinc-800 rounded-lg p-6 mb-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold">Question Bank Details</h2>
+
         {editingBank ? (
           <div className="flex space-x-2">
             <Button
@@ -63,9 +74,10 @@ export default function BankEditSection({
               className="border-green-600 text-green-400 bg-[#151518] hover:bg-green-900/20"
               onClick={handleSaveBank}
             >
-              <Save className="w-4 h-4 mr-2"/>
+              <Save className="w-4 h-4 mr-2" />
               Save
             </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -76,33 +88,49 @@ export default function BankEditSection({
             </Button>
           </div>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
-            onClick={handleEditBank}
-          >
-            <Edit className="w-4 h-4 mr-2"/>
-            Edit
-          </Button>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-700 text-red-400 bg-[#151518] hover:bg-red-900/20"
+              onClick={handleDeleteBank}
+            >
+              <Trash className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
+              onClick={handleEditBank}
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+          </div>
         )}
       </div>
 
       {editingBank ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-2">Name</label>
+            <label className="block text-sm font-medium text-zinc-400 mb-2">
+              Name
+            </label>
             <Input
               value={editingBank.name}
-              onChange={(e) => handleBankFieldChange('name', e.target.value)}
+              onChange={(e) => handleBankFieldChange("name", e.target.value)}
               className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-2">Access</label>
+            <label className="block text-sm font-medium text-zinc-400 mb-2">
+              Access
+            </label>
             <Select
               value={editingBank.access}
-              onValueChange={(value) => handleBankFieldChange('access', value)}
+              onValueChange={(value) => handleBankFieldChange("access", value)}
             >
               <SelectTrigger className="bg-[#0f0f10] border border-zinc-700 text-white focus-visible:ring-violet-600">
                 <SelectValue placeholder="Select access level" />
@@ -114,10 +142,12 @@ export default function BankEditSection({
             </Select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-2">Status</label>
+            <label className="block text-sm font-medium text-zinc-400 mb-2">
+              Status
+            </label>
             <Select
               value={editingBank.status}
-              onValueChange={(value) => handleBankFieldChange('status', value)}
+              onValueChange={(value) => handleBankFieldChange("status", value)}
             >
               <SelectTrigger className="bg-[#0f0f10] border border-zinc-700 text-white focus-visible:ring-violet-600">
                 <SelectValue placeholder="Select status" />
@@ -129,10 +159,14 @@ export default function BankEditSection({
             </Select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-zinc-400 mb-2">Description</label>
+            <label className="block text-sm font-medium text-zinc-400 mb-2">
+              Description
+            </label>
             <Input
-              value={editingBank.description || ''}
-              onChange={(e) => handleBankFieldChange('description', e.target.value)}
+              value={editingBank.description || ""}
+              onChange={(e) =>
+                handleBankFieldChange("description", e.target.value)
+              }
               className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600"
               placeholder="Enter description"
             />
@@ -162,11 +196,16 @@ export default function BankEditSection({
           </div>
           <div>
             <p className="text-sm font-medium text-zinc-400 mb-1">Created</p>
-            <p className="text-white">{questionBank && new Date(questionBank.createdAt).toLocaleDateString()}</p>
+            <p className="text-white">
+              {questionBank &&
+                new Date(questionBank.createdAt).toLocaleDateString()}
+            </p>
           </div>
           {questionBank?.description && (
             <div className="md:col-span-2">
-              <p className="text-sm font-medium text-zinc-400 mb-1">Description</p>
+              <p className="text-sm font-medium text-zinc-400 mb-1">
+                Description
+              </p>
               <p className="text-white">{questionBank.description}</p>
             </div>
           )}

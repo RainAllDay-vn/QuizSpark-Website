@@ -1,61 +1,68 @@
 "use client"
 
-import {Input} from "@/components/ui/input.tsx"
-import {ScrollArea} from "@/components/ui/scroll-area.tsx"
-import {LayoutDashboard, Video, Calendar, Users, Settings} from "lucide-react"
-import {Link, NavLink} from "react-router-dom"
+import { useState } from "react"
+import { Input } from "@/components/ui/input.tsx"
+import { ScrollArea } from "@/components/ui/scroll-area.tsx"
+import { LayoutDashboard, Calendar, Users, Settings, Folder, Compass } from "lucide-react"
+import { Link, NavLink } from "react-router-dom"
 import clsx from "clsx"
 
 interface SideBarProps {
-  isVisible: boolean,
+  isVisible: boolean
 }
 
 const navItems = [
-  {name: "Dashboard", icon: LayoutDashboard, to: "/home/dashboard"},
-  {name: "Banks", icon: Video, to: "/home/banks"},
-  {name: "Events", icon: Calendar, to: "/home/events"},
-  {name: "Students", icon: Users, to: "/home/students"},
-  {name: "Settings", icon: Settings, to: "/home/settings"},
+  { name: "Dashboard", icon: LayoutDashboard, to: "/home/dashboard" },
+  { name: "Banks", icon: Folder, to: "/home/banks" },
+  { name: "Discovery", icon: Compass, to: "/home/discovery" },
+  { name: "Events", icon: Calendar, to: "/home/events" },
+  { name: "Students", icon: Users, to: "/home/students" },
+  { name: "Settings", icon: Settings, to: "/home/settings" },
 ]
 
-export function SideBar({isVisible}: SideBarProps) {
+export function SideBar({ isVisible }: SideBarProps) {
+  const [collapsed, setCollapsed] = useState(false)
+
   const baseLink =
     "flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white"
-  const activeLink =
-    "bg-violet-600/20 border border-violet-600/40 text-violet-400 shadow-sm"
+  const activeLink = "bg-violet-600/20 border border-violet-600/40 text-violet-400 shadow-sm"
   const inactiveLink = "text-zinc-400 border border-transparent"
 
-  /*TO-DO:
-  * Add search logic
-  * Make SideBar become an overlay drawer on small screens
-  * */
   return (
     <aside
-      className={clsx("md:flex flex-col w-64 h-screen bg-[#151518] border-r border-zinc-800 text-white", isVisible ? "" : "hidden")}>
-      {/* === Logo Section === */}
-      <div className="p-6 text-2xl font-semibold tracking-tight text-white">
-        <Link to="/"><span className="text-violet-500">Quiz</span>Spark</Link>
-      </div>
-
-      {/* === Search === */}
-      <div className="px-4">
-        <Input
-          placeholder="Search..."
-          className="bg-[#151518] border border-[#1f1f23] text-white placeholder:text-zinc-500 focus-visible:ring-violet-600"
-        />
+      className={clsx(
+        "md:flex flex-col h-auto bg-[#151518] border-r border-zinc-800 text-white transition-all duration-300",
+        isVisible ? "" : "hidden",
+        collapsed ? "w-20" : "w-64"
+      )}
+    >
+      {/* === Logo & Collapse Button === */}
+      <div className="flex items-center justify-between p-6">
+        {!collapsed && (
+          <Link to="/" className="text-2xl font-semibold tracking-tight text-white">
+            <span className="text-violet-500">Quiz</span>Spark
+          </Link>
+        )}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-1 rounded hover:bg-zinc-700"
+          title={collapsed ? "Expand" : "Collapse"}
+        >
+          {collapsed ? "→" : "←"}
+        </button>
       </div>
 
       {/* === Navigation === */}
-      <ScrollArea className="flex-1 px-4 py-6">
+      <ScrollArea className="flex-1 px-2 py-4">
         <nav className="space-y-1">
-          {navItems.map(({name, icon: Icon, to}) => (
+          {navItems.map(({ name, icon: Icon, to }) => (
             <NavLink
               key={name}
               to={to}
-              className={({isActive}) => clsx(baseLink, isActive ? activeLink : inactiveLink)}
+              className={({ isActive }) => clsx(baseLink, isActive ? activeLink : inactiveLink)}
             >
-              <Icon className="mr-3 h-5 w-5"/>
-              <span className="font-medium">{name}</span>
+              <Icon className="h-5 w-5" />
+              {!collapsed && <span className="ml-3 font-medium">{name}</span>}
             </NavLink>
           ))}
         </nav>
