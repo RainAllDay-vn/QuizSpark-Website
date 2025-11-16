@@ -5,7 +5,7 @@ import InputWithIcon from "@/components/custom/input_with_icon.tsx";
 import {getAuth, signOut} from "firebase/auth";
 import {app} from "../../firebase.tsx";
 import AccountTypeButton from "@/components/custom/account_type_button.tsx";
-import type UserRegistrationDTO from "@/model/UserRegistrationDTO.ts";
+import type UserRegistrationDTO from "@/dtos/UserRegistrationDTO.ts";
 import {registerNewUser} from "@/lib/api.ts";
 import {AxiosError} from 'axios';
 

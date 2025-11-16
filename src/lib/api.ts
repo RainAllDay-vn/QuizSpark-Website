@@ -2,9 +2,9 @@ import axios from "axios";
 import {getAuth} from "firebase/auth";
 import {app} from "../firebase.tsx";
 import type {QuestionBank} from "@/model/QuestionBank.ts";
-import type UserRegistrationDTO from "@/model/UserRegistrationDTO.ts";
-import type QuestionBankCreationDTO from "@/model/QuestionBankCreationDTO.ts";
-import type QuestionBankUpdateDTO from "@/model/QuestionBankUpdateDTO.ts";
+import type UserRegistrationDTO from "@/dtos/UserRegistrationDTO.ts";
+import type QuestionBankCreationDTO from "@/dtos/QuestionBankCreationDTO.ts";
+import type QuestionBankUpdateDTO from "@/dtos/QuestionBankUpdateDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -84,6 +84,10 @@ export async function updateQuestionBank(bankId: string, bankData: QuestionBankU
     console.error('Failed to update question bank:', error);
     throw error; // rethrow so the caller can handle it
   }
+}
+
+export async function addQuestion() {
+  
 }
 
 export async function logQuestionAnswer(questionId: string, answer: number) {

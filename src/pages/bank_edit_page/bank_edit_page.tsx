@@ -5,7 +5,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {getQuestionBank, updateQuestionBank} from '@/lib/api';
 import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
-import type QuestionBankUpdateDTO from '@/model/QuestionBankUpdateDTO';
+import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
 import {Plus, Save, ChevronLeft, Edit, Trash2, Check, Eye} from 'lucide-react';
 import {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
