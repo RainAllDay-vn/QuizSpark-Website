@@ -2,7 +2,6 @@ import axios from "axios";
 import {getAuth} from "firebase/auth";
 import {app} from "../firebase.tsx";
 import type {QuestionBank} from "@/model/QuestionBank.ts";
-import type {Question} from "@/model/Question.ts";
 import type UserRegistrationDTO from "@/model/UserRegistrationDTO.ts";
 import type QuestionBankCreationDTO from "@/model/QuestionBankCreationDTO.ts";
 
@@ -82,16 +81,6 @@ export async function updateQuestionBank(bankId: string, bankData: Partial<Quest
     return response.data as QuestionBank;
   } catch (error) {
     console.error('Failed to update question bank:', error);
-    throw error; // rethrow so the caller can handle it
-  }
-}
-
-export async function getQuestions(bankId: string) {
-  try {
-    const response = await api.get('/questions', {params: {bankId}});
-    return response.data as Question[];
-  } catch (error) {
-    console.error('Failed to fetch questions from bank:', error);
     throw error; // rethrow so the caller can handle it
   }
 }

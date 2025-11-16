@@ -2,7 +2,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
 import {useParams, useNavigate} from "react-router-dom";
-import {getQuestions, logQuestionAnswer} from "@/lib/api.ts";
+import {getQuestionBank, logQuestionAnswer} from "@/lib/api.ts";
 import type {Question} from "@/model/Question.ts";
 import useAuthStatus from "@/lib/use_auth_hook.ts";
 
@@ -63,9 +63,19 @@ export default function PracticePage() {
   }, [currentQuestionIndex, questions]);
 
   useEffect(() => {
-    getQuestions(bankId)
-      .then(questions => {
-        setQuestions(questions);
+    if (!bankId) {
+      alert("This page doesn't exist")
+      navigate("/home")
+      return;
+    }
+    getQuestionBank(bankId)
+      .then(bank => {
+        if(bank.questions.length == 0){
+          alert("This question bank is empty")
+          navigate("/home")
+          return;
+        }
+        setQuestions(bank.questions);
         setQuestion(questions[currentQuestionIndex]);
       })
   }, [bankId]);
