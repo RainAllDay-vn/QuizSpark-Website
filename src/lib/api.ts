@@ -98,6 +98,15 @@ export async function updateQuestionBank(bankId: string, bankData: QuestionBankU
   }
 }
 
+export async function deleteQuestionBank(bankId: string) {
+  try {
+    await api.delete(`/banks/single/${bankId}`);
+  } catch (error) {
+    console.error('Failed to update question bank:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}
+
 export async function addQuestion(bankId: string, questionData: QuestionCreationDTO) {
     try {
     const response = await api.post(`/questions?bankId=${bankId}`, questionData);

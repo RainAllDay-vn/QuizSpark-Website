@@ -40,6 +40,10 @@ export default function BankEditPage() {
     setQuestionBank({...questionBank, questions: updatedQuestions});
   };
 
+  const handleBankDeleted = () => {
+    navigate("/home/banks");
+  };
+
   if (loading) return <Loader/>
 
   return (
@@ -62,6 +66,7 @@ export default function BankEditPage() {
         <BankEditSection
           questionBank={questionBank}
           onBankUpdated={handleBankUpdated}
+          onBankDeleted={handleBankDeleted}
         />
 
         {/* Quiz Questions Section */}

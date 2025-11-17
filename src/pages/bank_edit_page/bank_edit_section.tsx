@@ -1,22 +1,26 @@
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {updateQuestionBank} from '@/lib/api';
+import {updateQuestionBank, deleteQuestionBank} from '@/lib/api';
 import type {QuestionBank} from '@/model/QuestionBank';
 import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
-import {Save, Edit} from 'lucide-react';
+import {Save, Edit, Trash2} from 'lucide-react';
 import {useState} from 'react';
 
 interface BankEditSectionProps {
   questionBank: QuestionBank | null;
   onBankUpdated: (updatedBank: QuestionBank) => void;
+  onBankDeleted: () => void;
 }
 
 export default function BankEditSection({
   questionBank,
-  onBankUpdated
+  onBankUpdated,
+  onBankDeleted
 }: BankEditSectionProps) {
   const [editingBank, setEditingBank] = useState<QuestionBank | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
   const handleEditBank = () => {
     if (questionBank) {
@@ -51,8 +55,64 @@ export default function BankEditSection({
     if (!editingBank) return;
     setEditingBank({...editingBank, [field]: value});
   };
+
+  const handleDeleteBank = () => {
+    setShowDeleteWarning(true);
+  };
+
+  const confirmDeleteBank = async () => {
+    if (!questionBank) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteQuestionBank(questionBank.id);
+      onBankDeleted();
+    } catch (error) {
+      console.error('Failed to delete question bank:', error);
+      alert('Failed to delete question bank. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteWarning(false);
+    }
+  };
+
+  const cancelDeleteBank = () => {
+    setShowDeleteWarning(false);
+  };
   return (
     <div className="bg-[#0f0f10] border border-zinc-800 rounded-lg p-6 mb-6">
+      {showDeleteWarning && (
+        <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-red-400 font-medium">Delete Question Bank</p>
+              <p className="text-zinc-300 text-sm mt-1">
+                Are you sure you want to delete "{questionBank?.name}"? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-zinc-600 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
+                onClick={cancelDeleteBank}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-red-600 text-red-400 bg-[#151518] hover:bg-red-900/20"
+                onClick={confirmDeleteBank}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold">Question Bank Details</h2>
         {editingBank ? (
@@ -76,15 +136,28 @@ export default function BankEditSection({
             </Button>
           </div>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
-            onClick={handleEditBank}
-          >
-            <Edit className="w-4 h-4 mr-2"/>
-            Edit
-          </Button>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
+              onClick={handleEditBank}
+            >
+              <Edit className="w-4 h-4 mr-2"/>
+              Edit
+            </Button>
+            {showDeleteWarning || 
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-red-600 text-red-400 bg-[#151518] hover:bg-red-900/20"
+                onClick={handleDeleteBank}
+              >
+                <Trash2 className="w-4 h-4 mr-2"/>
+                Delete
+              </Button>
+            }
+          </div>
         )}
       </div>
 
