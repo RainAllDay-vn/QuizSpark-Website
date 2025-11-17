@@ -44,7 +44,7 @@ export function TopBar({toggleSideBar}: TopBarProps) {
   * */
   return (
     <header
-      className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-[#0f0f10]/80 backdrop-blur-md">
+      className="flex items-center justify-between h-16 px-6 py-3 border-b border-zinc-800 bg-[#0f0f10]/80 backdrop-blur-md">
       {/* === Left section === */}
       <div className="flex items-center gap-3 w-1/2">
         <Button
