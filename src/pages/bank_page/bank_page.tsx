@@ -3,7 +3,7 @@ import {Input} from "@/components/ui/input";
 import {Search} from "lucide-react";
 import {useEffect, useState} from "react";
 import type {QuestionBank} from "@/model/QuestionBank.ts";
-import {getPublicQuestionBank} from "@/lib/api.ts";
+import {getPublicQuestionBanks} from "@/lib/api.ts";
 import QuestionBankCard from "@/components/custom/question_bank_card.tsx";
 import Loader from "@/components/custom/loader.tsx";
 
@@ -11,7 +11,7 @@ export default function QuestionBankPage() {
   const [questionBanks, setQuestionBanks] = useState<QuestionBank[]>([])
 
   useEffect(() => {
-    getPublicQuestionBank()
+    getPublicQuestionBanks()
       .then(banks => setQuestionBanks(banks))
   }, [])
 
@@ -60,7 +60,7 @@ export default function QuestionBankPage() {
         <div className="grid gap-4">
           <div className="space-y-3">
             {questionBanks.map((item, index) => (
-              <QuestionBankCard key={index} questionBank={item}/>
+              <QuestionBankCard key={index} questionBank={item} editable={false}/>
             ))}
           </div>
         </div>

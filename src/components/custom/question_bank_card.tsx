@@ -28,9 +28,10 @@ function formatRelativeTime(dateString: string): string {
 
 interface QuestionBankCardProps {
   questionBank: QuestionBank;
+  editable: boolean;
 }
 
-export default function QuestionBankCard({questionBank}: QuestionBankCardProps) {
+export default function QuestionBankCard({questionBank, editable}: QuestionBankCardProps) {
   const navigate = useNavigate();
 
   async function handlePracticeButton() {
@@ -63,9 +64,11 @@ export default function QuestionBankCard({questionBank}: QuestionBankCardProps) 
           <span>🕒 Created {formatRelativeTime(questionBank.createdAt)}</span>
         </div>
         <div className="grow"></div>
-        <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-white" onClick={() => navigate("/edit/bank/"+questionBank.id)}>
-          Edit
-        </Button>
+        {editable && 
+          <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-white" onClick={() => navigate("/edit/bank/"+questionBank.id)}>
+            Edit
+          </Button>
+        }
         <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-white" onClick={handlePracticeButton}>
           Practice
         </Button>

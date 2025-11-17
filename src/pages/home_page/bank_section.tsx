@@ -6,7 +6,7 @@ import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
 import {Filter, Search} from "lucide-react"
 import {QuestionBankCreationDialog} from "@/components/custom/question_bank_creation_dialog.tsx";
 import type {QuestionBank} from "@/model/QuestionBank.ts";
-import {getPublicQuestionBank} from "@/lib/api.ts";
+import {getUserQuestionBanks} from "@/lib/api.ts";
 import QuestionBankCard from "@/components/custom/question_bank_card.tsx";
 
 
@@ -16,7 +16,7 @@ export default function QuestionBankSection() {
   const [questionBanks, setQuestionBanks] = useState<QuestionBank[]>([])
 
   useEffect(() => {
-    getPublicQuestionBank()
+    getUserQuestionBanks()
       .then(banks => setQuestionBanks(banks))
   }, [])
 
@@ -85,7 +85,7 @@ export default function QuestionBankSection() {
       {/* === Bank List === */}
       <div className="space-y-3">
         {filtered.map((item, index) => (
-          <QuestionBankCard key={index} questionBank={item}/>
+          <QuestionBankCard key={index} questionBank={item} editable={true}/>
         ))}
       </div>
     </div>

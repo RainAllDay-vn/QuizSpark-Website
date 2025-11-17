@@ -12,7 +12,7 @@ interface SideBarProps {
 
 const navItems = [
   {name: "Dashboard", icon: LayoutDashboard, to: "/home/dashboard"},
-  {name: "Banks", icon: Video, to: "/home/banks"},
+  {name: "My Banks", icon: Video, to: "/home/banks"},
   {name: "Events", icon: Calendar, to: "/home/events"},
   {name: "Students", icon: Users, to: "/home/students"},
   {name: "Settings", icon: Settings, to: "/home/settings"},

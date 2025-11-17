@@ -59,7 +59,7 @@ export async function createQuestionBank(payload: QuestionBankCreationDTO) {
   }
 }
 
-export async function getPublicQuestionBank() {
+export async function getPublicQuestionBanks() {
   try {
     const response = await api.get('/banks/public');
     return response.data as QuestionBank[];
@@ -69,6 +69,15 @@ export async function getPublicQuestionBank() {
   }
 }
 
+export async function getUserQuestionBanks() {
+  try {
+    const response = await api.get('/banks');
+    return response.data as QuestionBank[];
+  } catch (error) {
+    console.error('Failed to fetch public question banks:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}
 export async function getQuestionBank(bankId: string) {
   try {
     const response = await api.get(`/banks/single/${bankId}`);
