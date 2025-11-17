@@ -20,7 +20,6 @@ import Loader from "@/components/custom/loader.tsx";
 import MyHeader from "@/components/custom/header.tsx";
 import MyFooter from "@/components/custom/footer.tsx";
 import BankEditPage from "./pages/bank_edit_page/bank_edit_page";
-import DiscoverySection from "./pages/home_page/discovery_section";
 
 const ProtectedRoute = () => {
   const {user} = useAuthStatus();
@@ -68,7 +67,6 @@ function App() {
               <Route index element={<Navigate to="dashboard" replace/>}/>
               <Route path="dashboard" element={<DashboardSection/>}/>
               <Route path="banks" element={<QuestionBankSection/>}/>
-              <Route path="discovery" element={<DiscoverySection/>}/>
               <Route path="events" element={<EventSection/>}/>
               <Route path="students" element={<StudentSection/>}/>
               <Route path="settings" element={<SettingSection/>}/>
