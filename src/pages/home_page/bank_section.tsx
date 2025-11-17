@@ -36,7 +36,7 @@ export default function QuestionBankSection() {
           <h1 className="text-3xl font-semibold tracking-tight text-white">Banks</h1>
           <p className="text-zinc-400 mt-1">Create, manage and analyze your question banks</p>
         </div>
-        <QuestionBankCreationDialog/>
+        <QuestionBankCreationDialog addBank={(bank: QuestionBank) => setQuestionBanks(prev => [...prev, bank])}/>
       </div>
 
       <Separator className="bg-zinc-800"/>

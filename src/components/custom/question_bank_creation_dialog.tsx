@@ -15,6 +15,7 @@ import {Textarea} from "@/components/ui/textarea.tsx"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx"
 import {createQuestionBank} from "@/lib/api.ts";
 import * as React from "react";
+import type { QuestionBank } from "@/model/QuestionBank"
 
 interface ValidationError {
   name?: string;
@@ -22,7 +23,11 @@ interface ValidationError {
   access?: string;
 }
 
-export function QuestionBankCreationDialog() {
+interface QuestionBankCreationDialogProps{
+  addBank: (bank: QuestionBank) => void;
+}
+
+export function QuestionBankCreationDialog({addBank}: QuestionBankCreationDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -71,8 +76,8 @@ export function QuestionBankCreationDialog() {
     setError("");
 
     try {
-      const response = await createQuestionBank({name: name, description: description, access: access})
-      console.log(response)
+      const response = await createQuestionBank({name: name, description: description, access: access});
+      addBank(response);
       // Reset form
       setName("");
       setDescription("");
