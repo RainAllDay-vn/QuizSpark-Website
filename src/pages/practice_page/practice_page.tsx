@@ -264,7 +264,7 @@ export default function PracticePage() {
                   End Early
                 </Button>
                 <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={handleNextButton}>
-                  Skip →
+                  {selected==-1 ? "Skip →" : "Next →"}
                 </Button>
               </div>
             </CardContent>
