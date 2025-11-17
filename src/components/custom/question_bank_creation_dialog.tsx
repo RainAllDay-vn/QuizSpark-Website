@@ -24,7 +24,7 @@ interface ValidationError {
 }
 
 interface QuestionBankCreationDialogProps{
-  addBank: (bank: QuestionBank) => void;
+  addBank?: (bank: QuestionBank) => void;
 }
 
 export function QuestionBankCreationDialog({addBank}: QuestionBankCreationDialogProps) {
@@ -77,7 +77,7 @@ export function QuestionBankCreationDialog({addBank}: QuestionBankCreationDialog
 
     try {
       const response = await createQuestionBank({name: name, description: description, access: access});
-      addBank(response);
+      if (addBank) addBank(response);
       // Reset form
       setName("");
       setDescription("");
