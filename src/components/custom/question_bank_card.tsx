@@ -1,7 +1,20 @@
 import type {QuestionBank} from "@/model/QuestionBank.ts";
 import {useNavigate} from "react-router-dom";
+import {useState} from "react";
 import {Card, CardContent, CardHeader} from "@/components/ui/card.tsx";
 import {Button} from "@/components/ui/button.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.tsx";
+import {Label} from "@/components/ui/label.tsx";
+import {Checkbox} from "@/components/ui/checkbox.tsx";
+import {NumberInput} from "@/components/ui/number-input.tsx";
+import { startNewPractice } from "@/lib/api";
 
 // Utility function to format date in a human-readable way
 function formatRelativeTime(dateString: string): string {
@@ -33,9 +46,20 @@ interface QuestionBankCardProps {
 
 export default function QuestionBankCard({questionBank, editable}: QuestionBankCardProps) {
   const navigate = useNavigate();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [practiceSize, setPracticeSize] = useState<number>(10);
+  const [shuffleChoices, setShuffleChoices] = useState<boolean>(true);
+  const [revealAnswer, setRevealAnswer] = useState<boolean>(false);
 
-  async function handlePracticeButton() {
-    navigate('/practice/bank/' + questionBank.id);
+  function handlePracticeButton() {
+    setIsDialogOpen(true);
+  }
+
+  async function startPractice() {
+    const resopnse = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer);
+    const practiceId = resopnse.id;
+    navigate('/practice/'+practiceId);
+    setIsDialogOpen(false);
   }
 
   const statusColor =
@@ -73,6 +97,83 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
           Practice
         </Button>
       </CardContent>
+      
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-[#0f0f10] border border-zinc-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Practice Options</DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              Configure your practice session for "{questionBank.name}"
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="size" className="text-right">
+                Number of Questions
+              </Label>
+              <NumberInput
+                id="size"
+                min={1}
+                max={questionBank.numberOfQuestions}
+                value={practiceSize}
+                onValueChange={(value) => setPracticeSize(value || 1)}
+                inputClassName="col-span-3 border-zinc-700 text-white"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="shuffle" className="text-right">
+                Shuffle Choices
+              </Label>
+              <div className="col-span-3 flex items-center space-x-2">
+                <Checkbox
+                  id="shuffle"
+                  checked={shuffleChoices}
+                  onCheckedChange={(checked) => setShuffleChoices(checked === true)}
+                  className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                />
+                <Label htmlFor="shuffle" className="text-sm text-zinc-400">
+                  Randomize answer choices
+                </Label>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="reveal" className="text-right">
+                Reveal Answers
+              </Label>
+              <div className="col-span-3 flex items-center space-x-2">
+                <Checkbox
+                  id="reveal"
+                  checked={revealAnswer}
+                  onCheckedChange={(checked) => setRevealAnswer(checked === true)}
+                  className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                />
+                <Label htmlFor="reveal" className="text-sm text-zinc-400">
+                  Show correct answers immediately
+                </Label>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              className="border-zinc-700 text-white hover:bg-zinc-800"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={startPractice}
+              className="bg-zinc-800 hover:bg-zinc-700 text-white"
+            >
+              Start Practice
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }
