@@ -1,13 +1,14 @@
 import axios from "axios";
-import {getAuth} from "firebase/auth";
-import {app} from "../firebase.tsx";
-import type {QuestionBank} from "@/model/QuestionBank.ts";
+import { getAuth } from "firebase/auth";
+import { app } from "../firebase.tsx";
+import type { QuestionBank } from "@/model/QuestionBank.ts";
 import type UserRegistrationDTO from "@/dtos/UserRegistrationDTO.ts";
 import type QuestionBankCreationDTO from "@/dtos/QuestionBankCreationDTO.ts";
 import type QuestionBankUpdateDTO from "@/dtos/QuestionBankUpdateDTO.ts";
 import type QuestionCreationDTO from "@/dtos/QuestionCreationDTO.ts";
 import type QuestionUpdateDTO from "@/dtos/QuestionUpdateDTO.ts";
 import type { Question } from "@/model/Question.ts";
+import type { Practice } from "@/model/Practice.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -44,8 +45,8 @@ export async function registerNewUser(payload: UserRegistrationDTO) {
     const response = await api.post('/users/register', payload);
     return response.data;
   } catch (error) {
-  console.error('Failed to register new user:', error);
-  throw error; // rethrow so the caller can handle it
+    console.error('Failed to register new user:', error);
+    throw error; // rethrow so the caller can handle it
   }
 }
 
@@ -108,7 +109,7 @@ export async function deleteQuestionBank(bankId: string) {
 }
 
 export async function addQuestion(bankId: string, questionData: QuestionCreationDTO) {
-    try {
+  try {
     const response = await api.post(`/questions?bankId=${bankId}`, questionData);
     return response.data as Question;
   } catch (error) {
@@ -137,13 +138,29 @@ export async function deleteQuestion(questionId: string) {
   }
 }
 
-export async function logQuestionAnswer(questionId: string, answer: number) {
+export async function startNewPractice(bankId: string, size: number, shuffle: boolean, revealAnswer: boolean) {
   try {
-    const payload = {questionId: questionId, answer: answer}
-    const response = await api.post('/questions/log', payload);
-    return response.data;
+    const response = await api.get('/practice/new', {
+      params: {
+        bankId,
+        size,
+        shuffle,
+        revealAnswer
+      }
+    });
+    return response.data as { id: string };
   } catch (error) {
-    console.error('Failed to log user\'s answer:', error);
-    throw error; // rethrow so the caller can handle it
+    console.error('Failed to start new practice:', error);
+    throw error;
+  }
+}
+
+export async function getPractice(practiceId: string) {
+  try {
+    const response = await api.get(`/practice/${practiceId}`);
+    return response.data as Practice;
+  } catch (error) {
+    console.error('Failed to fetch practice:', error);
+    throw error;
   }
 }
