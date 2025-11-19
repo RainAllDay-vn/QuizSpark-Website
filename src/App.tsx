@@ -53,8 +53,7 @@ function App() {
           </Route>
           <Route path="/leaderboard" element={<LeaderboardPage/>}/>
           <Route path="/about" element={<AboutPage/>}/>
-          <Route path="/practice/bank/:bankId" element={<PracticePage/>}/>
-          <Route path="/test" element={<BankEditPage/>}/>
+          <Route path="/practice/:id" element={<PracticePage/>}/>
           {/* 2. Anonymous routes — only for non-logged-in users */}
           <Route element={<AnonymousRoute/>}>
             <Route path="/signup" element={<AccessPage Section={SignUpSection}/>}/>

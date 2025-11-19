@@ -138,6 +138,22 @@ export async function deleteQuestion(questionId: string) {
   }
 }
 
+export async function startNewAnonymousPractice(bankId: string, size: number, shuffle: boolean) {
+  try {
+    const response = await api.get('/practice/new/anonymous', {
+      params: {
+        bankId,
+        size,
+        shuffle
+      }
+    });
+    return response.data as Practice;
+  } catch (error) {
+    console.error('Failed to start new practice:', error);
+    throw error;
+  }
+}
+
 export async function startNewPractice(bankId: string, size: number, shuffle: boolean, revealAnswer: boolean) {
   try {
     const response = await api.get('/practice/new', {

@@ -15,6 +15,7 @@ import {Label} from "@/components/ui/label.tsx";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {NumberInput} from "@/components/ui/number-input.tsx";
 import { startNewPractice } from "@/lib/api";
+import useAuthStatus from "@/lib/use_auth_hook.ts";
 
 // Utility function to format date in a human-readable way
 function formatRelativeTime(dateString: string): string {
@@ -46,8 +47,9 @@ interface QuestionBankCardProps {
 
 export default function QuestionBankCard({questionBank, editable}: QuestionBankCardProps) {
   const navigate = useNavigate();
+  const {user} = useAuthStatus();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [practiceSize, setPracticeSize] = useState<number>(10);
+  const [practiceSize, setPracticeSize] = useState<number>(Math.min(10, questionBank.numberOfQuestions));
   const [shuffleChoices, setShuffleChoices] = useState<boolean>(true);
   const [revealAnswer, setRevealAnswer] = useState<boolean>(false);
 
@@ -56,11 +58,20 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
   }
 
   async function startPractice() {
-    const resopnse = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer);
-    const practiceId = resopnse.id;
-    navigate('/practice/'+practiceId);
+    if (user) {
+      const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer);
+      const practiceId = response.id;
+      navigate('/practice/'+practiceId);
+    } else {
+      const searchParams = new URLSearchParams();
+      searchParams.append("size", practiceSize.toString());
+      searchParams.append("shuffle", shuffleChoices.toString());
+      navigate(`/practice/${questionBank.id}?${searchParams.toString()}`);
+    }
     setIsDialogOpen(false);
   }
+
+  // This function is no longer needed as we handle anonymous practice in startPractice
 
   const statusColor =
     questionBank.status === "PUBLISHED"
@@ -104,6 +115,11 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
             <DialogTitle>Practice Options</DialogTitle>
             <DialogDescription className="text-zinc-400">
               Configure your practice session for "{questionBank.name}"
+              {!user && (
+                <div className="mt-2 p-2 bg-amber-900/30 border border-amber-700 rounded text-amber-300 text-sm">
+                  ⚠️ You are not logged in. Your progress will not be saved.
+                </div>
+              )}
             </DialogDescription>
           </DialogHeader>
           
@@ -139,22 +155,24 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
               </div>
             </div>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="reveal" className="text-right">
-                Reveal Answers
-              </Label>
-              <div className="col-span-3 flex items-center space-x-2">
-                <Checkbox
-                  id="reveal"
-                  checked={revealAnswer}
-                  onCheckedChange={(checked) => setRevealAnswer(checked === true)}
-                  className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-                />
-                <Label htmlFor="reveal" className="text-sm text-zinc-400">
-                  Show correct answers immediately
+            {user && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="reveal" className="text-right">
+                  Reveal Answers
                 </Label>
+                <div className="col-span-3 flex items-center space-x-2">
+                  <Checkbox
+                    id="reveal"
+                    checked={revealAnswer}
+                    onCheckedChange={(checked) => setRevealAnswer(checked === true)}
+                    className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                  />
+                  <Label htmlFor="reveal" className="text-sm text-zinc-400">
+                    Show correct answers immediately
+                  </Label>
+                </div>
               </div>
-            </div>
+            )}
           </div>
           
           <DialogFooter>

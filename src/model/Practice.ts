@@ -7,4 +7,6 @@ export interface Practice {
     questions: PracticeQuestion[];
     closed: boolean;
     date: string;
+    timeInSeconds: number;
+    score: number;
 }
