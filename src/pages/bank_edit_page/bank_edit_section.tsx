@@ -240,7 +240,7 @@ export default function BankEditSection({
           {questionBank?.description && (
             <div className="md:col-span-2">
               <p className="text-sm font-medium text-zinc-400 mb-1">Description</p>
-              <p className="text-white">{questionBank.description}</p>
+              <p className="text-white whitespace-pre-wrap">{questionBank.description}</p>
             </div>
           )}
         </div>

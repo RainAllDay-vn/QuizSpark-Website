@@ -85,7 +85,7 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
       <CardHeader className="flex flex-row justify-between items-center">
         <div>
           <h2 className="text-lg font-semibold">{questionBank.name}</h2>
-          <p className="text-zinc-400 text-sm">{questionBank.description}</p>
+          <p className="text-zinc-400 text-sm whitespace-pre-wrap">{questionBank.description}</p>
         </div>
         <span className={`text-xs px-3 py-1 rounded-full text-white ${statusColor}`}>
           {questionBank.status}

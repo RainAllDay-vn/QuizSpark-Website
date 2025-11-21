@@ -130,7 +130,7 @@ export default function PracticeSection({practiceProp, completePractice}: Practi
                 </span>
             </div>
 
-            <div className="text-lg font-semibold">{question.description}</div>
+            <div className="text-lg font-semibold whitespace-pre-wrap">{question.description}</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
               {question.choices.map((option, index) => (

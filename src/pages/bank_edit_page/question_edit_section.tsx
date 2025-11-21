@@ -328,7 +328,7 @@ export default function QuestionEditSection({
                       </div>
                     </div>
                   ) : (
-                    <h3 className="text-lg font-medium text-white">{q.description}</h3>
+                    <h3 className="text-lg font-medium text-white whitespace-pre-wrap">{q.description}</h3>
                   )}
                 </div>
 
