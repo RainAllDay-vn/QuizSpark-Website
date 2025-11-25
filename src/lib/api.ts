@@ -108,6 +108,16 @@ export async function deleteQuestionBank(bankId: string) {
   }
 }
 
+export async function overwriteQuestion(bankId: string, questionsData: QuestionCreationDTO[]) {
+  try {
+    const response = await api.post(`/questions/all?bankId=${bankId}`, questionsData);
+    return response.data as Question[];
+  } catch (error) {
+    console.error('Failed to create new questions:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}
+
 export async function addQuestion(bankId: string, questionData: QuestionCreationDTO) {
   try {
     const response = await api.post(`/questions?bankId=${bankId}`, questionData);

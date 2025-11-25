@@ -1,12 +1,12 @@
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {updateQuestion, deleteQuestion, addQuestion} from '@/lib/api';
+import {updateQuestion, deleteQuestion, addQuestion, overwriteQuestion} from '@/lib/api';
 import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
 import type QuestionUpdateDTO from '@/dtos/QuestionUpdateDTO';
 import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
-import {Plus, Save, Trash2, Check, Edit} from 'lucide-react';
-import {useState} from 'react';
+import {Plus, Save, Trash2, Check, Edit, Upload} from 'lucide-react';
+import {useState, useRef} from 'react';
 
 interface QuestionEditSectionProps {
   questionBank: QuestionBank | null;
@@ -19,6 +19,9 @@ export default function QuestionEditSection({
 }: QuestionEditSectionProps) {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [importError, setImportError] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleEditQuestion = (question: Question) => {
     // If there's a current editing question, save it first
@@ -160,20 +163,98 @@ export default function QuestionEditSection({
     setEditingQuestion({...editingQuestion, description: value});
   };
 
+  const handleImportFromJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !questionBank) return;
+
+    setIsImporting(true);
+    setImportError(null);
+
+    try {
+      const text = await file.text();
+      const jsonData = JSON.parse(text);
+      
+      // Validate the JSON structure
+      if (!Array.isArray(jsonData)) {
+        throw new Error('JSON file must contain an array of questions');
+      }
+
+      // Validate each question
+      const questionsToImport: QuestionCreationDTO[] = jsonData.map((q, index) => {
+        if (!q.description || typeof q.description !== 'string') {
+          throw new Error(`Question ${index + 1}: Description is required and must be a string`);
+        }
+        if (!Array.isArray(q.choices) || q.choices.length < 2) {
+          throw new Error(`Question ${index + 1}: At least 2 choices are required`);
+        }
+        if (typeof q.answer !== 'number' || q.answer < 0 || q.answer >= q.choices.length) {
+          throw new Error(`Question ${index + 1}: Answer must be a valid choice index`);
+        }
+        
+        return {
+          tags: q.tags || [],
+          description: q.description,
+          choices: q.choices,
+          answer: q.answer
+        };
+      });
+
+      // Call the API to overwrite all questions
+      const updatedQuestions = await overwriteQuestion(questionBank.id, questionsToImport);
+      onQuestionsUpdated(updatedQuestions);
+      
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      
+    } catch (error) {
+      console.error('Import error:', error);
+      setImportError(error instanceof Error ? error.message : 'Failed to import questions');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="bg-[#0f0f10] border border-zinc-800 rounded-lg p-6 mb-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold">Questions ({questionBank?.questions.length || 0})</h2>
-        <Button
-          variant="outline"
-          className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
-          onClick={handleAddQuestion}
-        >
-          <Plus className="w-4 h-4 mr-2"/>
-          Add Question
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isImporting}
+          >
+            <Upload className="w-4 h-4 mr-2"/>
+            {isImporting ? 'Importing...' : 'Import JSON'}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleImportFromJSON}
+            className="hidden"
+          />
+          <Button
+            variant="outline"
+            className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
+            onClick={handleAddQuestion}
+          >
+            <Plus className="w-4 h-4 mr-2"/>
+            Add Question
+          </Button>
+        </div>
       </div>
 
+      {/* Import Error Display */}
+      {importError && (
+        <div className="mb-4 bg-red-900/20 border border-red-700 rounded-lg p-4">
+          <p className="text-red-200">{importError}</p>
+        </div>
+      )}
+      
       {/* Validation Errors Display */}
       {Object.keys(validationErrors).length > 0 && (
         <div className="mb-4 bg-red-900/20 border border-red-700 rounded-lg p-4">
