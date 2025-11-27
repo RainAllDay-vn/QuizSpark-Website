@@ -5,8 +5,8 @@ import type {Practice} from "@/model/Practice.ts";
 import Loader from "@/components/custom/loader.tsx";
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import {getPractice, startNewAnonymousPractice} from "@/lib/api.ts";
-import {PracticeSection} from "@/pages/practice_page/practice_section.tsx";
 import SummarySection from "@/pages/practice_page/summary_section.tsx";
+import PracticeSection from './practice_section';
 
 export default function PracticePage() {
   const navigate = useNavigate();

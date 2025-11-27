@@ -66,9 +66,10 @@ export default function QuestionEditSection({
       if (editingQuestion.id === 'new') {
         // This is a new question, create it
         const questionData: QuestionCreationDTO = {
+          questionType: 'MULTIPLE_CHOICE', // Default question type
           tags: [], // Default empty tags
           description: editingQuestion.description,
-          answer: editingQuestion.answer,
+          answer: [editingQuestion.choices[editingQuestion.answer]], // Convert index to value
           choices: editingQuestion.choices
         };
         
@@ -79,7 +80,7 @@ export default function QuestionEditSection({
         // This is an existing question, update it
         const questionData: QuestionUpdateDTO = {
           description: editingQuestion.description,
-          answer: editingQuestion.answer,
+          answer: [editingQuestion.choices[editingQuestion.answer]], // Convert index to value
           choices: editingQuestion.choices
         };
         
@@ -180,22 +181,14 @@ export default function QuestionEditSection({
       }
 
       // Validate each question
-      const questionsToImport: QuestionCreationDTO[] = jsonData.map((q, index) => {
-        if (!q.description || typeof q.description !== 'string') {
-          throw new Error(`Question ${index + 1}: Description is required and must be a string`);
-        }
-        if (!Array.isArray(q.choices) || q.choices.length < 2) {
-          throw new Error(`Question ${index + 1}: At least 2 choices are required`);
-        }
-        if (typeof q.answer !== 'number' || q.answer < 0 || q.answer >= q.choices.length) {
-          throw new Error(`Question ${index + 1}: Answer must be a valid choice index`);
-        }
-        
+      const questionsToImport: QuestionCreationDTO[] = jsonData.map(q => {
         return {
+          questionType: q.questionType || 'MULTIPLE_CHOICE', // Default question type
           tags: q.tags || [],
           description: q.description,
           choices: q.choices,
-          answer: q.answer
+          answer: q.answer,
+          explanation: q.explanation
         };
       });
 

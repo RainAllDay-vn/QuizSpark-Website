@@ -4,6 +4,7 @@ import {correctMessages, wrongMessages, type EncouragementMessage} from "@/pages
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import type { PracticeQuestion } from "@/model/PracticeQuestion";
 import SingleAnswerQuestionSection from "./single_answer_question_section";
+import MultipleAnswerQuestionSection from "./multiple_answer_question_section";
 
 interface PracticeSectionProps {
   practice: Practice;
@@ -45,7 +46,7 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
           if (question === currentQuestion) {
             return {
               ...question,
-              userAnswer: action.payload.answer,
+              userAnswer: userAnswer,
             };
           }
           return question;
@@ -85,7 +86,7 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
 
   const [state, dispatch] = useReducer(practiceReducer, initialState);
   const {questions, currentQuestionIndex, timeInSeconds, score, encouragement} = state;
-  const question = practice.questions[currentQuestionIndex];
+  const question = questions[currentQuestionIndex];
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -110,15 +111,17 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
   const handleNextButton = () => {
     if (currentQuestionIndex < practice.questions.length - 1) dispatch({type: "NEXT_QUESTION"});
     else {
-      practice.timeInSeconds = timeInSeconds;
-      completePractice(practice);
+      handleCompleteButton();
     }
   }
 
   const handleCompleteButton = () => {
-    practice.questions = questions;
-    practice.score = score;
-    completePractice(practice);
+    completePractice({
+      ...practice,
+      questions: questions,
+      score: score,
+      timeInSeconds: timeInSeconds,
+    });
   }
 
   const formatTime = (totalSeconds: number) => {
@@ -131,6 +134,8 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
     <div className="flex w-full max-w-6xl gap-6">
       {/* LEFT: Question column */}
       {question.type==="SINGLE_ANSWER" && <SingleAnswerQuestionSection question={question} isLastQuestion={currentQuestionIndex===questions.length-1}
+          encouragement={encouragement} dispatch={dispatch} handleNextButton={handleNextButton} handleCompleteButton={handleCompleteButton}/>}
+      {question.type==="MULTIPLE_ANSWER" && <MultipleAnswerQuestionSection question={question} isLastQuestion={currentQuestionIndex===questions.length-1}
           encouragement={encouragement} dispatch={dispatch} handleNextButton={handleNextButton} handleCompleteButton={handleCompleteButton}/>}
 
       {/* RIGHT: Practice Stats column */}
