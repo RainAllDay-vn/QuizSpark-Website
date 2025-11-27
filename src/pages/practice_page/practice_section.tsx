@@ -1,25 +1,27 @@
 import {useEffect, useReducer} from "react";
 import type {Practice} from "@/model/Practice.ts";
-import {correctMessages, type EncouragementMessage, wrongMessages} from "@/pages/practice_page/EncouragementMessage.ts";
+import {correctMessages, wrongMessages, type EncouragementMessage} from "@/pages/practice_page/EncouragementMessage.ts";
 import {Card, CardContent} from "@/components/ui/card.tsx";
-import {Button} from "@/components/ui/button.tsx";
+import type { PracticeQuestion } from "@/model/PracticeQuestion";
+import SingleAnswerQuestionSection from "./single_answer_question_section";
 
 interface PracticeSectionProps {
-  practiceProp: Practice;
+  practice: Practice;
   completePractice: (practice: Practice) => void;
 }
 
 interface PracticeState {
-  practice: Practice;
+  questions: PracticeQuestion[];
   currentQuestionIndex: number;
   timeInSeconds: number;
+  score: number;
   encouragement: EncouragementMessage | null;
 }
 
-type PracticeAction =
+export type PracticeAction =
   | { type: "VIEW_QUESTION"; payload: { index: number } }
   | { type: "NEXT_QUESTION" }
-  | { type: "ANSWER"; payload: { answer: number } }
+  | { type: "ANSWER"; payload: { answer: string[] } }
   | { type: "INCREASE_TIME" };
 
 function practiceReducer(state: PracticeState, action: PracticeAction): PracticeState {
@@ -30,13 +32,16 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
       return {
         ...state,
         currentQuestionIndex: 
-          Math.min(state.currentQuestionIndex+1, state.practice.questions.length-1),
+          Math.min(state.currentQuestionIndex+1, state.questions.length-1),
         encouragement: null,
       };
     case "ANSWER":
       {
-        const currentQuestion = state.practice.questions[state.currentQuestionIndex];
-        const newQuestions = state.practice.questions.map((question) => {
+        const currentQuestion = state.questions[state.currentQuestionIndex];
+        const answer = currentQuestion.answer;
+        const userAnswer = action.payload.answer;
+        if (currentQuestion.userAnswer) return state;
+        const newQuestions = state.questions.map((question) => {
           if (question === currentQuestion) {
             return {
               ...question,
@@ -47,20 +52,17 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
         });
         let newScore;
         let encouragement;
-        if (currentQuestion.answer === action.payload.answer){
-          newScore = state.practice.score + 100;
+        if (answer.every((value, index) => value===userAnswer[index])){
+          newScore = state.score + 100;
           encouragement = correctMessages[Math.floor(Math.random() * correctMessages.length)];
         } else {
-          newScore = state.practice.score;
-          encouragement = wrongMessages[Math.floor(Math.random() * correctMessages.length)];
+          newScore = state.score;
+          encouragement = wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
         }
         return {
           ...state,
-          practice: {
-            ...state.practice,
-            questions: newQuestions,
-            score: newScore,
-          },
+          questions: newQuestions,
+          score: newScore,
           encouragement: encouragement,
         };
       }
@@ -71,24 +73,25 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
   }
 }
 
-export default function PracticeSection({practiceProp, completePractice}: PracticeSectionProps) {
-  practiceProp.score = 0;
+export default function PracticeSection({practice, completePractice}: PracticeSectionProps) {
+  practice.score = 0;
   const initialState: PracticeState = {
-    practice: practiceProp,
+    questions: practice.questions,
     currentQuestionIndex: 0,
     timeInSeconds: 0,
+    score: 0,
     encouragement: null,
   };
 
   const [state, dispatch] = useReducer(practiceReducer, initialState);
-  const {practice, currentQuestionIndex, timeInSeconds, encouragement} = state;
+  const {questions, currentQuestionIndex, timeInSeconds, score, encouragement} = state;
   const question = practice.questions[currentQuestionIndex];
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      if (e.key >= '1' && e.key <= '4') {
+      if (e.key >= '1' && e.key <= '9') {
         const answerIndex = parseInt(e.key) - 1;
-        dispatch({type: "ANSWER", payload: {answer: answerIndex}});
+        dispatch({type: "ANSWER", payload: {answer: [answerIndex.toString()]}});
       } else if (e.key === 'Enter') {
         dispatch({type: "NEXT_QUESTION"});
       }
@@ -112,6 +115,12 @@ export default function PracticeSection({practiceProp, completePractice}: Practi
     }
   }
 
+  const handleCompleteButton = () => {
+    practice.questions = questions;
+    practice.score = score;
+    completePractice(practice);
+  }
+
   const formatTime = (totalSeconds: number) => {
     const minutes = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
@@ -121,64 +130,8 @@ export default function PracticeSection({practiceProp, completePractice}: Practi
   return (
     <div className="flex w-full max-w-6xl gap-6">
       {/* LEFT: Question column */}
-      <div className="flex-grow">
-        <Card className="bg-gray-900/60 border border-gray-700 w-full text-white">
-          <CardContent className="p-6 space-y-4">
-            <div className="flex items-center justify-between">
-                <span className="bg-purple-500 text-sm px-3 py-1 rounded-full font-medium">
-                  100 points
-                </span>
-            </div>
-
-            <div className="text-lg font-semibold whitespace-pre-wrap">{question.description}</div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-              {question.choices.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => dispatch({type: "ANSWER", payload: {answer: index}})}
-                  disabled={question.userAnswer !== undefined} // prevent further clicks
-                  className={`border border-gray-700 rounded-xl px-4 py-3 text-left transition-all duration-150 hover:border-purple-400 ${
-                    question.userAnswer === undefined
-                      ? ""
-                      : index === question.answer
-                        ? "bg-green-500 text-white border-green-600" // correct answer
-                        : index === question.userAnswer
-                          ? "bg-red-500 text-white border-red-600" // wrong selection
-                          : "" // other buttons stay default
-                  }`}
-                ><span className="font-semibold mr-2">{String.fromCharCode(65 + index)}.</span>{" "}{option}
-                </button>
-              ))}
-            </div>
-
-            {/* Encouragement Message */}
-            {encouragement && (
-              <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
-                question.userAnswer === question.answer
-                  ? "bg-green-500/20 border border-green-500/30 text-green-300"
-                  : "bg-orange-500/20 border border-orange-500/30 text-orange-300"
-              }`}>
-                <span className="text-2xl mr-2">{encouragement.emoji}</span>
-                {encouragement.message}
-                <span className="text-2xl ml-2">{encouragement.emoji}</span>
-              </div>
-            )}
-
-            <div className="flex justify-between items-center mt-6">
-              <Button
-                variant="outline" onClick={() => completePractice(state.practice)}
-                className="border-gray-600 text-gray-300"
-              >
-                End Early
-              </Button>
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={handleNextButton}>
-                {currentQuestionIndex === practice.questions.length - 1 ? "Finish →" : "Next →"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {question.type==="SINGLE_ANSWER" && <SingleAnswerQuestionSection question={question} isLastQuestion={currentQuestionIndex===questions.length-1}
+          encouragement={encouragement} dispatch={dispatch} handleNextButton={handleNextButton} handleCompleteButton={handleCompleteButton}/>}
 
       {/* RIGHT: Practice Stats column */}
       <div className="w-64">

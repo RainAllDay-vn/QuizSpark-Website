@@ -1,9 +1,9 @@
 export interface PracticeQuestion {
-    id: number;
     index: number;
+    type: string;
     tags: string[];
     description: string;
     choices: string[];
-    answer: number;
-    userAnswer: number | null;
+    answer: string[];
+    userAnswer: string[] | null;
 }

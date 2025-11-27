@@ -1,6 +1,7 @@
 export default interface QuestionUpdateDTO {
   tags?: string[];
   description?: string;
-  answer?: number;
+  answer?: string[];
   choices?: string[];
+  explanation?: string;
 }
