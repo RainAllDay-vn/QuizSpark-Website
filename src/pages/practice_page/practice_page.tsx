@@ -41,7 +41,6 @@ export default function PracticePage() {
   }, [id, params, user]);
 
   const completePractice = (practice: Practice) => {
-    practice.closed = true;
     setPractice(practice);
   }
 

@@ -9,6 +9,7 @@ import type QuestionCreationDTO from "@/dtos/QuestionCreationDTO.ts";
 import type QuestionUpdateDTO from "@/dtos/QuestionUpdateDTO.ts";
 import type { Question } from "@/model/Question.ts";
 import type { Practice } from "@/model/Practice.ts";
+import type PracticeAnswerDTO from "@/dtos/PracticeAnswerDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -183,10 +184,21 @@ export async function startNewPractice(bankId: string, size: number, shuffle: bo
 
 export async function getPractice(practiceId: string) {
   try {
-    const response = await api.get(`/practice/${practiceId}`);
+    const response = await api.get(`/practice/id/${practiceId}`);
     return response.data as Practice;
   } catch (error) {
     console.error('Failed to fetch practice:', error);
+    throw error;
+  }
+}
+
+export async function answer(practiceId: string, body: PracticeAnswerDTO) {
+    try {
+    const response = await api.post(`/practice/id/${practiceId}/answer`, body);
+    if (response.data.correctAnswer) return response.data.correctAnswer as string[];
+    return null
+  } catch (error) {
+    console.error('Failed to save user\'s answer:', error);
     throw error;
   }
 }

@@ -1,52 +1,64 @@
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
-import type {PracticeQuestion} from "@/model/PracticeQuestion";
-import type {PracticeAction} from "@/pages/practice_page/practice_section.tsx";
-import * as React from "react";
-import type {EncouragementMessage} from "@/pages/practice_page/EncouragementMessage.ts";
+import type {QuestionSectionProps} from "@/pages/practice_page/practice_section.tsx";
 import {useEffect, useState} from "react";
 
-interface MultipleAnswerQuestionSectionProps {
-  question: PracticeQuestion;
-  isLastQuestion: boolean;
-  encouragement: EncouragementMessage | null;
-  dispatch: React.Dispatch<PracticeAction>;
-  handleNextButton: () => void;
-  handleCompleteButton: () => void;
-}
-
 export default function MultipleAnswerQuestionSection({
-                                                      question,
-                                                      isLastQuestion,
-                                                      encouragement,
-                                                      dispatch,
-                                                      handleNextButton,
-                                                      handleCompleteButton
-                                                    }: MultipleAnswerQuestionSectionProps) {
+                                                      state,
+                                                      handleSubmitAnswer,
+                                                      handleNextQuestion,
+                                                      handleCompletePractice,
+                                                    }: QuestionSectionProps) {
   const [selected, setSelected] = useState<number[]>([]);
+  const {questions, currentQuestionIndex, encouragement} = state;
+  const question = questions[currentQuestionIndex];
+  const isLastQuestion = questions.length-1 === currentQuestionIndex;
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.key >= '1' && e.key <= '9') {
         const answerIndex = parseInt(e.key) - 1;
-        handleAnswerButton(answerIndex);
+        handleSelect(answerIndex);
       } else if (e.key === 'Enter') {
-        if(question.userAnswer) handleNextButton();
-        else dispatch({type: "ANSWER", payload: {answer: selected.map(v => v.toString())}})
+        if(!question.userAnswer){
+          if(selected.length===0) handleNextQuestion();
+          else handleSubmitAnswer(selected.map(v => v.toString()));
+        }
+        else if(isLastQuestion) handleCompletePractice();
+        else handleNextQuestion();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dispatch, handleNextButton]);
+  }, []);
 
-  const answer = question.answer.map(v => parseInt(v));
-  const userAnswer = question.userAnswer?.map(v => parseInt(v));
+  let correctAnswer: number[] | undefined;
+  let userAnswer: number[] | undefined;
+  if (question.answer) {
+    correctAnswer = question.answer.map(v => parseInt(v));
+  }
+  if (question.userAnswer) {
+    userAnswer = question.userAnswer.map(v => parseInt(v));
+  }
 
-  const handleAnswerButton= (answerIndex: number) => {
-    console.log(userAnswer);
+  const handleSelect = (answerIndex: number) => {
     if (userAnswer) return;
     if (selected.includes(answerIndex)) setSelected(selected.filter(v => v!==answerIndex));
     else setSelected([...selected, answerIndex].sort())
+  }
+
+  const calAnswerButtonStyle = (index: number) => {
+    if (!userAnswer){
+      if (selected.includes(index)) return "border-purple-400";
+      return "";
+    }
+    if (!correctAnswer){
+      if (userAnswer.includes(index)) return "bg-purple-400";
+      return "";
+    }
+    if (correctAnswer.includes(index)) return "bg-green-500 text-white border-green-600";
+    if (userAnswer.includes(index)) return "bg-red-500 text-white border-red-600";
+    return "";
   }
 
   return (
@@ -65,17 +77,10 @@ export default function MultipleAnswerQuestionSection({
             {question.choices.map((option, index) => (
               <button
                 key={index}
-                onClick={() => handleAnswerButton(index)}
+                onClick={() => handleSelect(index)}
                 disabled={question.userAnswer !== undefined} // prevent further clicks
-                className={`border border-gray-700 rounded-xl px-4 py-3 text-left transition-all duration-150 hover:border-purple-400 ${
-                  userAnswer === undefined
-                    ? ""
-                    : answer.includes(index)
-                      ? "bg-green-500 text-white border-green-600" // correct answer
-                      : userAnswer.includes(index)
-                        ? "bg-red-500 text-white border-red-600" // wrong selection
-                        : "" // other buttons stay default
-                } ${selected.includes(index) ? "border-purple-400" : ""}`}
+                className={`border border-gray-700 rounded-xl px-4 py-3 text-left transition-all duration-150 hover:border-purple-400 
+                  ${calAnswerButtonStyle(index)}`}
               ><span className="font-semibold mr-2">{String.fromCharCode(65 + index)}.</span>{" "}{option}
               </button>
             ))}
@@ -96,17 +101,20 @@ export default function MultipleAnswerQuestionSection({
 
           <div className="flex justify-between items-center mt-6">
             <Button
-              variant="outline" onClick={handleCompleteButton}
+              variant="outline" onClick={handleCompletePractice}
               className="border-gray-600 text-gray-300"
             >
               End Early
             </Button>
-            {userAnswer===undefined && <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6" 
-                onClick={() => dispatch({type: "ANSWER", payload: {answer: selected.map(v => v.toString())}})}>
+            {!userAnswer && <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6" 
+                onClick={() => handleSubmitAnswer(selected.map(v => v.toString()))}>
               Submit answers
             </Button>}
-            {userAnswer!==undefined && <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={handleNextButton}>
-              {isLastQuestion ? "Finish →" : "Next →"}
+            {userAnswer && isLastQuestion && <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={handleCompletePractice}>
+              Finish →
+            </Button>}
+            {userAnswer && !isLastQuestion && <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={handleNextQuestion}>
+              Next →
             </Button>}
           </div>
         </CardContent>
