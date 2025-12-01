@@ -10,14 +10,17 @@ interface SummarySectionProps{
 
 export default function SummarySection({practice}: SummarySectionProps){
   const navigate = useNavigate();
+  const {user} = useAuthStatus();
 
   let correctAnswers = 0;
   practice.questions.forEach((question) => {
-    if (question.userAnswer === question.correctAnswer) correctAnswers++;
+    const userAnswer = question.userAnswer;
+    const correctAnswer = question.correctAnswer;
+    if (!userAnswer || !correctAnswer) return;
+    if (userAnswer.every((val, index) => val === correctAnswer[index])) correctAnswers++;
   });
   const totalQuestions = practice.questions.length;
   const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
-  const {user} = useAuthStatus();
 
   const formatTime = (totalSeconds: number) => {
     const minutes = Math.floor(totalSeconds / 60);
@@ -35,11 +38,6 @@ export default function SummarySection({practice}: SummarySectionProps){
         <div className="absolute top-1/4 right-1/4 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
       </div>
 
-      {/* === Header === */}
-      <div className="flex justify-center items-center w-full max-w-6xl mb-6 relative z-10">
-        <h1 className="text-xl font-semibold">PRACTICE RESULTS</h1>
-      </div>
-
       {/* === Main content (Statistics) === */}
       <div className="grow"></div>
       <div className="w-full max-w-2xl">
@@ -50,8 +48,8 @@ export default function SummarySection({practice}: SummarySectionProps){
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <div className="bg-gray-800/50 rounded-lg p-4">
-                <div className="text-2xl font-bold text-purple-400">{practice.score}</div>
-                <div className="text-sm text-gray-400">Total Score</div>
+                <div className="text-2xl font-bold text-purple-400">{correctAnswers}</div>
+                <div className="text-sm text-gray-400">Correct Answers</div>
               </div>
               <div className="bg-gray-800/50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-green-400">{accuracy}%</div>
