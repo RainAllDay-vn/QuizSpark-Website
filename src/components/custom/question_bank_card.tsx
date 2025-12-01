@@ -16,6 +16,7 @@ import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {NumberInput} from "@/components/ui/number-input.tsx";
 import { startNewPractice } from "@/lib/api";
 import useAuthStatus from "@/lib/use_auth_hook.ts";
+import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 
 // Utility function to format date in a human-readable way
 function formatRelativeTime(dateString: string): string {
@@ -49,9 +50,21 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
   const navigate = useNavigate();
   const {user} = useAuthStatus();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [practiceSize, setPracticeSize] = useState<number>(Math.min(10, questionBank.numberOfQuestions));
+  const [practiceSize, setPracticeSize] = useState<number>(Math.min(50, questionBank.numberOfQuestions));
   const [shuffleChoices, setShuffleChoices] = useState<boolean>(true);
-  const [revealAnswer, setRevealAnswer] = useState<boolean>(false);
+  const [revealAnswer, setRevealAnswer] = useState<boolean>(true);
+  const availableTags = questionBank.tags;
+  const [selectedTags, setSelectedTags] = useState<string[]>([...availableTags]);
+  
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags(prev => {
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      } else {
+        return [...prev, tag];
+      }
+    });
+  };
 
   function handlePracticeButton() {
     setIsDialogOpen(true);
@@ -59,19 +72,21 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
 
   async function startPractice() {
     if (user) {
-      const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer);
+      const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer, selectedTags);
       const practiceId = response.id;
       navigate('/practice/'+practiceId);
     } else {
       const searchParams = new URLSearchParams();
       searchParams.append("size", practiceSize.toString());
       searchParams.append("shuffle", shuffleChoices.toString());
+      // Add selected tags as query parameters (will be used by API later)
+      if (selectedTags.length > 0 && selectedTags.length < availableTags.length) {
+        searchParams.append("tags", selectedTags.join(","));
+      }
       navigate(`/practice/${questionBank.id}?${searchParams.toString()}`);
     }
     setIsDialogOpen(false);
   }
-
-  // This function is no longer needed as we handle anonymous practice in startPractice
 
   const statusColor =
     questionBank.status === "PUBLISHED"
@@ -173,6 +188,60 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
                 </div>
               </div>
             )}
+            
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right pt-2">
+                Select Tags
+              </Label>
+              <div className="col-span-3 space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="selectAll"
+                    checked={selectedTags.length === availableTags.length}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedTags([...availableTags]);
+                      } else {
+                        setSelectedTags([]);
+                      }
+                    }}
+                    className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                  />
+                  <Label htmlFor="selectAll" className="text-sm text-zinc-400">
+                    Select All Tags ({selectedTags.length} of {availableTags.length} selected)
+                  </Label>
+                </div>
+                
+                {availableTags.length > 0 && (
+                  <ScrollArea className="h-32 w-full rounded-md border border-zinc-700 p-2">
+                    <div className="flex flex-wrap gap-2">
+                      {availableTags.sort().map((tag) => (
+                        <div key={tag} className="flex items-center space-x-1">
+                          <Checkbox
+                            id={`tag-${tag}`}
+                            checked={selectedTags.includes(tag)}
+                            onCheckedChange={() => handleTagToggle(tag)}
+                            className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                          />
+                          <Label
+                            htmlFor={`tag-${tag}`}
+                            className="text-sm text-zinc-300 cursor-pointer"
+                          >
+                            {tag}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+                
+                {selectedTags.length === 0 && (
+                  <p className="text-xs text-amber-400">
+                    Warning: No tags selected. Questions from all tags will be included.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
           
           <DialogFooter>

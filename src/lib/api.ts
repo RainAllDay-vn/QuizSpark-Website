@@ -165,14 +165,15 @@ export async function startNewAnonymousPractice(bankId: string, size: number, sh
   }
 }
 
-export async function startNewPractice(bankId: string, size: number, shuffle: boolean, revealAnswer: boolean) {
+export async function startNewPractice(bankId: string, size: number, shuffle: boolean, revealAnswer: boolean, tags: string[]) {
   try {
     const response = await api.get('/practice/new', {
       params: {
         bankId,
         size,
         shuffle,
-        revealAnswer
+        revealAnswer,
+        tags
       }
     });
     return response.data as { id: string };

@@ -71,6 +71,20 @@ export default function MultipleAnswerQuestionSection({
                 </span>
           </div>
 
+          {/* Question Tags */}
+          {question.tags && question.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {question.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded-md border border-blue-500/30"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div className="text-lg font-semibold whitespace-pre-wrap">{question.description}</div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">

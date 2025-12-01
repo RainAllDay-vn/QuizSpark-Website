@@ -11,5 +11,6 @@ export interface QuestionBank {
   rating?: number;
   numberOfQuestions: number;
   numberOfAttempts: number;
+  tags: string[];
   questions: Question[];
 }

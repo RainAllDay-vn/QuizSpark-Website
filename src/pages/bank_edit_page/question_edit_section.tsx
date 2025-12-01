@@ -66,7 +66,7 @@ export default function QuestionEditSection({
       if (editingQuestion.id === 'new') {
         // This is a new question, create it
         const questionData: QuestionCreationDTO = {
-          questionType: 'MULTIPLE_CHOICE', // Default question type
+          questionType: 'MULTIPLE_ANSWER', // Default question type
           tags: [], // Default empty tags
           description: editingQuestion.description,
           answer: [editingQuestion.choices[editingQuestion.answer]], // Convert index to value

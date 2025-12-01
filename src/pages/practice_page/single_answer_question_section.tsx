@@ -26,8 +26,8 @@ export default function SingleAnswerQuestionSection({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  let correctAnswer: number;
-  let userAnswer: number;
+  let correctAnswer = -1;
+  let userAnswer = -1;
   if (question.correctAnswer) {
     correctAnswer = parseInt(question.correctAnswer[0]);
   }
@@ -36,8 +36,8 @@ export default function SingleAnswerQuestionSection({
   }
 
   const calAnswerButtonStyle = (index: number) => {
-    if (!userAnswer) return "";
-    if (!correctAnswer){
+    if (userAnswer==-1) return "";
+    if (correctAnswer==-1){
       if (index===userAnswer) return "bg-purple-400";
       return "";
     }
@@ -55,6 +55,20 @@ export default function SingleAnswerQuestionSection({
                   100 points
                 </span>
           </div>
+
+          {/* Question Tags */}
+          {question.tags && question.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {question.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded-md border border-blue-500/30"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="text-lg font-semibold whitespace-pre-wrap">{question.description}</div>
 
