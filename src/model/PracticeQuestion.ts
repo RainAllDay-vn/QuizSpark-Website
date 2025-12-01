@@ -4,7 +4,7 @@ export interface PracticeQuestion {
     tags: string[];
     description: string;
     choices: string[];
-    answer: string[] | null;
+    correctAnswer: string[] | null;
     userAnswer: string[] | null;
     timesToAnswer: number;
 }

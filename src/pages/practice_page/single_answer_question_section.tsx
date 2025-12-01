@@ -28,8 +28,8 @@ export default function SingleAnswerQuestionSection({
 
   let correctAnswer: number;
   let userAnswer: number;
-  if (question.answer) {
-    correctAnswer = parseInt(question.answer[0]);
+  if (question.correctAnswer) {
+    correctAnswer = parseInt(question.correctAnswer[0]);
   }
   if (question.userAnswer && question.userAnswer[0]) {
     userAnswer = parseInt(question.userAnswer[0]);
@@ -74,7 +74,7 @@ export default function SingleAnswerQuestionSection({
           {/* Encouragement Message */}
           {encouragement && (
             <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
-              question.userAnswer === question.answer
+              question.userAnswer === question.correctAnswer
                 ? "bg-green-500/20 border border-green-500/30 text-green-300"
                 : "bg-orange-500/20 border border-orange-500/30 text-orange-300"
             }`}>

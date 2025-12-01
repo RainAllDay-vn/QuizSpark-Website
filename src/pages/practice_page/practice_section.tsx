@@ -58,7 +58,7 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
             return {
               ...question,
               userAnswer: userAnswer,
-              answer: correctAnswer,
+              correctAnswer: correctAnswer,
             };
           }
           return question;

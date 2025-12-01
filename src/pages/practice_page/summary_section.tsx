@@ -13,7 +13,7 @@ export default function SummarySection({practice}: SummarySectionProps){
 
   let correctAnswers = 0;
   practice.questions.forEach((question) => {
-    if (question.userAnswer === question.answer) correctAnswers++;
+    if (question.userAnswer === question.correctAnswer) correctAnswers++;
   });
   const totalQuestions = practice.questions.length;
   const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;

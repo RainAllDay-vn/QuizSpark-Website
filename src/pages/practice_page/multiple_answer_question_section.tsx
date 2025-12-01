@@ -34,8 +34,8 @@ export default function MultipleAnswerQuestionSection({
 
   let correctAnswer: number[] | undefined;
   let userAnswer: number[] | undefined;
-  if (question.answer) {
-    correctAnswer = question.answer.map(v => parseInt(v));
+  if (question.correctAnswer) {
+    correctAnswer = question.correctAnswer.map(v => parseInt(v));
   }
   if (question.userAnswer) {
     userAnswer = question.userAnswer.map(v => parseInt(v));
@@ -89,7 +89,7 @@ export default function MultipleAnswerQuestionSection({
           {/* Encouragement Message */}
           {encouragement && (
             <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
-              question.userAnswer === question.answer
+              question.userAnswer === question.correctAnswer
                 ? "bg-green-500/20 border border-green-500/30 text-green-300"
                 : "bg-orange-500/20 border border-orange-500/30 text-orange-300"
             }`}>
