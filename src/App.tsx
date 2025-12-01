@@ -8,7 +8,7 @@ import {LeaderboardPage} from "./pages/leaderboard_page/leaderboard-page"
 import QuestionBankPage from "@/pages/bank_page/bank_page.tsx"
 import DashboardSection from "@/pages/home_page/dashboard_section.tsx";
 import QuestionBankSection from "@/pages/home_page/bank_section.tsx";
-import EventSection from "@/pages/home_page/event_section.tsx";
+import PastPracticeSection from "@/pages/home_page/past_practice_section";
 import StudentSection from "@/pages/home_page/student_section.tsx";
 import SettingSection from "@/pages/home_page/setting_section.tsx";
 import LogInSection from "@/pages/log_in_page/log_in_section.tsx";
@@ -66,7 +66,7 @@ function App() {
               <Route index element={<Navigate to="dashboard" replace/>}/>
               <Route path="dashboard" element={<DashboardSection/>}/>
               <Route path="banks" element={<QuestionBankSection/>}/>
-              <Route path="events" element={<EventSection/>}/>
+              <Route path="past-practices" element={<PastPracticeSection/>}/>
               <Route path="students" element={<StudentSection/>}/>
               <Route path="settings" element={<SettingSection/>}/>
             </Route>

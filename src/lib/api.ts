@@ -183,6 +183,16 @@ export async function startNewPractice(bankId: string, size: number, shuffle: bo
   }
 }
 
+export async function getUserPractice() {
+    try {
+    const response = await api.get(`/practice/me`);
+    return response.data as Practice[];
+  } catch (error) {
+    console.error('Failed to fetch practice:', error);
+    throw error;
+  }
+}
+
 export async function getPractice(practiceId: string) {
   try {
     const response = await api.get(`/practice/id/${practiceId}`);
@@ -200,6 +210,16 @@ export async function answer(practiceId: string, body: PracticeAnswerDTO) {
     return null
   } catch (error) {
     console.error('Failed to save user\'s answer:', error);
+    throw error;
+  }
+}
+
+export async function finishPractice(practiceId: string) {
+    try {
+    const response = await api.post(`/practice/id/${practiceId}/finish`);
+    return response.data as Practice;
+  } catch (error) {
+    console.error('Failed to finish practice session:', error);
     throw error;
   }
 }

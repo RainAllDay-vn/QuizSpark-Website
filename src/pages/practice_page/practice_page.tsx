@@ -4,7 +4,7 @@ import {useEffect, useState} from "react";
 import type {Practice} from "@/model/Practice.ts";
 import Loader from "@/components/custom/loader.tsx";
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
-import {getPractice, startNewAnonymousPractice} from "@/lib/api.ts";
+import {finishPractice, getPractice, startNewAnonymousPractice} from "@/lib/api.ts";
 import SummarySection from "@/pages/practice_page/summary_section.tsx";
 import PracticeSection from './practice_section';
 
@@ -40,7 +40,9 @@ export default function PracticePage() {
     fetchPractice().then(() => setLoading(false));
   }, [id, params, user]);
 
-  const completePractice = (practice: Practice) => {
+  const completePractice = async () => {
+    if (id === undefined) return;
+    const practice = await finishPractice(id);
     setPractice(practice);
   }
 

@@ -9,7 +9,7 @@ import { answer } from "@/lib/api";
 
 interface PracticeSectionProps {
   practice: Practice;
-  completePractice: (practice: Practice) => void;
+  completePractice: () => void;
 }
 
 export interface QuestionSectionProps {
@@ -23,7 +23,6 @@ export interface PracticeState {
   questions: PracticeQuestion[];
   currentQuestionIndex: number;
   timeInSeconds: number;
-  score: number;
   encouragement: EncouragementMessage | null;
   loading: boolean;
 }
@@ -64,19 +63,15 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
           return question;
         });
         if (correctAnswer===null) return {...state, questions: newQuestions}
-        let newScore;
         let encouragement;
         if (correctAnswer.every((value, index) => value===userAnswer[index])){
-          newScore = state.score + 100;
           encouragement = correctMessages[Math.floor(Math.random() * correctMessages.length)];
         } else {
-          newScore = state.score;
           encouragement = wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
         }
         return {
           ...state,
           questions: newQuestions,
-          score: newScore,
           encouragement: encouragement,
         };
       }
@@ -88,18 +83,16 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
 }
 
 export default function PracticeSection({practice, completePractice}: PracticeSectionProps) {
-  practice.score = 0;
   const initialState: PracticeState = {
     questions: practice.questions,
     currentQuestionIndex: 0,
     timeInSeconds: 0,
-    score: 0,
     encouragement: null,
     loading: false,
   };
 
   const [state, dispatch] = useReducer(practiceReducer, initialState);
-  const {questions, currentQuestionIndex, timeInSeconds, score} = state;
+  const {questions, currentQuestionIndex, timeInSeconds} = state;
   const question = questions[currentQuestionIndex];
 
   useEffect(() => {
@@ -120,13 +113,7 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
   }
 
   const handleCompletePractice = () => {
-    completePractice({
-      ...practice,
-      questions: questions,
-      score: score,
-      timeInSeconds: timeInSeconds,
-      closed: true,
-    });
+    completePractice();
   }
 
   const formatTime = (totalSeconds: number) => {
@@ -151,10 +138,6 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
               Practice Stats
             </h2>
             <div className="space-y-3 text-gray-300 text-sm">
-              <div className="flex justify-between">
-                <span>Score</span>
-                <span>{practice.score}</span>
-              </div>
               <div className="flex justify-between">
                 <span>Progress</span>
                 <span>{currentQuestionIndex + 1}/{practice.questions.length}</span>

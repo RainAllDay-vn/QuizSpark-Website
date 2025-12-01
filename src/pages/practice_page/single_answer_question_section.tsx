@@ -88,7 +88,7 @@ export default function SingleAnswerQuestionSection({
           {/* Encouragement Message */}
           {encouragement && (
             <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
-              question.userAnswer === question.correctAnswer
+              userAnswer === correctAnswer
                 ? "bg-green-500/20 border border-green-500/30 text-green-300"
                 : "bg-orange-500/20 border border-orange-500/30 text-orange-300"
             }`}>
