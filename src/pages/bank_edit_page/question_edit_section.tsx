@@ -1,5 +1,6 @@
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {updateQuestion, deleteQuestion, addQuestion, overwriteQuestion} from '@/lib/api';
 import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
 import type QuestionUpdateDTO from '@/dtos/QuestionUpdateDTO';
@@ -49,6 +50,10 @@ export default function QuestionEditSection({
         errors.choices = 'All choices must have content';
       }
     }
+    // Validate answers
+    if (!question.answer || question.answer.length === 0) {
+      errors.answer = 'At least one correct answer is required';
+    }
     return errors;
   };
 
@@ -66,11 +71,12 @@ export default function QuestionEditSection({
       if (editingQuestion.id === 'new') {
         // This is a new question, create it
         const questionData: QuestionCreationDTO = {
-          questionType: 'MULTIPLE_ANSWER', // Default question type
-          tags: [], // Default empty tags
+          questionType: editingQuestion.questionType,
+          tags: editingQuestion.tags || [],
           description: editingQuestion.description,
-          answer: [editingQuestion.choices[editingQuestion.answer]], // Convert index to value
-          choices: editingQuestion.choices
+          answer: editingQuestion.answer,
+          choices: editingQuestion.choices,
+          explanation: editingQuestion.explanation
         };
         
         const newQuestion = await addQuestion(questionBank.id, questionData);
@@ -79,9 +85,12 @@ export default function QuestionEditSection({
       } else {
         // This is an existing question, update it
         const questionData: QuestionUpdateDTO = {
+          questionType: editingQuestion.questionType,
           description: editingQuestion.description,
-          answer: [editingQuestion.choices[editingQuestion.answer]], // Convert index to value
-          choices: editingQuestion.choices
+          answer: editingQuestion.answer,
+          choices: editingQuestion.choices,
+          tags: editingQuestion.tags,
+          explanation: editingQuestion.explanation
         };
         
         const updatedQuestion = await updateQuestion(editingQuestion.id, questionData);
@@ -119,7 +128,9 @@ export default function QuestionEditSection({
       id: 'new', // Temporary ID for new questions
       description: '',
       choices: ['', '', ''], // Start with 3 empty choices
-      answer: 0 // Default to first choice
+      answer: ['0'], // Default to first choice as string
+      questionType: 'SINGLE_ANSWER',
+      tags: []
     };
     setEditingQuestion(newQuestion);
   };
@@ -134,48 +145,54 @@ export default function QuestionEditSection({
 
   const handleAddChoice = () => {
     if (!editingQuestion) return;
-
     setEditingQuestion({...editingQuestion, choices: [...editingQuestion.choices, ""]});
   };
 
   const handleRemoveChoice = (index: number) => {
     if (!editingQuestion) return;
-
     const newChoices = editingQuestion.choices.filter((_, i) => i !== index);
-    let newAnswer = editingQuestion.answer;
-
-    // Adjust the correct answer index if necessary
-    if (editingQuestion.answer >= index && editingQuestion.answer > 0) {
-      newAnswer = editingQuestion.answer - 1;
-    }
-
+    const newAnswer = editingQuestion.answer.filter(ans => ans !== index.toString());
     setEditingQuestion({...editingQuestion, choices: newChoices, answer: newAnswer});
   };
 
   const handleAnswerChange = (index: number) => {
     if (!editingQuestion) return;
+    if (editingQuestion.questionType==="SINGLE_ANSWER") {
+      setEditingQuestion({...editingQuestion, answer: [index.toString()]});
+      return;
+    }
+    if (editingQuestion.questionType==="MULTIPLE_ANSWER") {
+      const currentAnswers = editingQuestion.answer;
+      if (currentAnswers.includes(index.toString())) {
+        const newAnswer = currentAnswers.filter(ans => ans !== index.toString());
+        setEditingQuestion({...editingQuestion, answer: newAnswer});
+      } else {
+        const newAnswer = [...currentAnswers, index.toString()].sort();
+        setEditingQuestion({...editingQuestion, answer: newAnswer});
+      }
+    }
 
-    setEditingQuestion({...editingQuestion, answer: index});
   };
 
   const handleQuestionDescriptionChange = (value: string) => {
     if (!editingQuestion) return;
-
     setEditingQuestion({...editingQuestion, description: value});
+  };
+
+  const handleQuestionTypeChange = (value: string) => {
+    if (!editingQuestion) return;
+    setEditingQuestion({...editingQuestion, questionType: value as Question['questionType']});
   };
 
   const handleImportFromJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !questionBank) return;
-
     setIsImporting(true);
     setImportError(null);
 
     try {
       const text = await file.text();
       const jsonData = JSON.parse(text);
-      
-      // Validate the JSON structure
       if (!Array.isArray(jsonData)) {
         throw new Error('JSON file must contain an array of questions');
       }
@@ -183,7 +200,7 @@ export default function QuestionEditSection({
       // Validate each question
       const questionsToImport: QuestionCreationDTO[] = jsonData.map(q => {
         return {
-          questionType: q.questionType || 'MULTIPLE_CHOICE', // Default question type
+          questionType: q.questionType,
           tags: q.tags || [],
           description: q.description,
           choices: q.choices,
@@ -191,16 +208,13 @@ export default function QuestionEditSection({
           explanation: q.explanation
         };
       });
-
       // Call the API to overwrite all questions
       const updatedQuestions = await overwriteQuestion(questionBank.id, questionsToImport);
       onQuestionsUpdated(updatedQuestions);
-      
       // Reset the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      
     } catch (error) {
       console.error('Import error:', error);
       setImportError(error instanceof Error ? error.message : 'Failed to import questions');
@@ -269,6 +283,20 @@ export default function QuestionEditSection({
                 <div className="flex items-center mb-2">
                   <span className="text-sm font-medium text-violet-400 mr-3">#New</span>
                   <div className="w-full">
+                    <div className="mb-3">
+                      <label className="text-sm text-zinc-400 mb-1 block">Question Type:</label>
+                      <Select value={editingQuestion.questionType} onValueChange={handleQuestionTypeChange}>
+                        <SelectTrigger className="bg-[#0f0f10] border-zinc-700 text-white focus:ring-violet-600">
+                          <SelectValue placeholder="Select question type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#151518] border-zinc-700">
+                          <SelectItem value="SINGLE_ANSWER">Single Answer</SelectItem>
+                          <SelectItem value="MULTIPLE_ANSWER">Multiple Answer</SelectItem>
+                          <SelectItem value="FILL_THE_BLANK">Fill the Blank</SelectItem>
+                          <SelectItem value="OPEN_ANSWER">Open Answer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <Input
                       value={editingQuestion.description}
                       onChange={(e) => handleQuestionDescriptionChange(e.target.value)}
@@ -283,9 +311,9 @@ export default function QuestionEditSection({
                         <div key={choiceIndex} className="flex items-center space-x-2">
                           <div
                             className={`w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer ${
-                              editingQuestion.answer === choiceIndex ? 'border-green-500 bg-green-500' : 'border-zinc-600'
+                              editingQuestion.answer.includes(choiceIndex.toString()) ? 'border-green-500 bg-green-500' : 'border-zinc-600'
                             }`} onClick={() => handleAnswerChange(choiceIndex)}>
-                            {editingQuestion.answer === choiceIndex && <Check className="w-3 h-3 text-white"/>}
+                            {editingQuestion.answer.includes(choiceIndex.toString()) && <Check className="w-3 h-3 text-white"/>}
                           </div>
                           <Input
                             value={choice}
@@ -352,6 +380,20 @@ export default function QuestionEditSection({
                   <span className="text-sm font-medium text-violet-400 mr-3">#{index + 1}</span>
                   {editingQuestion?.id === q.id ? (
                     <div className="w-full">
+                      <div className="mb-3">
+                        <label className="text-sm text-zinc-400 mb-1 block">Question Type:</label>
+                        <Select value={editingQuestion.questionType} onValueChange={handleQuestionTypeChange}>
+                          <SelectTrigger className="bg-[#0f0f10] border-zinc-700 text-white focus:ring-violet-600">
+                            <SelectValue placeholder="Select question type" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#151518] border-zinc-700 text-white focus:ring-violet-600">
+                            <SelectItem value="SINGLE_ANSWER">Single Answer</SelectItem>
+                            <SelectItem value="MULTIPLE_ANSWER">Multiple Answer</SelectItem>
+                            <SelectItem value="FILL_THE_BLANK">Fill the Blank</SelectItem>
+                            <SelectItem value="OPEN_ANSWER">Open Answer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <Input
                         value={editingQuestion.description}
                         onChange={(e) => handleQuestionDescriptionChange(e.target.value)}
@@ -366,9 +408,9 @@ export default function QuestionEditSection({
                           <div key={choiceIndex} className="flex items-center space-x-2">
                             <div
                               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer ${
-                                editingQuestion.answer === choiceIndex ? 'border-green-500 bg-green-500' : 'border-zinc-600'
+                                editingQuestion.answer.includes(choiceIndex.toString()) ? 'border-green-500 bg-green-500' : 'border-zinc-600'
                               }`} onClick={() => handleAnswerChange(choiceIndex)}>
-                              {editingQuestion.answer === choiceIndex && <Check className="w-3 h-3 text-white"/>}
+                              {editingQuestion.answer.includes(choiceIndex.toString()) && <Check className="w-3 h-3 text-white"/>}
                             </div>
                             <Input
                               value={choice}
@@ -410,7 +452,7 @@ export default function QuestionEditSection({
                 {editingQuestion?.id !== q.id && (
                   <div className="mt-3 space-y-2">
                     {q.choices.map((option, optionIndex) => {
-                      const isCorrect = q.answer === optionIndex;
+                      const isCorrect = q.answer.includes(optionIndex.toString());
                       return (
                         <div
                           key={optionIndex}

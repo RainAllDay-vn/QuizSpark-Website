@@ -2,5 +2,8 @@ export interface Question {
   id: string;
   description: string;
   choices: string[];
-  answer: number;
+  answer: string[];
+  questionType: "SINGLE_ANSWER"|"MULTIPLE_ANSWER"|"FILL_THE_BLANK"|"OPEN_ANSWER";
+  tags?: string[];
+  explanation?: string;
 }

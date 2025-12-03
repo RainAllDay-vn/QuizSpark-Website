@@ -6,5 +6,5 @@ export interface PracticeQuestion {
     choices: string[];
     correctAnswer: string[] | null;
     userAnswer: string[] | null;
-    timesToAnswer: number;
+    secondsToAnswer: number;
 }
