@@ -19,12 +19,13 @@ export default function SingleAnswerQuestionSection({
         const answerIndex = parseInt(e.key) - 1;
         handleSubmitAnswer([answerIndex.toString()]);
       } else if (e.key === 'Enter') {
-        if (!isLastQuestion) handleNextQuestion;
+        if (!isLastQuestion) handleNextQuestion();
+        else handleCompletePractice();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [handleSubmitAnswer, handleNextQuestion, handleCompletePractice, isLastQuestion]);
 
   let correctAnswer = -1;
   let userAnswer = -1;
@@ -88,7 +89,7 @@ export default function SingleAnswerQuestionSection({
           {/* Encouragement Message */}
           {encouragement && (
             <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
-              userAnswer === correctAnswer
+              encouragement.type === "CORRECT"
                 ? "bg-green-500/20 border border-green-500/30 text-green-300"
                 : "bg-orange-500/20 border border-orange-500/30 text-orange-300"
             }`}>

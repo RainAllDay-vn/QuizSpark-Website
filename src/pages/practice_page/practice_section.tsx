@@ -76,7 +76,17 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
         };
       }
     case "INCREASE_TIME":
-      return {...state, timeInSeconds: state.timeInSeconds+1};
+      const currentQuestion = state.questions[state.currentQuestionIndex];
+      const newQuestions = state.questions.map((question) => {
+          if (question === currentQuestion) {
+            return {
+              ...question,
+              secondsToAnswer: currentQuestion.secondsToAnswer+1,
+            };
+          }
+          return question;
+        });
+      return {...state, questions: newQuestions, timeInSeconds: state.timeInSeconds+1};
     default:
       return state;
   }
@@ -104,7 +114,7 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
 
   const handleSubmitAnswer = async (userAnswer: string[]) => {
     dispatch({type: "ANSWER"});
-    const correctAnswer = await answer(practice.id, {index: currentQuestionIndex, answer: userAnswer, secondsToAnswer: 0})
+    const correctAnswer = await answer(practice.id, {index: currentQuestionIndex, answer: userAnswer, secondsToAnswer: question.secondsToAnswer})
     dispatch({type: "SHOW_RESULT", payload: {userAnswer: userAnswer, correctAnswer: correctAnswer}});
   }
 
@@ -114,6 +124,10 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
 
   const handleCompletePractice = () => {
     completePractice();
+  }
+
+  const handleQuestionNavigation = (index: number) => {
+    dispatch({ type: "VIEW_QUESTION", payload: { index } });
   }
 
   const formatTime = (totalSeconds: number) => {
@@ -131,7 +145,7 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
           handleNextQuestion={handleNextQuestion} handleCompletePractice={handleCompletePractice}/>}
 
       {/* RIGHT: Practice Stats column */}
-      <div className="w-64">
+      <div className="w-72 min-w-72">
         <Card className="bg-gray-900/60 border border-gray-700 text-white">
           <CardContent className="p-4 space-y-4">
             <h2 className="text-lg font-semibold text-gray-200">
@@ -145,6 +159,35 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
               <div className="flex justify-between">
                 <span>Time</span>
                 <span>{formatTime(timeInSeconds)}</span>
+              </div>
+            </div>
+            
+            {/* Question Navigation Grid */}
+            <div className="pt-3 border-t border-gray-700">
+              <h3 className="text-sm font-medium text-gray-300 mb-3">Navigate to Question</h3>
+              <div className="grid grid-cols-5 gap-2">
+                {questions.map((question, index) => {
+                  const isCurrentQuestion = index === currentQuestionIndex;
+                  const hasAnswer = question.userAnswer !== undefined;
+                  
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleQuestionNavigation(index)}
+                      className={`
+                        w-10 h-10 text-xs font-medium rounded transition-all duration-200
+                        ${isCurrentQuestion
+                          ? 'bg-blue-600 text-white ring-2 ring-blue-400'
+                          : hasAnswer
+                            ? 'bg-green-600/20 text-green-400 border border-green-600/30 hover:bg-green-600/30'
+                            : 'bg-gray-700/50 text-gray-400 border border-gray-600/30 hover:bg-gray-700'
+                        }
+                      `}
+                    >
+                      {index + 1}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </CardContent>

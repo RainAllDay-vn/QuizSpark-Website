@@ -1,7 +1,7 @@
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import type {QuestionSectionProps} from "@/pages/practice_page/practice_section.tsx";
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback} from "react";
 
 export default function MultipleAnswerQuestionSection({
                                                       state,
@@ -13,6 +13,25 @@ export default function MultipleAnswerQuestionSection({
   const {questions, currentQuestionIndex, encouragement} = state;
   const question = questions[currentQuestionIndex];
   const isLastQuestion = questions.length-1 === currentQuestionIndex;
+
+  useEffect(() => {
+    setSelected([]);
+  }, [currentQuestionIndex]);
+
+  let correctAnswer: number[] | undefined;
+  let userAnswer: number[] | undefined;
+  if (question.correctAnswer) {
+    correctAnswer = question.correctAnswer.map(v => parseInt(v));
+  }
+  if (question.userAnswer) {
+    userAnswer = question.userAnswer.map(v => parseInt(v));
+  }
+
+  const handleSelect = useCallback((answerIndex: number) => {
+    if (userAnswer) return;
+    if (selected.includes(answerIndex)) setSelected(selected.filter(v => v!==answerIndex));
+    else setSelected([...selected, answerIndex].sort())
+  }, [selected, userAnswer]);
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -30,22 +49,7 @@ export default function MultipleAnswerQuestionSection({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  let correctAnswer: number[] | undefined;
-  let userAnswer: number[] | undefined;
-  if (question.correctAnswer) {
-    correctAnswer = question.correctAnswer.map(v => parseInt(v));
-  }
-  if (question.userAnswer) {
-    userAnswer = question.userAnswer.map(v => parseInt(v));
-  }
-
-  const handleSelect = (answerIndex: number) => {
-    if (userAnswer) return;
-    if (selected.includes(answerIndex)) setSelected(selected.filter(v => v!==answerIndex));
-    else setSelected([...selected, answerIndex].sort())
-  }
+  }, [selected, handleSelect, question.userAnswer, isLastQuestion, handleNextQuestion, handleSubmitAnswer, handleCompletePractice]);
 
   const calAnswerButtonStyle = (index: number) => {
     if (!userAnswer){
@@ -103,7 +107,7 @@ export default function MultipleAnswerQuestionSection({
           {/* Encouragement Message */}
           {encouragement && (
             <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
-              question.userAnswer === question.correctAnswer
+              encouragement.type === "CORRECT"
                 ? "bg-green-500/20 border border-green-500/30 text-green-300"
                 : "bg-orange-500/20 border border-orange-500/30 text-orange-300"
             }`}>
