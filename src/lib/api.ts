@@ -2,14 +2,15 @@ import axios from "axios";
 import { getAuth } from "firebase/auth";
 import { app } from "../firebase.tsx";
 import type { QuestionBank } from "@/model/QuestionBank.ts";
+import type { Question } from "@/model/Question.ts";
+import type { Practice } from "@/model/Practice.ts";
 import type UserRegistrationDTO from "@/dtos/UserRegistrationDTO.ts";
 import type QuestionBankCreationDTO from "@/dtos/QuestionBankCreationDTO.ts";
 import type QuestionBankUpdateDTO from "@/dtos/QuestionBankUpdateDTO.ts";
 import type QuestionCreationDTO from "@/dtos/QuestionCreationDTO.ts";
 import type QuestionUpdateDTO from "@/dtos/QuestionUpdateDTO.ts";
-import type { Question } from "@/model/Question.ts";
-import type { Practice } from "@/model/Practice.ts";
 import type PracticeAnswerDTO from "@/dtos/PracticeAnswerDTO.ts";
+import type Page from "@/dtos/Page.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -192,10 +193,16 @@ export async function startNewPractice(bankId: string, size: number, shuffle: bo
   }
 }
 
-export async function getUserPractice() {
-    try {
-    const response = await api.get(`/practice/me`);
-    return response.data as Practice[];
+export async function getUserPractice(pageSize?: number, pageIndex?: number, isClosed?: boolean) {
+  try {
+    const response = await api.get(`/practice/me`, {
+      params: {
+        size: pageSize,
+        page: pageIndex,
+        isClosed: isClosed,
+      }
+    });
+    return response.data as Page<Practice>;
   } catch (error) {
     console.error('Failed to fetch practice:', error);
     throw error;
