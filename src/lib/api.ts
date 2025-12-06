@@ -31,6 +31,8 @@ api.interceptors.request.use(async (config) => {
   return Promise.reject(error);
 });
 
+// ===== USER ENDPOINTS (/users/) =====
+
 export async function getUserInfo() {
   try {
     const response = await api.get('/users/me');
@@ -50,6 +52,8 @@ export async function registerNewUser(payload: UserRegistrationDTO) {
     throw error; // rethrow so the caller can handle it
   }
 }
+
+// ===== QUESTION BANK ENDPOINTS (/banks/) =====
 
 export async function createQuestionBank(payload: QuestionBankCreationDTO) {
   try {
@@ -76,10 +80,11 @@ export async function getUserQuestionBanks() {
     const response = await api.get('/banks');
     return response.data as QuestionBank[];
   } catch (error) {
-    console.error('Failed to fetch public question banks:', error);
+    console.error('Failed to fetch user question banks:', error);
     throw error; // rethrow so the caller can handle it
   }
 }
+
 export async function getQuestionBank(bankId: string) {
   try {
     const response = await api.get(`/banks/single/${bankId}`);
@@ -104,10 +109,12 @@ export async function deleteQuestionBank(bankId: string) {
   try {
     await api.delete(`/banks/single/${bankId}`);
   } catch (error) {
-    console.error('Failed to update question bank:', error);
+    console.error('Failed to delete question bank:', error);
     throw error; // rethrow so the caller can handle it
   }
 }
+
+// ===== QUESTION ENDPOINTS (/questions/) =====
 
 export async function overwriteQuestion(bankId: string, questionsData: QuestionCreationDTO[]) {
   try {
@@ -148,6 +155,8 @@ export async function deleteQuestion(questionId: string) {
     throw error; // rethrow so the caller can handle it
   }
 }
+
+// ===== PRACTICE ENDPOINTS (/practice/) =====
 
 export async function startNewAnonymousPractice(bankId: string, size: number, shuffle: boolean) {
   try {
