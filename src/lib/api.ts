@@ -11,6 +11,7 @@ import type QuestionCreationDTO from "@/dtos/QuestionCreationDTO.ts";
 import type QuestionUpdateDTO from "@/dtos/QuestionUpdateDTO.ts";
 import type PracticeAnswerDTO from "@/dtos/PracticeAnswerDTO.ts";
 import type Page from "@/dtos/Page.ts";
+import type { UserStatisticDTO } from "@/dtos/UserStatisticDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -40,6 +41,16 @@ export async function getUserInfo() {
     return response.data;
   } catch (error) {
     console.error('Failed to fetch user info:', error);
+    throw error; // rethrow so the caller can handle it
+  }
+}
+
+export async function getUserStatistic() {
+  try {
+    const response = await api.get('/users/me/statistic');
+    return response.data as UserStatisticDTO;
+  } catch (error) {
+    console.error('Failed to fetch user statistic:', error);
     throw error; // rethrow so the caller can handle it
   }
 }
