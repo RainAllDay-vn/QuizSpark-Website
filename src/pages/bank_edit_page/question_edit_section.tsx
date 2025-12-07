@@ -8,6 +8,7 @@ import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
 import {Plus, Save, Trash2, Check, Edit, Upload} from 'lucide-react';
 import {useState, useRef} from 'react';
+import * as React from "react";
 
 interface QuestionEditSectionProps {
   questionBank: QuestionBank | null;
@@ -194,7 +195,10 @@ export default function QuestionEditSection({
       const text = await file.text();
       const jsonData = JSON.parse(text);
       if (!Array.isArray(jsonData)) {
-        throw new Error('JSON file must contain an array of questions');
+        console.error('Import error:', 'JSON file must contain an array of questions');
+        setImportError('JSON file must contain an array of questions');
+        setIsImporting(false);
+        return;
       }
 
       // Validate each question
