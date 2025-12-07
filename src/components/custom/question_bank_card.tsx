@@ -77,7 +77,7 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
     <Card className="bg-[#0f0f10] border border-zinc-800 text-white hover:border-zinc-700 transition-all">
       <CardHeader className="flex flex-row justify-between items-center">
         <div>
-          <h2 className="text-lg font-semibold">{questionBank.name}</h2>
+          <h2 className="text-lg font-semibold cursor-pointer hover:text-violet-400 transition-colors" onClick={() => navigate(`/bank/${questionBank.id}`)}>{questionBank.name}</h2>
           <p className="text-zinc-400 text-sm whitespace-pre-wrap">{questionBank.description}</p>
         </div>
         <span className={`text-xs px-3 py-1 rounded-full text-white ${statusColor}`}>

@@ -20,6 +20,7 @@ import Loader from "@/components/custom/loader.tsx";
 import MyHeader from "@/components/custom/header.tsx";
 import MyFooter from "@/components/custom/footer.tsx";
 import BankEditPage from "./pages/bank_edit_page/bank_edit_page";
+import BankOverviewPage from "./pages/bank_overview_page/bank_overview_page";
 
 const ProtectedRoute = () => {
   const {user} = useAuthStatus();
@@ -71,6 +72,7 @@ function App() {
               <Route path="settings" element={<SettingSection/>}/>
             </Route>
             <Route path="/edit/bank/:bankId" element={<BankEditPage/>}/>
+            <Route path="/bank/:bankId" element={<BankOverviewPage/>}/>
           </Route>
         </Routes>
       </div>

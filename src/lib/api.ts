@@ -100,7 +100,9 @@ export async function getUserQuestionBanks() {
 export async function getQuestionBank(bankId: string) {
   try {
     const response = await api.get(`/banks/single/${bankId}`);
-    return response.data as QuestionBank;
+    const questionBank: QuestionBank = response.data;
+    questionBank.tags.sort();
+    return questionBank;
   } catch (error) {
     console.error('Failed to fetch question bank:', error);
     throw error; // rethrow so the caller can handle it
