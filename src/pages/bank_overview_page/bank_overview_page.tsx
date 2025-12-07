@@ -1,14 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Play } from "lucide-react";
+import { ArrowLeft, Edit, Play, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { QuestionBank } from "@/model/QuestionBank";
 import type { Question } from "@/model/Question";
 import { getQuestionBank } from "@/lib/api";
 import { useNavigate, useParams } from "react-router-dom";
 import Loader from "@/components/custom/loader";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatRelativeTime } from "@/lib/utils";
 
 export default function BankOverviewPage() {
@@ -151,57 +150,68 @@ export default function BankOverviewPage() {
       {/* Questions Section */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         <h2 className="text-xl font-semibold mb-4">Questions</h2>
-        <ScrollArea className="h-[600px] rounded-md border border-zinc-800 p-4">
-          <div className="space-y-6">
-            {questionBank.questions.map((question: Question, index: number) => (
-              <Card key={question.id} className="bg-zinc-900 border-zinc-800">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">
-                      Question {index + 1}: {question.description}
-                    </CardTitle>
-                    <Badge variant="outline" className="border-zinc-700 text-zinc-300">
-                      {getQuestionTypeDisplay(question.questionType)}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-medium mb-2">Choices:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {question.choices.map((choice, choiceIndex) => (
-                          <div 
-                            key={choiceIndex} 
-                            className={`p-2 rounded-md ${
-                              question.answer.includes(choice) 
-                                ? "bg-green-900/30 border border-green-800" 
-                                : "bg-zinc-800 border border-zinc-700"
-                            }`}
-                          >
-                            <span className="text-sm">
-                              {choice}
-                              {question.answer.includes(choice) && (
-                                <span className="ml-2 text-green-400">✓</span>
-                              )}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+        <div className="space-y-6">
+          {questionBank.questions.map((question: Question, index: number) => (
+            <Card key={question.id} className="bg-zinc-900 border-zinc-800">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg">
+                    Question {index + 1}: {question.description}
+                  </CardTitle>
+                  <Badge variant="outline" className="border-zinc-700 text-zinc-300">
+                    {getQuestionTypeDisplay(question.questionType)}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-medium mb-2">Choices:</h4>
+                    <div className="space-y-2">
+                      {question.choices.map((choice, choiceIndex) => {
+                        const isCorrect = question.answer.includes(choiceIndex.toString());
 
-                    {question.explanation && (
-                      <div>
-                        <h4 className="font-medium mb-2">Explanation:</h4>
-                        <p className="text-zinc-400 text-sm">{question.explanation}</p>
-                      </div>
-                    )}
+                        const containerClasses = isCorrect
+                          ? "bg-green-900/30 border border-green-700"
+                          : "bg-zinc-800 border border-zinc-700";
+
+                        const indicatorClasses = isCorrect
+                          ? "border-green-500 bg-green-500"
+                          : "border-zinc-600";
+
+                        return (
+                          <div
+                            key={choiceIndex}
+                            className={`flex items-center space-x-2 p-2 rounded ${containerClasses}`}
+                            aria-checked={isCorrect}
+                            role="option"
+                          >
+                            <div
+                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${indicatorClasses}`}
+                            >
+                              {isCorrect && <Check className="w-3 h-3 text-white"/>}
+                            </div>
+                            <span className="text-zinc-200"
+                                  aria-label={isCorrect ? `Correct choice: ${choice}` : choice}>
+                                {choice}
+                              </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
+
+                  {question.explanation && (
+                    <div>
+                      <h4 className="font-medium mb-2">Explanation:</h4>
+                      <p className="text-zinc-400 text-sm">{question.explanation}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
