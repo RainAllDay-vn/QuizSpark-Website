@@ -1,12 +1,10 @@
 import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {updateQuestion, deleteQuestion, addQuestion, overwriteQuestion} from '@/lib/api';
 import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
 import type QuestionUpdateDTO from '@/dtos/QuestionUpdateDTO';
 import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
-import {Plus, Save, Trash2, Check, Edit, Upload} from 'lucide-react';
+import {Plus, Trash2, Check, Edit, Upload} from 'lucide-react';
 import {useState, useRef} from 'react';
 import * as React from "react";
 import QuestionEditor from './question_editor';
@@ -296,153 +294,73 @@ export default function QuestionEditSection({
             isNewQuestion={true}
           />
         )}
-        
-        {questionBank?.questions.map((q, index) => (
-          <div key={q.id} className="bg-[#151518] border border-zinc-800 rounded-lg p-4">
+
+        {questionBank?.questions.map((q, index) => {
+          if (q.id === editingQuestion?.id) return <QuestionEditor
+            key="new"
+            editingQuestion={editingQuestion}
+            validationErrors={validationErrors}
+            handleQuestionTypeChange={handleQuestionTypeChange}
+            handleQuestionDescriptionChange={handleQuestionDescriptionChange}
+            handleChoiceChange={handleChoiceChange}
+            handleAnswerChange={handleAnswerChange}
+            handleAddChoice={handleAddChoice}
+            handleRemoveChoice={handleRemoveChoice}
+            handleSaveQuestion={handleSaveQuestion}
+            handleCancelQuestion={handleCancelQuestion}
+            isNewQuestion={false}
+          />
+          else return <div key={q.id} className="bg-[#151518] border border-zinc-800 rounded-lg p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <div className="flex items-center mb-2">
                   <span className="text-sm font-medium text-violet-400 mr-3">#{index + 1}</span>
-                  {editingQuestion?.id === q.id ? (
-                    <div className="w-full">
-                      <div className="mb-3">
-                        <label className="text-sm text-zinc-400 mb-1 block">Question Type:</label>
-                        <Select value={editingQuestion.questionType} onValueChange={handleQuestionTypeChange}>
-                          <SelectTrigger className="bg-[#0f0f10] border-zinc-700 text-white focus:ring-violet-600">
-                            <SelectValue placeholder="Select question type" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-[#151518] border-zinc-700 text-white focus:ring-violet-600">
-                            <SelectItem value="SINGLE_ANSWER">Single Answer</SelectItem>
-                            <SelectItem value="MULTIPLE_ANSWER">Multiple Answer</SelectItem>
-                            <SelectItem value="FILL_THE_BLANK">Fill the Blank</SelectItem>
-                            <SelectItem value="OPEN_ANSWER">Open Answer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Input
-                        value={editingQuestion.description}
-                        onChange={(e) => handleQuestionDescriptionChange(e.target.value)}
-                        className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 mb-3 ${
-                          validationErrors.description ? 'border-red-500' : 'border-zinc-700'
-                        }`}
-                        placeholder="Question text"
-                      />
-                      <div className="space-y-2">
-                        <p className="text-sm text-zinc-400 mb-2">Answer Options:</p>
-                        {editingQuestion.choices.map((choice, choiceIndex) => (
-                          <div key={choiceIndex} className="flex items-center space-x-2">
-                            <div
-                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer ${
-                                editingQuestion.answer.includes(choiceIndex.toString()) ? 'border-green-500 bg-green-500' : 'border-zinc-600'
-                              }`} onClick={() => handleAnswerChange(choiceIndex)}>
-                              {editingQuestion.answer.includes(choiceIndex.toString()) && <Check className="w-3 h-3 text-white"/>}
-                            </div>
-                            <Input
-                              value={choice}
-                              onChange={(e) => handleChoiceChange(choiceIndex, e.target.value)}
-                              className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 flex-1 ${
-                                validationErrors.choices ? 'border-red-500' : 'border-zinc-700'
-                              }`}
-                              placeholder={`Option ${choiceIndex + 1}`}
-                            />
-                            {editingQuestion.choices.length > 2 && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-red-600 text-red-400 bg-[#151518] hover:bg-red-900/20"
-                                onClick={() => handleRemoveChoice(choiceIndex)}
-                              >
-                                <Trash2 className="w-4 h-4"/>
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c] mt-2"
-                          onClick={handleAddChoice}
-                        >
-                          <Plus className="w-4 h-4 mr-2"/>
-                          Add Option
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <h3 className="text-lg font-medium text-white whitespace-pre-wrap">{q.description}</h3>
-                  )}
+                  <h3 className="text-lg font-medium text-white whitespace-pre-wrap">{q.description}</h3>
                 </div>
-
-                {/* Answer Options - Only show when not editing */}
-                {editingQuestion?.id !== q.id && (
-                  <div className="mt-3 space-y-2">
-                    {q.choices.map((option, optionIndex) => {
-                      const isCorrect = q.answer.includes(optionIndex.toString());
-                      return (
-                        <div
-                          key={optionIndex}
-                          className={`flex items-center space-x-2 p-2 rounded ${
-                            isCorrect ? 'bg-green-900/30 border border-green-700' : ''
-                          }`}
-                        >
-                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                            isCorrect ? 'border-green-500 bg-green-500' : 'border-zinc-600'
-                          }`}>
-                            {isCorrect && <Check className="w-3 h-3 text-white"/>}
-                          </div>
-                          <span className="text-zinc-200">{option}</span>
+                <div className="mt-3 space-y-2">
+                  {q.choices.map((option, optionIndex) => {
+                    const isCorrect = q.answer.includes(optionIndex.toString());
+                    return (
+                      <div
+                        key={optionIndex}
+                        className={`flex items-center space-x-2 p-2 rounded ${
+                          isCorrect ? 'bg-green-900/30 border border-green-700' : ''
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          isCorrect ? 'border-green-500 bg-green-500' : 'border-zinc-600'
+                        }`}>
+                          {isCorrect && <Check className="w-3 h-3 text-white"/>}
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        <span className="text-zinc-200">{option}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex space-x-2 ml-4">
-                {editingQuestion?.id === q.id ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-green-600 text-green-400 bg-[#151518] hover:bg-green-900/20"
-                      onClick={handleSaveQuestion}
-                    >
-                      <Save className="w-4 h-4"/>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
-                      onClick={handleCancelQuestion}
-                    >
-                      Cancel
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
-                      onClick={() => handleEditQuestion(q)}
-                    >
-                      <Edit className="w-4 h-4"/>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-red-600 text-red-400 bg-[#151518] hover:bg-red-900/20"
-                      onClick={() => handleDeleteQuestion(q.id)}
-                    >
-                      <Trash2 className="w-4 h-4"/>
-                    </Button>
-                  </>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
+                  onClick={() => handleEditQuestion(q)}
+                >
+                  <Edit className="w-4 h-4"/>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-red-600 text-red-400 bg-[#151518] hover:bg-red-900/20"
+                  onClick={() => handleDeleteQuestion(q.id)}
+                >
+                  <Trash2 className="w-4 h-4"/>
+                </Button>
               </div>
             </div>
           </div>
-        ))}
+        })}
       </div>
     </div>
   );
