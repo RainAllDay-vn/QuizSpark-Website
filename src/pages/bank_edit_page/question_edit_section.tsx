@@ -8,6 +8,7 @@ import {Plus, Trash2, Check, Edit, Upload} from 'lucide-react';
 import {useState, useRef} from 'react';
 import * as React from "react";
 import QuestionEditor from './question_editor';
+import MarkdownRenderer from "@/components/custom/markdown-renderer";
 
 interface QuestionEditSectionProps {
   questionBank: QuestionBank | null;
@@ -278,7 +279,7 @@ export default function QuestionEditSection({
 
       {/* Questions List */}
       <div className="space-y-4">
-        {/* Show new question being edited */}
+        {/* Show the question being edited */}
         {editingQuestion?.id === 'new' && (
           <QuestionEditor
             editingQuestion={editingQuestion}
@@ -315,7 +316,7 @@ export default function QuestionEditSection({
               <div className="flex-1">
                 <div className="flex items-center mb-2">
                   <span className="text-sm font-medium text-violet-400 mr-3">#{index + 1}</span>
-                  <h3 className="text-lg font-medium text-white whitespace-pre-wrap">{q.description}</h3>
+                  <div className="text-lg font-medium text-white"><MarkdownRenderer content={q.description} /></div>
                 </div>
                 <div className="mt-3 space-y-2">
                   {q.choices.map((option, optionIndex) => {
@@ -332,7 +333,7 @@ export default function QuestionEditSection({
                         }`}>
                           {isCorrect && <Check className="w-3 h-3 text-white"/>}
                         </div>
-                        <span className="text-zinc-200">{option}</span>
+                        <div className="text-zinc-200"><MarkdownRenderer content={option} /></div>
                       </div>
                     );
                   })}

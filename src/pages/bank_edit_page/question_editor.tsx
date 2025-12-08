@@ -1,9 +1,12 @@
 
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
+import {Textarea} from '@/components/ui/textarea';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import type {Question} from '@/model/Question';
-import {Plus, Trash2, Check, Save} from 'lucide-react';
+import {Plus, Trash2, Check, Save, Eye, EyeOff} from 'lucide-react';
+import {useState} from 'react';
+import MarkdownRenderer from "@/components/custom/markdown-renderer";
 
 interface QuestionEditorProps {
   editingQuestion: Question;
@@ -32,6 +35,7 @@ export default function QuestionEditor({
   handleCancelQuestion,
   isNewQuestion = false
 }: QuestionEditorProps) {
+  const [showPreview, setShowPreview] = useState(false);
   return (
     <div className="bg-[#151518] border border-zinc-800 rounded-lg p-4">
       <span className="text-sm font-medium text-violet-400 mr-3">{isNewQuestion ? '#New' : '#Edit'}</span>
@@ -40,7 +44,18 @@ export default function QuestionEditor({
           <div className="flex items-center mb-2">
             <div className="w-full">
               <div className="mb-3">
-                <label className="text-sm text-zinc-400 mb-1 block">Question Type:</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm text-zinc-400">Question Type:</label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-zinc-400 hover:text-white h-8 px-2"
+                    onClick={() => setShowPreview(!showPreview)}
+                  >
+                    {showPreview ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
+                    {showPreview ? "Edit" : "Preview"}
+                  </Button>
+                </div>
                 <Select value={editingQuestion.questionType} onValueChange={handleQuestionTypeChange}>
                   <SelectTrigger className="bg-[#0f0f10] border-zinc-700 text-white focus:ring-violet-600">
                     <SelectValue placeholder="Select question type" />
@@ -53,14 +68,22 @@ export default function QuestionEditor({
                   </SelectContent>
                 </Select>
               </div>
-              <Input
-                value={editingQuestion.description}
-                onChange={(e) => handleQuestionDescriptionChange(e.target.value)}
-                className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 mb-3 ${
+              {showPreview ? (
+                <div className={`bg-[#0f0f10] border p-3 rounded mb-3 ${
                   validationErrors.description ? 'border-red-500' : 'border-zinc-700'
-                }`}
-                placeholder="Question text"
-              />
+                }`}>
+                  <MarkdownRenderer content={editingQuestion.description} />
+                </div>
+              ) : (
+                <Textarea
+                  value={editingQuestion.description}
+                  onChange={(e) => handleQuestionDescriptionChange(e.target.value)}
+                  className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 mb-3 min-h-[100px] ${
+                    validationErrors.description ? 'border-red-500' : 'border-zinc-700'
+                  }`}
+                  placeholder="Question text (supports Markdown and LaTeX: $x^2$ for inline math, $$\frac{1}{2}$$ for block math)"
+                />
+              )}
               <div className="space-y-2">
                 <p className="text-sm text-zinc-400 mb-2">Answer Options:</p>
                 {editingQuestion.choices.map((choice, choiceIndex) => (
@@ -71,14 +94,22 @@ export default function QuestionEditor({
                       }`} onClick={() => handleAnswerChange(choiceIndex)}>
                       {editingQuestion.answer.includes(choiceIndex.toString()) && <Check className="w-3 h-3 text-white"/>}
                     </div>
-                    <Input
-                      value={choice}
-                      onChange={(e) => handleChoiceChange(choiceIndex, e.target.value)}
-                      className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 flex-1 ${
+                    {showPreview ? (
+                      <div className={`bg-[#0f0f10] border p-2 rounded flex-1 ${
                         validationErrors.choices ? 'border-red-500' : 'border-zinc-700'
-                      }`}
-                      placeholder={`Option ${choiceIndex + 1}`}
-                    />
+                      }`}>
+                        <MarkdownRenderer content={choice} />
+                      </div>
+                    ) : (
+                      <Input
+                        value={choice}
+                        onChange={(e) => handleChoiceChange(choiceIndex, e.target.value)}
+                        className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 flex-1 ${
+                          validationErrors.choices ? 'border-red-500' : 'border-zinc-700'
+                        }`}
+                        placeholder={`Option ${choiceIndex + 1} (supports Markdown and LaTeX)`}
+                      />
+                    )}
                     {editingQuestion.choices.length > 2 && (
                       <Button
                         variant="outline"
