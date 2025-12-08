@@ -11,6 +11,7 @@ import Loader from "@/components/custom/loader";
 import { formatRelativeTime } from "@/lib/utils";
 import useAuthStatus from "@/lib/use_auth_hook";
 import PracticeOptionsDialog from "@/components/custom/practice_options_dialog";
+import MarkdownRenderer from "@/components/custom/markdown-renderer";
 
 export default function BankOverviewPage() {
   const { bankId } = useParams<{ bankId: string }>();
@@ -130,9 +131,9 @@ export default function BankOverviewPage() {
           </div>
 
           {questionBank.description && (
-            <p className="text-zinc-400 mt-4 max-w-3xl">
-              {questionBank.description}
-            </p>
+            <div className="text-zinc-400 mt-4 max-w-3xl">
+              <MarkdownRenderer content={questionBank.description} />
+            </div>
           )}
 
           {questionBank.tags.length > 0 && (
@@ -185,7 +186,10 @@ export default function BankOverviewPage() {
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-lg">
-                    Question {index + 1}: {question.description}
+                    <div className="flex gap-2">
+                      <span className="shrink-0">Question {index + 1}:</span>
+                      <MarkdownRenderer content={question.description} />
+                    </div>
                   </CardTitle>
                   <Badge variant="outline" className="border-zinc-700 text-zinc-300">
                     {getQuestionTypeDisplay(question.questionType)}
@@ -220,10 +224,10 @@ export default function BankOverviewPage() {
                             >
                               {isCorrect && <Check className="w-3 h-3 text-white"/>}
                             </div>
-                            <span className="text-zinc-200"
+                            <div className="text-zinc-200"
                                   aria-label={isCorrect ? `Correct choice: ${choice}` : choice}>
-                                {choice}
-                              </span>
+                                <MarkdownRenderer content={choice} />
+                              </div>
                           </div>
                         );
                       })}
@@ -233,7 +237,9 @@ export default function BankOverviewPage() {
                   {question.explanation && (
                     <div>
                       <h4 className="font-medium mb-2">Explanation:</h4>
-                      <p className="text-zinc-400 text-sm">{question.explanation}</p>
+                      <div className="text-zinc-400 text-sm">
+                        <MarkdownRenderer content={question.explanation} />
+                      </div>
                     </div>
                   )}
                 </div>
