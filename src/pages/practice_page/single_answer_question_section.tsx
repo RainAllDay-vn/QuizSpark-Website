@@ -2,6 +2,7 @@ import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import type {QuestionSectionProps} from "@/pages/practice_page/practice_section.tsx";
 import {useEffect} from "react";
+import MarkdownRenderer from "@/components/custom/markdown-renderer";
 
 export default function SingleAnswerQuestionSection({
                                                       state,
@@ -71,7 +72,7 @@ export default function SingleAnswerQuestionSection({
             </div>
           )}
 
-          <div className="text-lg font-semibold whitespace-pre-wrap">{question.description}</div>
+          <div className="text-lg font-semibold"><MarkdownRenderer content={question.description} /></div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
             {question.choices.map((option, index) => (
@@ -81,7 +82,7 @@ export default function SingleAnswerQuestionSection({
                 disabled={question.userAnswer !== undefined} // prevent further clicks
                 className={`border border-gray-700 rounded-xl px-4 py-3 text-left transition-all duration-150 hover:border-purple-400 
                   ${calAnswerButtonStyle(index)}`}
-              ><span className="font-semibold mr-2">{String.fromCharCode(65 + index)}.</span>{" "}{option}
+              ><span className="font-semibold mr-2">{String.fromCharCode(65 + index)}.</span>{" "}<MarkdownRenderer content={option} />
               </button>
             ))}
           </div>

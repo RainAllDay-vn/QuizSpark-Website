@@ -47,46 +47,46 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
       };
     case "ANSWER":
       return {...state, loading: true}
-    case "SHOW_RESULT":
-       {
-        const currentQuestion = state.questions[state.currentQuestionIndex];
-        const userAnswer = action.payload.userAnswer;
-        const correctAnswer = action.payload.correctAnswer;
-        const newQuestions = state.questions.map((question) => {
-          if (question === currentQuestion) {
-            return {
-              ...question,
-              userAnswer: userAnswer,
-              correctAnswer: correctAnswer,
-            };
-          }
-          return question;
-        });
-        if (correctAnswer===null) return {...state, questions: newQuestions}
-        let encouragement;
-        if (correctAnswer.every((value, index) => value===userAnswer[index])){
-          encouragement = correctMessages[Math.floor(Math.random() * correctMessages.length)];
-        } else {
-          encouragement = wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
+    case "SHOW_RESULT": {
+      const currentQuestion = state.questions[state.currentQuestionIndex];
+      const userAnswer = action.payload.userAnswer;
+      const correctAnswer = action.payload.correctAnswer;
+      const newQuestions = state.questions.map((question) => {
+        if (question === currentQuestion) {
+          return {
+            ...question,
+            userAnswer: userAnswer,
+            correctAnswer: correctAnswer,
+          };
         }
-        return {
-          ...state,
-          questions: newQuestions,
-          encouragement: encouragement,
-        };
+        return question;
+      });
+      if (correctAnswer === null) return {...state, questions: newQuestions}
+      let encouragement;
+      if (correctAnswer.every((value, index) => value === userAnswer[index])) {
+        encouragement = correctMessages[Math.floor(Math.random() * correctMessages.length)];
+      } else {
+        encouragement = wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
       }
-    case "INCREASE_TIME":
+      return {
+        ...state,
+        questions: newQuestions,
+        encouragement: encouragement,
+      };
+    }
+    case "INCREASE_TIME": {
       const currentQuestion = state.questions[state.currentQuestionIndex];
       const newQuestions = state.questions.map((question) => {
-          if (question === currentQuestion) {
-            return {
-              ...question,
-              secondsToAnswer: currentQuestion.secondsToAnswer+1,
-            };
-          }
-          return question;
-        });
-      return {...state, questions: newQuestions, timeInSeconds: state.timeInSeconds+1};
+        if (question === currentQuestion) {
+          return {
+            ...question,
+            secondsToAnswer: currentQuestion.secondsToAnswer + 1,
+          };
+        }
+        return question;
+      });
+      return {...state, questions: newQuestions, timeInSeconds: state.timeInSeconds + 1};
+    }
     default:
       return state;
   }
