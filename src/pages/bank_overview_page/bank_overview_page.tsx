@@ -107,6 +107,16 @@ export default function BankOverviewPage() {
             >
               {questionBank.status}
             </Badge>
+            {questionBank.access === "PRIVATE" && (
+              <Badge variant="outline" className="border-orange-600 text-orange-400">
+                Private Access
+              </Badge>
+            )}
+            {questionBank.access === "PUBLIC" && (
+              <Badge variant="outline" className="border-green-600 text-green-400">
+                Public Access
+              </Badge>
+            )}
           </div>
 
           {questionBank.description && (

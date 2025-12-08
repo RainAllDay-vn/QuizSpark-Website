@@ -7,6 +7,7 @@ import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
 import {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
+import {ChevronDown} from 'lucide-react';
 
 export default function BankEditPage() {
   const {bankId} = useParams<{ bankId: string }>();
@@ -46,8 +47,24 @@ export default function BankEditPage() {
 
   if (loading) return <Loader/>
 
+  const scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white w-full">
+    <div className="min-h-screen bg-black text-white w-full relative">
+      {/* Scroll to Bottom Button */}
+      <Button
+        onClick={scrollToBottom}
+        className="fixed bottom-20 right-8 z-10 bg-zinc-800 hover:bg-zinc-700 rounded-full p-3"
+        size="icon"
+      >
+        <ChevronDown className="h-5 w-5" />
+      </Button>
+      
       {/* Header Section */}
       <div className="border-b border-zinc-800 bg-[#0f0f10]">
         <div className="max-w-6xl mx-auto px-4 py-8">

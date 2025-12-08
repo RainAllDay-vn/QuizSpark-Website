@@ -6,6 +6,7 @@ import type {QuestionBank} from '@/model/QuestionBank';
 import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
 import {Save, Edit, Trash2} from 'lucide-react';
 import {useState} from 'react';
+import {Textarea} from "@/components/ui/textarea.tsx";
 
 interface BankEditSectionProps {
   questionBank: QuestionBank | null;
@@ -163,12 +164,21 @@ export default function BankEditSection({
 
       {editingBank ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-zinc-400 mb-2">Name</label>
             <Input
               value={editingBank.name}
               onChange={(e) => handleBankFieldChange('name', e.target.value)}
               className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-zinc-400 mb-2">Description</label>
+            <Textarea
+              value={editingBank.description}
+              onChange={(e) => handleBankFieldChange('description', e.target.value)}
+              className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600"
+              placeholder="Enter description"
             />
           </div>
           <div>
@@ -201,15 +211,6 @@ export default function BankEditSection({
               </SelectContent>
             </Select>
           </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-zinc-400 mb-2">Description</label>
-            <Input
-              value={editingBank.description || ''}
-              onChange={(e) => handleBankFieldChange('description', e.target.value)}
-              className="bg-[#0f0f10] border border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-violet-600"
-              placeholder="Enter description"
-            />
-          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -224,14 +225,6 @@ export default function BankEditSection({
           <div>
             <p className="text-sm font-medium text-zinc-400 mb-1">Status</p>
             <p className="text-white">{questionBank?.status}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-zinc-400 mb-1">Questions</p>
-            <p className="text-white">{questionBank?.numberOfQuestions}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-zinc-400 mb-1">Attempts</p>
-            <p className="text-white">{questionBank?.numberOfAttempts}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-zinc-400 mb-1">Created</p>

@@ -319,7 +319,8 @@ export default function QuestionEditSection({
                   <div className="text-lg font-medium text-white"><MarkdownRenderer content={q.description} /></div>
                 </div>
                 <div className="mt-3 space-y-2">
-                  {q.choices.map((option, optionIndex) => {
+                  {(q.questionType == "SINGLE_ANSWER" || q.questionType == "MULTIPLE_ANSWER")
+                    && q.choices.map((option, optionIndex) => {
                     const isCorrect = q.answer.includes(optionIndex.toString());
                     return (
                       <div
