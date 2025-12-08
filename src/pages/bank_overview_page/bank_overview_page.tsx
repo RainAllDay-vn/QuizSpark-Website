@@ -5,18 +5,16 @@ import { ArrowLeft, Edit, Play, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { QuestionBank } from "@/model/QuestionBank";
 import type { Question } from "@/model/Question";
-import { getQuestionBank, startNewPractice } from "@/lib/api";
+import { getQuestionBank } from "@/lib/api";
 import { useNavigate, useParams } from "react-router-dom";
 import Loader from "@/components/custom/loader";
 import { formatRelativeTime } from "@/lib/utils";
-import useAuthStatus from "@/lib/use_auth_hook";
 import PracticeOptionsDialog from "@/components/custom/practice_options_dialog";
 import MarkdownRenderer from "@/components/custom/markdown-renderer";
 
 export default function BankOverviewPage() {
   const { bankId } = useParams<{ bankId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthStatus();
   const [loading, setLoading] = useState(true);
   const [questionBank, setQuestionBank] = useState<QuestionBank | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -41,25 +39,6 @@ export default function BankOverviewPage() {
 
   const handlePractice = () => {
     setIsDialogOpen(true);
-  };
-
-  const startPractice = async (practiceSize: number, shuffleChoices: boolean, revealAnswer: boolean, selectedTags: string[]) => {
-    if (questionBank) {
-      if (user) {
-        const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer, selectedTags);
-        const practiceId = response.id;
-        navigate('/practice/'+practiceId);
-      } else {
-        const searchParams = new URLSearchParams();
-        searchParams.append("size", practiceSize.toString());
-        searchParams.append("shuffle", shuffleChoices.toString());
-        // Add selected tags as query parameters (will be used by API later)
-        if (selectedTags.length > 0 && selectedTags.length < questionBank.tags.length) {
-          searchParams.append("tags", selectedTags.join(","));
-        }
-        navigate(`/practice/${questionBank.id}?${searchParams.toString()}`);
-      }
-    }
   };
 
   const handleEdit = () => {
@@ -172,7 +151,6 @@ export default function BankOverviewPage() {
         <PracticeOptionsDialog
           isOpen={isDialogOpen}
           onClose={() => setIsDialogOpen(false)}
-          onStartPractice={startPractice}
           questionBank={questionBank}
         />
       )}

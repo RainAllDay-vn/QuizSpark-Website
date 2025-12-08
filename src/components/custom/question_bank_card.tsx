@@ -3,8 +3,6 @@ import {useNavigate} from "react-router-dom";
 import {useState} from "react";
 import {Card, CardContent, CardHeader} from "@/components/ui/card.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import { startNewPractice } from "@/lib/api";
-import useAuthStatus from "@/lib/use_auth_hook.ts";
 import { formatRelativeTime } from "@/lib/utils";
 import PracticeOptionsDialog from "@/components/custom/practice_options_dialog";
 
@@ -15,32 +13,10 @@ interface QuestionBankCardProps {
 
 export default function QuestionBankCard({questionBank, editable}: QuestionBankCardProps) {
   const navigate = useNavigate();
-  const {user} = useAuthStatus();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-
-  
-
 
   function handlePracticeButton() {
     setIsDialogOpen(true);
-  }
-
-  async function startPractice(practiceSize: number, shuffleChoices: boolean, revealAnswer: boolean, selectedTags: string[]) {
-    if (user) {
-      const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer, selectedTags);
-      const practiceId = response.id;
-      navigate('/practice/'+practiceId);
-    } else {
-      const searchParams = new URLSearchParams();
-      searchParams.append("size", practiceSize.toString());
-      searchParams.append("shuffle", shuffleChoices.toString());
-      // Add selected tags as query parameters (will be used by API later)
-      if (selectedTags.length > 0 && selectedTags.length < questionBank.tags.length) {
-        searchParams.append("tags", selectedTags.join(","));
-      }
-      navigate(`/practice/${questionBank.id}?${searchParams.toString()}`);
-    }
   }
 
   const statusColor =
@@ -82,7 +58,6 @@ export default function QuestionBankCard({questionBank, editable}: QuestionBankC
       <PracticeOptionsDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        onStartPractice={startPractice}
         questionBank={questionBank}
       />
     </Card>

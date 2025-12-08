@@ -14,20 +14,21 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import type { QuestionBank } from "@/model/QuestionBank";
 import useAuthStatus from "@/lib/use_auth_hook";
 import {useState} from "react";
+import {startNewPractice} from "@/lib/api.ts";
+import {useNavigate} from "react-router-dom";
 
 interface PracticeOptionsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onStartPractice: (practiceSize: number, shuffleChoices: boolean, revealAnswer: boolean, selectedTags: string[]) => void;
   questionBank: QuestionBank;
 }
 
 export default function PracticeOptionsDialog({ 
   isOpen, 
   onClose, 
-  onStartPractice, 
-  questionBank 
+  questionBank
 }: PracticeOptionsDialogProps) {
+  const navigate = useNavigate();
   const { user } = useAuthStatus();
   const [practiceSize, setPracticeSize] = useState<number>(10);
   const [shuffleChoices, setShuffleChoices] = useState<boolean>(true);
@@ -45,9 +46,23 @@ export default function PracticeOptionsDialog({
     });
   };
 
-  const handleStartPractice = () => {
-    onStartPractice(practiceSize, shuffleChoices, revealAnswer, selectedTags);
-    onClose();
+  const handleStartPractice = async () => {
+    if (questionBank) {
+      if (user) {
+        const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer, selectedTags);
+        const practiceId = response.id;
+        navigate('/practice/'+practiceId);
+      } else {
+        const searchParams = new URLSearchParams();
+        searchParams.append("size", practiceSize.toString());
+        searchParams.append("shuffle", shuffleChoices.toString());
+        // Add selected tags as query parameters (will be used by API later)
+        if (selectedTags.length > 0 && selectedTags.length < questionBank.tags.length) {
+          searchParams.append("tags", selectedTags.join(","));
+        }
+        navigate(`/practice/${questionBank.id}?${searchParams.toString()}`);
+      }
+    }
   };
 
   return (
