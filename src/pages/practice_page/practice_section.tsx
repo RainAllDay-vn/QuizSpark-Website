@@ -1,11 +1,12 @@
-import {useEffect, useReducer} from "react";
-import type {Practice} from "@/model/Practice.ts";
-import {correctMessages, wrongMessages, type EncouragementMessage} from "@/pages/practice_page/EncouragementMessage.ts";
-import {Card, CardContent} from "@/components/ui/card.tsx";
+import { useEffect, useReducer } from "react";
+import type { Practice } from "@/model/Practice.ts";
+import { correctMessages, wrongMessages, type EncouragementMessage } from "@/pages/practice_page/EncouragementMessage.ts";
+import { Card, CardContent } from "@/components/ui/card.tsx";
 import type { PracticeQuestion } from "@/model/PracticeQuestion";
 import SingleAnswerQuestionSection from "./single_answer_question_section";
 import MultipleAnswerQuestionSection from "./multiple_answer_question_section";
 import { answer } from "@/lib/api";
+import CommentSection from "@/pages/practice_page/comment_section.tsx";
 
 interface PracticeSectionProps {
   practice: Practice;
@@ -31,7 +32,7 @@ export type PracticeAction =
   | { type: "VIEW_QUESTION"; payload: { index: number } }
   | { type: "NEXT_QUESTION" }
   | { type: "ANSWER" }
-  | { type: "SHOW_RESULT"; payload: { userAnswer: string[], correctAnswer: string[] | null}}
+  | { type: "SHOW_RESULT"; payload: { userAnswer: string[], correctAnswer: string[] | null } }
   | { type: "INCREASE_TIME" };
 
 function practiceReducer(state: PracticeState, action: PracticeAction): PracticeState {
@@ -41,12 +42,12 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
     case "NEXT_QUESTION":
       return {
         ...state,
-        currentQuestionIndex: 
-          Math.min(state.currentQuestionIndex+1, state.questions.length-1),
+        currentQuestionIndex:
+          Math.min(state.currentQuestionIndex + 1, state.questions.length - 1),
         encouragement: null,
       };
     case "ANSWER":
-      return {...state, loading: true}
+      return { ...state, loading: true }
     case "SHOW_RESULT": {
       const currentQuestion = state.questions[state.currentQuestionIndex];
       const userAnswer = action.payload.userAnswer;
@@ -61,7 +62,7 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
         }
         return question;
       });
-      if (correctAnswer === null) return {...state, questions: newQuestions}
+      if (correctAnswer === null) return { ...state, questions: newQuestions }
       let encouragement;
       if (correctAnswer.every((value, index) => value === userAnswer[index])) {
         encouragement = correctMessages[Math.floor(Math.random() * correctMessages.length)];
@@ -85,14 +86,14 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
         }
         return question;
       });
-      return {...state, questions: newQuestions, timeInSeconds: state.timeInSeconds + 1};
+      return { ...state, questions: newQuestions, timeInSeconds: state.timeInSeconds + 1 };
     }
     default:
       return state;
   }
 }
 
-export default function PracticeSection({practice, completePractice}: PracticeSectionProps) {
+export default function PracticeSection({ practice, completePractice }: PracticeSectionProps) {
   const initialState: PracticeState = {
     questions: practice.questions,
     currentQuestionIndex: 0,
@@ -102,24 +103,24 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
   };
 
   const [state, dispatch] = useReducer(practiceReducer, initialState);
-  const {questions, currentQuestionIndex, timeInSeconds} = state;
+  const { questions, currentQuestionIndex, timeInSeconds } = state;
   const question = questions[currentQuestionIndex];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      dispatch({type: "INCREASE_TIME"});
+      dispatch({ type: "INCREASE_TIME" });
     }, 1000);
     return () => clearInterval(interval);
   }, []);
 
   const handleSubmitAnswer = async (userAnswer: string[]) => {
-    dispatch({type: "ANSWER"});
-    const correctAnswer = await answer(practice.id, {index: currentQuestionIndex, answer: userAnswer, secondsToAnswer: question.secondsToAnswer})
-    dispatch({type: "SHOW_RESULT", payload: {userAnswer: userAnswer, correctAnswer: correctAnswer}});
+    dispatch({ type: "ANSWER" });
+    const correctAnswer = await answer(practice.id, { index: currentQuestionIndex, answer: userAnswer, secondsToAnswer: question.secondsToAnswer })
+    dispatch({ type: "SHOW_RESULT", payload: { userAnswer: userAnswer, correctAnswer: correctAnswer } });
   }
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < practice.questions.length - 1) dispatch({type: "NEXT_QUESTION"});
+    if (currentQuestionIndex < practice.questions.length - 1) dispatch({ type: "NEXT_QUESTION" });
   }
 
   const handleCompletePractice = () => {
@@ -137,15 +138,17 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
   };
 
   return (
-    <div className="flex w-full max-w-6xl gap-6">
+    <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* LEFT: Question column */}
-      {question.type==="SINGLE_ANSWER" && <SingleAnswerQuestionSection state={state} handleSubmitAnswer={handleSubmitAnswer} 
-          handleNextQuestion={handleNextQuestion} handleCompletePractice={handleCompletePractice}/>}
-      {question.type==="MULTIPLE_ANSWER" && <MultipleAnswerQuestionSection state={state} handleSubmitAnswer={handleSubmitAnswer} 
-          handleNextQuestion={handleNextQuestion} handleCompletePractice={handleCompletePractice}/>}
+      <div className="lg:col-span-2">
+        {question.type === "SINGLE_ANSWER" && <SingleAnswerQuestionSection state={state} handleSubmitAnswer={handleSubmitAnswer}
+          handleNextQuestion={handleNextQuestion} handleCompletePractice={handleCompletePractice} />}
+        {question.type === "MULTIPLE_ANSWER" && <MultipleAnswerQuestionSection state={state} handleSubmitAnswer={handleSubmitAnswer}
+          handleNextQuestion={handleNextQuestion} handleCompletePractice={handleCompletePractice} />}
+      </div>
 
       {/* RIGHT: Practice Stats column */}
-      <div className="w-72 min-w-72">
+      <div className="lg:col-span-1">
         <Card className="bg-gray-900/60 border border-gray-700 text-white">
           <CardContent className="p-4 space-y-4">
             <h2 className="text-lg font-semibold text-gray-200">
@@ -161,7 +164,7 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
                 <span>{formatTime(timeInSeconds)}</span>
               </div>
             </div>
-            
+
             {/* Question Navigation Grid */}
             <div className="pt-3 border-t border-gray-700">
               <h3 className="text-sm font-medium text-gray-300 mb-3">Navigate to Question</h3>
@@ -169,7 +172,7 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
                 {questions.map((question, index) => {
                   const isCurrentQuestion = index === currentQuestionIndex;
                   const hasAnswer = question.userAnswer !== undefined;
-                  
+
                   return (
                     <button
                       key={index}
@@ -193,6 +196,16 @@ export default function PracticeSection({practice, completePractice}: PracticeSe
           </CardContent>
         </Card>
       </div>
+      
+      {/* BOTTOM: Comment Section - shown after answering */}
+      {question.userAnswer!==undefined && (
+        <div className="lg:col-span-3 w-full">
+          <CommentSection
+            question={question}
+            isVisible={true}
+          />
+        </div>
+      )}
     </div>
   )
 }

@@ -49,9 +49,9 @@ export default function SingleAnswerQuestionSection({
   }
 
   return (
-    <div className="flex-grow">
-      <Card className="bg-gray-900/60 border border-gray-700 w-full text-white">
-        <CardContent className="p-6 space-y-4">
+    <div className="flex-grow h-full">
+      <Card className="h-full bg-gray-900/60 border border-gray-700 w-full text-white">
+        <CardContent className="h-full p-6 space-y-4 flex flex-col">
           <div className="flex items-center justify-between">
                 <span className="bg-purple-500 text-sm px-3 py-1 rounded-full font-medium">
                   100 points
@@ -72,7 +72,11 @@ export default function SingleAnswerQuestionSection({
             </div>
           )}
 
+          <div className="grow"></div>
+
           <div className="text-lg font-semibold"><MarkdownRenderer content={question.description} /></div>
+
+          <div className="grow"></div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
             {question.choices.map((option, index) => (
@@ -86,7 +90,6 @@ export default function SingleAnswerQuestionSection({
               </button>
             ))}
           </div>
-
           {/* Encouragement Message */}
           {encouragement && (
             <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
@@ -99,6 +102,8 @@ export default function SingleAnswerQuestionSection({
               <span className="text-2xl ml-2">{encouragement.emoji}</span>
             </div>
           )}
+
+          <div className="grow"></div>
 
           <div className="flex justify-between items-center mt-6">
             <Button
