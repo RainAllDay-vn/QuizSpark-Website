@@ -12,7 +12,7 @@ export default function BankEditPage() {
   const {bankId} = useParams<{ bankId: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [questionBank, setQuestionBank] = useState<QuestionBank | null>(null);
+  const [questionBank, setQuestionBank] = useState<QuestionBank>({} as QuestionBank);
 
   useEffect(() => {
     if (!bankId) {
@@ -29,7 +29,7 @@ export default function BankEditPage() {
         console.error('Failed to load data:', error);
         setLoading(false);
       });
-  }, [bankId]);
+  }, [bankId, navigate]);
 
   const handleBankUpdated = (updatedBank: QuestionBank) => {
     setQuestionBank(updatedBank);
