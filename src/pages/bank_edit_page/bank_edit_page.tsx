@@ -32,17 +32,9 @@ export default function BankEditPage() {
       });
   }, [bankId, navigate]);
 
-  const handleBankUpdated = (updatedBank: QuestionBank) => {
-    setQuestionBank(updatedBank);
-  };
-
   const handleQuestionsUpdated = (updatedQuestions: Question[]) => {
     if (!questionBank) return;
     setQuestionBank({...questionBank, questions: updatedQuestions});
-  };
-
-  const handleBankDeleted = () => {
-    navigate("/home/banks");
   };
 
   if (loading) return <Loader/>
@@ -82,8 +74,6 @@ export default function BankEditPage() {
         {/* Question Bank Metadata Section */}
         <BankEditSection
           questionBank={questionBank}
-          onBankUpdated={handleBankUpdated}
-          onBankDeleted={handleBankDeleted}
         />
 
         {/* Quiz Questions Section */}

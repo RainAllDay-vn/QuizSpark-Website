@@ -7,21 +7,13 @@ import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
 import {Save, Edit, Trash2} from 'lucide-react';
 import {useState} from 'react';
 import {Textarea} from "@/components/ui/textarea.tsx";
+import {useNavigate} from "react-router-dom";
 
-interface BankEditSectionProps {
-  questionBank: QuestionBank | null;
-  onBankUpdated: (updatedBank: QuestionBank) => void;
-  onBankDeleted: () => void;
-}
-
-export default function BankEditSection({
-  questionBank,
-  onBankUpdated,
-  onBankDeleted
-}: BankEditSectionProps) {
+export default function BankEditSection({questionBank}: {questionBank: QuestionBank}) {
+  const navigate = useNavigate();
   const [editingBank, setEditingBank] = useState<QuestionBank | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleEditBank = () => {
     if (questionBank) {
@@ -39,9 +31,7 @@ export default function BankEditSection({
         access: editingBank.access,
         status: editingBank.status
       };
-      
-      const updatedBank = await updateQuestionBank(questionBank.id, updateData);
-      onBankUpdated(updatedBank);
+      await updateQuestionBank(questionBank.id, updateData);
       setEditingBank(null);
     } catch (error) {
       console.error('Failed to update question bank:', error);
@@ -67,19 +57,17 @@ export default function BankEditSection({
     setIsDeleting(true);
     try {
       await deleteQuestionBank(questionBank.id);
-      onBankDeleted();
+      navigate("/home/banks");
     } catch (error) {
       console.error('Failed to delete question bank:', error);
       alert('Failed to delete question bank. Please try again.');
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteWarning(false);
     }
   };
 
   const cancelDeleteBank = () => {
     setShowDeleteWarning(false);
   };
+
   return (
     <div className="bg-[#0f0f10] border border-zinc-800 rounded-lg p-6 mb-6">
       {showDeleteWarning && (
