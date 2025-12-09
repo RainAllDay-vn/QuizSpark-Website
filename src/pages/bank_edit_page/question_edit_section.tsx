@@ -10,32 +10,13 @@ import * as React from "react";
 import QuestionEditor from './question_editor';
 import MarkdownRenderer from "@/components/custom/markdown-renderer";
 
-interface QuestionEditSectionProps {
-  questionBank: QuestionBank | null;
-  onQuestionsUpdated: (updatedQuestions: Question[]) => void;
-}
-
-export default function QuestionEditSection({
-  questionBank,
-  onQuestionsUpdated
-}: QuestionEditSectionProps) {
+export default function QuestionEditSection({questionBank}: {questionBank: QuestionBank}) {
+  const [questions, setQuestions] = useState(questionBank.questions);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [importError, setImportError] = useState<string | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleEditQuestion = (question: Question) => {
-    // If there's a current editing question, save it first
-    if (editingQuestion && questionBank) {
-      const updatedQuestions = questionBank.questions.map(q =>
-        q.id === editingQuestion.id ? editingQuestion : q
-      );
-      onQuestionsUpdated(updatedQuestions);
-    }
-    // Start editing the new question
-    setEditingQuestion({...question});
-  };
 
   const validateQuestionData = (question: Question): Record<string, string> => {
     const errors: Record<string, string> = {};
@@ -59,13 +40,10 @@ export default function QuestionEditSection({
   };
 
   const handleSaveQuestion = async () => {
-    if (!editingQuestion || !questionBank) return;
+    if (!editingQuestion) return;
     const errors = validateQuestionData(editingQuestion);
     setValidationErrors(errors);
-    // If there are validation errors, don't proceed with saving
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
+    if (Object.keys(errors).length > 0) return;
 
     try {
       // Check if this is a new question (no id yet) or an existing one
@@ -79,10 +57,8 @@ export default function QuestionEditSection({
           choices: editingQuestion.choices,
           explanation: editingQuestion.explanation
         };
-        
         const newQuestion = await addQuestion(questionBank.id, questionData);
-        const updatedQuestions = [...questionBank.questions, newQuestion];
-        onQuestionsUpdated(updatedQuestions);
+        setQuestions([...questions, newQuestion]);
       } else {
         // This is an existing question, update it
         const questionData: QuestionUpdateDTO = {
@@ -93,12 +69,11 @@ export default function QuestionEditSection({
           tags: editingQuestion.tags,
           explanation: editingQuestion.explanation
         };
-        
         const updatedQuestion = await updateQuestion(editingQuestion.id, questionData);
-        const updatedQuestions = questionBank.questions.map(q =>
+        const updatedQuestions = questions.map(q =>
           q.id === editingQuestion.id ? updatedQuestion : q
         );
-        onQuestionsUpdated(updatedQuestions);
+        setQuestions(updatedQuestions);
       }
       setEditingQuestion(null);
       setValidationErrors({});
@@ -107,18 +82,25 @@ export default function QuestionEditSection({
     }
   };
 
+  const handleEditQuestion = async (question: Question) => {
+    // If there's a current editing question, save it first
+    if (editingQuestion) {
+      await handleSaveQuestion();
+    }
+    // Start editing the new question
+    setEditingQuestion({...question});
+  };
+
   const handleCancelQuestion = () => {
     setEditingQuestion(null);
     setValidationErrors({});
   };
 
   const handleDeleteQuestion = async (id: string) => {
-    if (!questionBank) return;
-
     try {
       await deleteQuestion(id);
-      const updatedQuestions = questionBank.questions.filter(q => q.id !== id);
-      onQuestionsUpdated(updatedQuestions);
+      const updatedQuestions = questions.filter(q => q.id !== id);
+      setQuestions(updatedQuestions);
     } catch (error) {
       console.error('Failed to delete question:', error);
     }
@@ -138,7 +120,6 @@ export default function QuestionEditSection({
 
   const handleChoiceChange = (index: number, value: string) => {
     if (!editingQuestion) return;
-
     const newChoices = [...editingQuestion.choices];
     newChoices[index] = value;
     setEditingQuestion({...editingQuestion, choices: newChoices});
@@ -172,7 +153,6 @@ export default function QuestionEditSection({
         setEditingQuestion({...editingQuestion, answer: newAnswer});
       }
     }
-
   };
 
   const handleQuestionDescriptionChange = (value: string) => {
@@ -187,7 +167,7 @@ export default function QuestionEditSection({
 
   const handleImportFromJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !questionBank) return;
+    if (!file) return;
     setIsImporting(true);
     setImportError(null);
 
@@ -214,7 +194,7 @@ export default function QuestionEditSection({
       });
       // Call the API to overwrite all questions
       const updatedQuestions = await overwriteQuestion(questionBank.id, questionsToImport);
-      onQuestionsUpdated(updatedQuestions);
+      setQuestions(updatedQuestions);
       // Reset the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -230,7 +210,7 @@ export default function QuestionEditSection({
   return (
     <div className="bg-[#0f0f10] border border-zinc-800 rounded-lg p-6 mb-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Questions ({questionBank?.questions.length || 0})</h2>
+        <h2 className="text-xl font-semibold">Questions ({questions.length || 0})</h2>
         <div className="flex space-x-2">
           <Button
             variant="outline"
@@ -265,17 +245,6 @@ export default function QuestionEditSection({
           <p className="text-red-200">{importError}</p>
         </div>
       )}
-      
-      {/* Validation Errors Display */}
-      {Object.keys(validationErrors).length > 0 && (
-        <div className="mb-4 bg-red-900/20 border border-red-700 rounded-lg p-4">
-          <ul className="list-disc list-inside space-y-1 text-red-200">
-            {Object.entries(validationErrors).map(([field, error]) => (
-              <li key={field}>{error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {/* Questions List */}
       <div className="space-y-4">
@@ -296,7 +265,7 @@ export default function QuestionEditSection({
           />
         )}
 
-        {questionBank?.questions.map((q, index) => {
+        {questions.map((q, index) => {
           if (q.id === editingQuestion?.id) return <QuestionEditor
             key="new"
             editingQuestion={editingQuestion}

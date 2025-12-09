@@ -134,6 +134,16 @@ export default function QuestionEditor({
               </div>
             </div>
           </div>
+          {/* Validation Errors Display */}
+          {Object.keys(validationErrors).length > 0 && (
+            <div className="mb-4 bg-red-900/20 border border-red-700 rounded-lg p-4">
+              <ul className="list-disc list-inside space-y-1 text-red-200">
+                {Object.entries(validationErrors).map(([field, error]) => (
+                  <li key={field}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         
         {/* Action Buttons */}
