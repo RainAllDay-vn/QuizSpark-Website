@@ -1,169 +1,19 @@
 import {Button} from '@/components/ui/button';
-import {updateQuestion, deleteQuestion, addQuestion, overwriteQuestion} from '@/lib/api';
+import {overwriteQuestion} from '@/lib/api';
 import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
-import type QuestionUpdateDTO from '@/dtos/QuestionUpdateDTO';
 import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
-import {Plus, Trash2, Check, Edit, Upload} from 'lucide-react';
-import {useState, useRef} from 'react';
+import {Plus, Upload} from 'lucide-react';
+import {useState, useRef, useCallback} from 'react';
 import * as React from "react";
-import QuestionEditor from './question_editor';
-import MarkdownRenderer from "@/components/custom/markdown-renderer";
+import QuestionCard from "@/pages/bank_edit_page/question_card.tsx";
 
 export default function QuestionEditSection({questionBank}: {questionBank: QuestionBank}) {
   const [questions, setQuestions] = useState(questionBank.questions);
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [newQuestion, setNewQuestion] = useState<Question | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const validateQuestionData = (question: Question): Record<string, string> => {
-    const errors: Record<string, string> = {};
-    if (!question.description || question.description.trim() === '') {
-      errors.description = 'Description is required and cannot be empty';
-    }
-    // Validate choices (should not be null or undefined)
-    if (question.choices.length < 2) {
-      errors.choices = 'At least 2 choices are required';
-    } else {
-      const hasEmptyChoice = question.choices.some(choice => !choice || choice.trim() === '');
-      if (hasEmptyChoice) {
-        errors.choices = 'All choices must have content';
-      }
-    }
-    // Validate answers
-    if (!question.answer || question.answer.length === 0) {
-      errors.answer = 'At least one correct answer is required';
-    }
-    return errors;
-  };
-
-  const handleSaveQuestion = async () => {
-    if (!editingQuestion) return;
-    const errors = validateQuestionData(editingQuestion);
-    setValidationErrors(errors);
-    if (Object.keys(errors).length > 0) return;
-
-    try {
-      // Check if this is a new question (no id yet) or an existing one
-      if (editingQuestion.id === 'new') {
-        // This is a new question, create it
-        const questionData: QuestionCreationDTO = {
-          questionType: editingQuestion.questionType,
-          tags: editingQuestion.tags || [],
-          description: editingQuestion.description,
-          answer: editingQuestion.answer,
-          choices: editingQuestion.choices,
-          explanation: editingQuestion.explanation
-        };
-        const newQuestion = await addQuestion(questionBank.id, questionData);
-        setQuestions([...questions, newQuestion]);
-      } else {
-        // This is an existing question, update it
-        const questionData: QuestionUpdateDTO = {
-          questionType: editingQuestion.questionType,
-          description: editingQuestion.description,
-          answer: editingQuestion.answer,
-          choices: editingQuestion.choices,
-          tags: editingQuestion.tags,
-          explanation: editingQuestion.explanation
-        };
-        const updatedQuestion = await updateQuestion(editingQuestion.id, questionData);
-        const updatedQuestions = questions.map(q =>
-          q.id === editingQuestion.id ? updatedQuestion : q
-        );
-        setQuestions(updatedQuestions);
-      }
-      setEditingQuestion(null);
-      setValidationErrors({});
-    } catch (error) {
-      console.error('Failed to save question:', error);
-    }
-  };
-
-  const handleEditQuestion = async (question: Question) => {
-    // If there's a current editing question, save it first
-    if (editingQuestion) {
-      await handleSaveQuestion();
-    }
-    // Start editing the new question
-    setEditingQuestion({...question});
-  };
-
-  const handleCancelQuestion = () => {
-    setEditingQuestion(null);
-    setValidationErrors({});
-  };
-
-  const handleDeleteQuestion = async (id: string) => {
-    try {
-      await deleteQuestion(id);
-      const updatedQuestions = questions.filter(q => q.id !== id);
-      setQuestions(updatedQuestions);
-    } catch (error) {
-      console.error('Failed to delete question:', error);
-    }
-  };
-
-  const handleAddQuestion = () => {
-    const newQuestion: Question = {
-      id: 'new', // Temporary ID for new questions
-      description: '',
-      choices: ['', '', ''], // Start with 3 empty choices
-      answer: ['0'], // Default to first choice as string
-      questionType: 'SINGLE_ANSWER',
-      tags: []
-    };
-    setEditingQuestion(newQuestion);
-  };
-
-  const handleChoiceChange = (index: number, value: string) => {
-    if (!editingQuestion) return;
-    const newChoices = [...editingQuestion.choices];
-    newChoices[index] = value;
-    setEditingQuestion({...editingQuestion, choices: newChoices});
-  };
-
-  const handleAddChoice = () => {
-    if (!editingQuestion) return;
-    setEditingQuestion({...editingQuestion, choices: [...editingQuestion.choices, ""]});
-  };
-
-  const handleRemoveChoice = (index: number) => {
-    if (!editingQuestion) return;
-    const newChoices = editingQuestion.choices.filter((_, i) => i !== index);
-    const newAnswer = editingQuestion.answer.filter(ans => ans !== index.toString());
-    setEditingQuestion({...editingQuestion, choices: newChoices, answer: newAnswer});
-  };
-
-  const handleAnswerChange = (index: number) => {
-    if (!editingQuestion) return;
-    if (editingQuestion.questionType==="SINGLE_ANSWER") {
-      setEditingQuestion({...editingQuestion, answer: [index.toString()]});
-      return;
-    }
-    if (editingQuestion.questionType==="MULTIPLE_ANSWER") {
-      const currentAnswers = editingQuestion.answer;
-      if (currentAnswers.includes(index.toString())) {
-        const newAnswer = currentAnswers.filter(ans => ans !== index.toString());
-        setEditingQuestion({...editingQuestion, answer: newAnswer});
-      } else {
-        const newAnswer = [...currentAnswers, index.toString()].sort();
-        setEditingQuestion({...editingQuestion, answer: newAnswer});
-      }
-    }
-  };
-
-  const handleQuestionDescriptionChange = (value: string) => {
-    if (!editingQuestion) return;
-    setEditingQuestion({...editingQuestion, description: value});
-  };
-
-  const handleQuestionTypeChange = (value: string) => {
-    if (!editingQuestion) return;
-    setEditingQuestion({...editingQuestion, questionType: value as Question['questionType']});
-  };
 
   const handleImportFromJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -207,6 +57,30 @@ export default function QuestionEditSection({questionBank}: {questionBank: Quest
     }
   };
 
+  const handleAddQuestion = () => {
+    const newQuestion: Question = {
+      id: 'new', // Temporary ID for new questions
+      description: '',
+      choices: ['', '', ''], // Start with 3 empty choices
+      answer: ['0'], // Default to first choice as string
+      questionType: 'SINGLE_ANSWER',
+      tags: []
+    };
+    setNewQuestion(newQuestion);
+  };
+  
+  const handleAppendQuestion = useCallback((question: Question) => {
+    setQuestions([...questions, question]);
+  }, [questions]);
+  
+  const handleRemoveQuestion = useCallback((question: Question) => {
+    if (question.id==='new') {
+      setNewQuestion(null);
+      return;
+    }
+    setQuestions(questions.filter(q => q.id !== question.id));
+  }, [questions]);
+
   return (
     <div className="bg-[#0f0f10] border border-zinc-800 rounded-lg p-6 mb-6">
       <div className="flex items-center justify-between mb-6">
@@ -248,90 +122,12 @@ export default function QuestionEditSection({questionBank}: {questionBank: Quest
 
       {/* Questions List */}
       <div className="space-y-4">
-        {/* Show the question being edited */}
-        {editingQuestion?.id === 'new' && (
-          <QuestionEditor
-            editingQuestion={editingQuestion}
-            validationErrors={validationErrors}
-            handleQuestionTypeChange={handleQuestionTypeChange}
-            handleQuestionDescriptionChange={handleQuestionDescriptionChange}
-            handleChoiceChange={handleChoiceChange}
-            handleAnswerChange={handleAnswerChange}
-            handleAddChoice={handleAddChoice}
-            handleRemoveChoice={handleRemoveChoice}
-            handleSaveQuestion={handleSaveQuestion}
-            handleCancelQuestion={handleCancelQuestion}
-            isNewQuestion={true}
-          />
+        {newQuestion && <QuestionCard questionProp={newQuestion} bankId={questionBank.id} index={0} isEditingProp={true} 
+                                      appendQuestion={handleAppendQuestion} removeQuestion={handleRemoveQuestion}/>}
+        {questions.map((q, index) =>
+          <QuestionCard key={q.id} questionProp={q} bankId={questionBank.id} index={index} isEditingProp={false}
+                        appendQuestion={handleAppendQuestion} removeQuestion={handleRemoveQuestion}/>
         )}
-
-        {questions.map((q, index) => {
-          if (q.id === editingQuestion?.id) return <QuestionEditor
-            key="new"
-            editingQuestion={editingQuestion}
-            validationErrors={validationErrors}
-            handleQuestionTypeChange={handleQuestionTypeChange}
-            handleQuestionDescriptionChange={handleQuestionDescriptionChange}
-            handleChoiceChange={handleChoiceChange}
-            handleAnswerChange={handleAnswerChange}
-            handleAddChoice={handleAddChoice}
-            handleRemoveChoice={handleRemoveChoice}
-            handleSaveQuestion={handleSaveQuestion}
-            handleCancelQuestion={handleCancelQuestion}
-            isNewQuestion={false}
-          />
-          else return <div key={q.id} className="bg-[#151518] border border-zinc-800 rounded-lg p-4">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <div className="flex items-center mb-2">
-                  <span className="text-sm font-medium text-violet-400 mr-3">#{index + 1}</span>
-                  <div className="text-lg font-medium text-white"><MarkdownRenderer content={q.description} /></div>
-                </div>
-                <div className="mt-3 space-y-2">
-                  {(q.questionType == "SINGLE_ANSWER" || q.questionType == "MULTIPLE_ANSWER")
-                    && q.choices.map((option, optionIndex) => {
-                    const isCorrect = q.answer.includes(optionIndex.toString());
-                    return (
-                      <div
-                        key={optionIndex}
-                        className={`flex items-center space-x-2 p-2 rounded ${
-                          isCorrect ? 'bg-green-900/30 border border-green-700' : ''
-                        }`}
-                      >
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          isCorrect ? 'border-green-500 bg-green-500' : 'border-zinc-600'
-                        }`}>
-                          {isCorrect && <Check className="w-3 h-3 text-white"/>}
-                        </div>
-                        <div className="text-zinc-200"><MarkdownRenderer content={option} /></div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex space-x-2 ml-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
-                  onClick={() => handleEditQuestion(q)}
-                >
-                  <Edit className="w-4 h-4"/>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-red-600 text-red-400 bg-[#151518] hover:bg-red-900/20"
-                  onClick={() => handleDeleteQuestion(q.id)}
-                >
-                  <Trash2 className="w-4 h-4"/>
-                </Button>
-              </div>
-            </div>
-          </div>
-        })}
       </div>
     </div>
   );

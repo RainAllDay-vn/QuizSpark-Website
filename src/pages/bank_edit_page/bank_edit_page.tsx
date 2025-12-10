@@ -3,7 +3,6 @@ import BankEditSection from '@/pages/bank_edit_page/bank_edit_section';
 import QuestionEditSection from '@/pages/bank_edit_page/question_edit_section';
 import {Button} from '@/components/ui/button';
 import {getQuestionBank} from '@/lib/api';
-import type {Question} from '@/model/Question';
 import type {QuestionBank} from '@/model/QuestionBank';
 import {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
@@ -31,11 +30,6 @@ export default function BankEditPage() {
         setLoading(false);
       });
   }, [bankId, navigate]);
-
-  const handleQuestionsUpdated = (updatedQuestions: Question[]) => {
-    if (!questionBank) return;
-    setQuestionBank({...questionBank, questions: updatedQuestions});
-  };
 
   if (loading) return <Loader/>
 
@@ -79,7 +73,6 @@ export default function BankEditPage() {
         {/* Quiz Questions Section */}
         <QuestionEditSection
           questionBank={questionBank}
-          onQuestionsUpdated={handleQuestionsUpdated}
         />
 
         {/* Bottom Navigation */}
