@@ -3,56 +3,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import type {PracticeQuestion} from "@/model/PracticeQuestion.ts";
+import type QuestionComment from "@/model/Comment.ts";
+import {formatRelativeTime} from "@/lib/utils.ts";
 
 interface CommentSectionProps {
   question: PracticeQuestion;
   isVisible: boolean;
 }
 
-interface Comment {
-  id: string;
-  text: string;
-  timestamp: Date;
-}
-
 export default function CommentSection({ question, isVisible }: CommentSectionProps) {
-  // Sample comments for demonstration
-  const sampleComments: Comment[] = [
-    {
-      id: "1",
-      text: "This question really made me think about the concept in a different way. The multiple choice options were well-designed!",
-      timestamp: new Date(Date.now() - 3600000) // 1 hour ago
-    },
-    {
-      id: "2",
-      text: "I initially chose option B but realized it was incorrect after reviewing the explanation. Great question for testing understanding.",
-      timestamp: new Date(Date.now() - 7200000) // 2 hours ago
-    },
-    {
-      id: "3",
-      text: "Could someone explain why option C is the correct answer? I thought D would be better based on my understanding.",
-      timestamp: new Date(Date.now() - 10800000) // 3 hours ago
-    }
-  ];
-  
-  const [comments, setComments] = useState<Comment[]>(sampleComments);
+  const [comments, setComments] = useState<QuestionComment[]>(question.comments || []);
   const [newComment, setNewComment] = useState("");
 
   const handleSubmitComment = () => {
     if (newComment.trim() === "") return;
 
-    const comment: Comment = {
-      id: Date.now().toString(),
-      text: newComment,
-      timestamp: new Date()
-    };
-
-    setComments([...comments, comment]);
-    setNewComment("");
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   if (!isVisible) return null;
@@ -88,9 +53,9 @@ export default function CommentSection({ question, isVisible }: CommentSectionPr
               <div key={comment.id} className="bg-gray-800/50 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-1">
                   <span className="text-sm text-gray-400">User</span>
-                  <span className="text-xs text-gray-500">{formatTime(comment.timestamp)}</span>
+                  <span className="text-xs text-gray-500">{formatRelativeTime(comment.date)}</span>
                 </div>
-                <p className="text-gray-200 text-sm">{comment.text}</p>
+                <p className="text-gray-200 text-sm">{comment.content}</p>
               </div>
             ))
           )}
