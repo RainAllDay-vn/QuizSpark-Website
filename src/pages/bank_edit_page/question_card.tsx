@@ -158,7 +158,7 @@ function QuestionCard({
 
   if (isEditing) return (
     <div className="bg-[#151518] border border-zinc-800 rounded-lg p-4">
-      <span className="text-sm font-medium text-violet-400 mr-3">{question.id==='new' ? '#New' : '#Edit'}</span>
+      <span className="text-sm font-medium text-violet-400 mr-3">{tempQuestion.id==='new' ? '#New' : '#Edit'}</span>
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center mb-2">
@@ -176,7 +176,7 @@ function QuestionCard({
                     {showPreview ? "Edit" : "Preview"}
                   </Button>
                 </div>
-                <Select value={question.questionType} onValueChange={handleQuestionTypeChange}>
+                <Select value={tempQuestion.questionType} onValueChange={handleQuestionTypeChange}>
                   <SelectTrigger className="bg-[#0f0f10] border-zinc-700 text-white focus:ring-violet-600">
                     <SelectValue placeholder="Select question type"/>
                   </SelectTrigger>
@@ -192,11 +192,11 @@ function QuestionCard({
                 <div className={`bg-[#0f0f10] border p-3 rounded mb-3 ${
                   validationErrors.description ? 'border-red-500' : 'border-zinc-700'
                 }`}>
-                  <MarkdownRenderer content={question.description}/>
+                  <MarkdownRenderer content={tempQuestion.description}/>
                 </div>
               ) : (
                 <Textarea
-                  value={question.description}
+                  value={tempQuestion.description}
                   onChange={(e) => handleQuestionDescriptionChange(e.target.value)}
                   className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 mb-3 min-h-[100px] ${
                     validationErrors.description ? 'border-red-500' : 'border-zinc-700'
@@ -206,13 +206,13 @@ function QuestionCard({
               )}
               <div className="space-y-2">
                 <p className="text-sm text-zinc-400 mb-2">Answer Options:</p>
-                {question.choices.map((choice, choiceIndex) => (
+                {tempQuestion.choices.map((choice, choiceIndex) => (
                   <div key={choiceIndex} className="flex items-center space-x-2">
                     <div
                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer ${
-                        question.answer.includes(choiceIndex.toString()) ? 'border-green-500 bg-green-500' : 'border-zinc-600'
+                        tempQuestion.answer.includes(choiceIndex.toString()) ? 'border-green-500 bg-green-500' : 'border-zinc-600'
                       }`} onClick={() => handleAnswerChange(choiceIndex)}>
-                      {question.answer.includes(choiceIndex.toString()) &&
+                      {tempQuestion.answer.includes(choiceIndex.toString()) &&
                           <Check className="w-3 h-3 text-white"/>}
                     </div>
                     {showPreview ? (
@@ -231,7 +231,7 @@ function QuestionCard({
                         placeholder={`Option ${choiceIndex + 1} (supports Markdown and LaTeX)`}
                       />
                     )}
-                    {question.choices.length > 2 && (
+                    {tempQuestion.choices.length > 2 && (
                       <Button
                         variant="outline"
                         size="sm"

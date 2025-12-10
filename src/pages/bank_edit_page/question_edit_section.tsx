@@ -15,6 +15,13 @@ export default function QuestionEditSection({questionBank}: {questionBank: Quest
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
+    });
+  };
+
   const handleImportFromJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -67,12 +74,13 @@ export default function QuestionEditSection({questionBank}: {questionBank: Quest
       tags: []
     };
     setNewQuestion(newQuestion);
+    scrollToBottom();
   };
-  
+
   const handleAppendQuestion = useCallback((question: Question) => {
     setQuestions([...questions, question]);
   }, [questions]);
-  
+
   const handleRemoveQuestion = useCallback((question: Question) => {
     if (question.id==='new') {
       setNewQuestion(null);
@@ -122,13 +130,26 @@ export default function QuestionEditSection({questionBank}: {questionBank: Quest
 
       {/* Questions List */}
       <div className="space-y-4">
-        {newQuestion && <QuestionCard questionProp={newQuestion} bankId={questionBank.id} index={0} isEditingProp={true} 
-                                      appendQuestion={handleAppendQuestion} removeQuestion={handleRemoveQuestion}/>}
         {questions.map((q, index) =>
           <QuestionCard key={q.id} questionProp={q} bankId={questionBank.id} index={index} isEditingProp={false}
                         appendQuestion={handleAppendQuestion} removeQuestion={handleRemoveQuestion}/>
         )}
+        {newQuestion && <QuestionCard questionProp={newQuestion} bankId={questionBank.id} index={0} isEditingProp={true}
+                                      appendQuestion={handleAppendQuestion} removeQuestion={handleRemoveQuestion}/>}
       </div>
+
+      {/* Add Question Button at Bottom */}
+      {!newQuestion &&
+          <div className="mt-6 border-2 border-dashed border-zinc-700 rounded-lg p-4 flex justify-center">
+            <Button
+                variant="outline"
+                className="border-zinc-600 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
+                onClick={handleAddQuestion}
+            >
+              <Plus className="w-4 h-4 mr-2"/>
+              Add New Question
+            </Button>
+          </div>}
     </div>
   );
 }

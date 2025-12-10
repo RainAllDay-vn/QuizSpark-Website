@@ -2,14 +2,15 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
-import 'katex/dist/katex.min.css'; // Import KaTeX styles
+import 'katex/dist/katex.min.css';
+import {memo} from "react"; // Import KaTeX styles
 
 interface MarkdownRendererProps {
   content: string;
   className?: string;
 }
 
-export default function MarkdownRenderer({ content, className = "" }: MarkdownRendererProps) {
+function MarkdownRenderer({ content, className = "" }: MarkdownRendererProps) {
   return (
     <div className={`text-md leading-relaxed ${className}`}>
       <ReactMarkdown
@@ -28,3 +29,5 @@ export default function MarkdownRenderer({ content, className = "" }: MarkdownRe
     </div>
   );
 }
+
+export default memo(MarkdownRenderer);
