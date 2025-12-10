@@ -12,6 +12,7 @@ import type QuestionUpdateDTO from "@/dtos/QuestionUpdateDTO.ts";
 import type PracticeAnswerDTO from "@/dtos/PracticeAnswerDTO.ts";
 import type Page from "@/dtos/Page.ts";
 import type { UserStatisticDTO } from "@/dtos/UserStatisticDTO.ts";
+import type PracticeAnswerResponseDTO from "@/dtos/PracticeAnswerResponseDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -235,8 +236,8 @@ export async function getPractice(practiceId: string) {
 export async function answer(practiceId: string, body: PracticeAnswerDTO) {
     try {
     const response = await api.post(`/practice/id/${practiceId}/answer`, body);
-    if (response.data.correctAnswer) return response.data.correctAnswer as string[];
-    return null
+    if (response.data.correctAnswer) return response.data as PracticeAnswerResponseDTO;
+    return null;
   } catch (error) {
     console.error('Failed to save user\'s answer:', error);
     throw error;

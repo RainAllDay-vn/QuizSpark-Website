@@ -9,6 +9,7 @@ import {Input} from "@/components/ui/input.tsx";
 import type QuestionCreationDTO from "@/dtos/QuestionCreationDTO.ts";
 import {addQuestion, deleteQuestion, updateQuestion} from "@/lib/api.ts";
 import type QuestionUpdateDTO from "@/dtos/QuestionUpdateDTO.ts";
+import * as React from "react";
 
 interface QuestionCardProps {
   questionProp: Question;
@@ -68,7 +69,6 @@ function QuestionCard({
           description: tempQuestion.description,
           answer: tempQuestion.answer,
           choices: tempQuestion.choices,
-          explanation: tempQuestion.explanation
         };
         const newQuestion = await addQuestion(bankId, questionData);
         appendQuestion(newQuestion);
@@ -81,7 +81,6 @@ function QuestionCard({
           answer: tempQuestion.answer,
           choices: tempQuestion.choices,
           tags: tempQuestion.tags,
-          explanation: tempQuestion.explanation
         };
         const updatedQuestion = await updateQuestion(tempQuestion.id, questionData);
         setQuestion(updatedQuestion);
@@ -156,6 +155,14 @@ function QuestionCard({
     setTempQuestion({...tempQuestion, questionType: value as Question['questionType']});
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData.items;
+    for (let i=0; i<items.length;i++){
+      console.log(items[i]);
+      if (items[i].kind === 'string') items[i].getAsString((data) => console.log(data));
+    }
+  };
+
   if (isEditing) return (
     <div className="bg-[#151518] border border-zinc-800 rounded-lg p-4">
       <span className="text-sm font-medium text-violet-400 mr-3">{tempQuestion.id==='new' ? '#New' : '#Edit'}</span>
@@ -198,6 +205,7 @@ function QuestionCard({
                 <Textarea
                   value={tempQuestion.description}
                   onChange={(e) => handleQuestionDescriptionChange(e.target.value)}
+                  onPaste={handlePaste}
                   className={`bg-[#0f0f10] border text-white placeholder:text-zinc-500 focus-visible:ring-violet-600 mb-3 min-h-[100px] ${
                     validationErrors.description ? 'border-red-500' : 'border-zinc-700'
                   }`}

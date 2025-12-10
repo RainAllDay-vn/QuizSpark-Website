@@ -7,6 +7,7 @@ import SingleAnswerQuestionSection from "./single_answer_question_section";
 import MultipleAnswerQuestionSection from "./multiple_answer_question_section";
 import { answer } from "@/lib/api";
 import CommentSection from "@/pages/practice_page/comment_section.tsx";
+import type PracticeAnswerResponseDTO from "@/dtos/PracticeAnswerResponseDTO.ts";
 
 interface PracticeSectionProps {
   practice: Practice;
@@ -32,7 +33,7 @@ export type PracticeAction =
   | { type: "VIEW_QUESTION"; payload: { index: number } }
   | { type: "NEXT_QUESTION" }
   | { type: "ANSWER" }
-  | { type: "SHOW_RESULT"; payload: { userAnswer: string[], correctAnswer: string[] | null } }
+  | { type: "SHOW_RESULT"; payload: { userAnswer: string[], response: PracticeAnswerResponseDTO|null } }
   | { type: "INCREASE_TIME" };
 
 function practiceReducer(state: PracticeState, action: PracticeAction): PracticeState {
@@ -49,16 +50,19 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
     case "ANSWER":
       return { ...state, loading: true }
     case "SHOW_RESULT": {
+      console.log(action.payload.response);
       const currentQuestion = state.questions[state.currentQuestionIndex];
       const userAnswer = action.payload.userAnswer;
-      const correctAnswer = action.payload.correctAnswer;
+      const correctAnswer = action.payload.response ? action.payload.response.correctAnswer : null;
+      const comments = action.payload.response ? action.payload.response.questionComments : null;
       const newQuestions = state.questions.map((question) => {
         if (question === currentQuestion) {
           return {
             ...question,
             userAnswer: userAnswer,
             correctAnswer: correctAnswer,
-          };
+            comments: comments,
+          } as PracticeQuestion;
         }
         return question;
       });
@@ -81,7 +85,7 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
         if (question === currentQuestion) {
           return {
             ...question,
-            secondsToAnswer: currentQuestion.secondsToAnswer + 1,
+            secondsToAnswer: (currentQuestion?.secondsToAnswer || 0) + 1,
           };
         }
         return question;
@@ -115,8 +119,8 @@ export default function PracticeSection({ practice, completePractice }: Practice
 
   const handleSubmitAnswer = async (userAnswer: string[]) => {
     dispatch({ type: "ANSWER" });
-    const correctAnswer = await answer(practice.id, { index: currentQuestionIndex, answer: userAnswer, secondsToAnswer: question.secondsToAnswer })
-    dispatch({ type: "SHOW_RESULT", payload: { userAnswer: userAnswer, correctAnswer: correctAnswer } });
+    const response = await answer(practice.id, { index: currentQuestionIndex, answer: userAnswer, secondsToAnswer: question.secondsToAnswer || 0 })
+    dispatch({ type: "SHOW_RESULT", payload: { userAnswer: userAnswer, response: response } });
   }
 
   const handleNextQuestion = () => {
