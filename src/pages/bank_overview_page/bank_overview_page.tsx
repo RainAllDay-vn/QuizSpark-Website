@@ -174,10 +174,8 @@ export default function BankOverviewPage() {
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-lg">
-                    <div className="flex gap-2">
-                      <span className="shrink-0">Question {index + 1}:</span>
-                      <MarkdownRenderer content={question.description} />
-                    </div>
+                    <span className="text-sm font-medium text-violet-400 mr-3">#{index + 1}</span>
+                    <MarkdownRenderer content={question.description} />
                   </CardTitle>
                   <Badge variant="outline" className="border-zinc-700 text-zinc-300">
                     {getQuestionTypeDisplay(question.questionType)}
