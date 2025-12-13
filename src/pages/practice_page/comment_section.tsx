@@ -5,6 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import type {PracticeQuestion} from "@/model/PracticeQuestion.ts";
 import type QuestionComment from "@/model/Comment.ts";
 import {formatRelativeTime} from "@/lib/utils.ts";
+import { addComment } from "@/lib/api.ts";
+import type QuestionCommentCreationDTO from "@/dtos/QuestionCommentCreationDTO.ts";
 
 interface CommentSectionProps {
   question: PracticeQuestion;
@@ -15,9 +17,16 @@ export default function CommentSection({ question, isVisible }: CommentSectionPr
   const [comments, setComments] = useState<QuestionComment[]>(question.comments || []);
   const [newComment, setNewComment] = useState("");
 
-  const handleSubmitComment = () => {
+  const handleSubmitComment = async () => {
     if (newComment.trim() === "") return;
-
+    const commentPayload: QuestionCommentCreationDTO = {
+      comment: newComment,
+      isAI: false,
+      isAnswer: false
+    };
+    const savedComment = await addComment(question.baseQuestionId, commentPayload);
+    setComments([...comments, savedComment]);
+    setNewComment("");
   };
 
   if (!isVisible) return null;
@@ -52,10 +61,10 @@ export default function CommentSection({ question, isVisible }: CommentSectionPr
             comments.map((comment) => (
               <div key={comment.id} className="bg-gray-800/50 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-1">
-                  <span className="text-sm text-gray-400">User</span>
-                  <span className="text-xs text-gray-500">{formatRelativeTime(comment.date)}</span>
+                  <span className="text-sm text-gray-400">{comment.user}</span>
+                  <span className="text-xs text-gray-500">{formatRelativeTime(comment.createdDate)}</span>
                 </div>
-                <p className="text-gray-200 text-sm">{comment.content}</p>
+                <p className="text-gray-200 text-sm">{comment.comment}</p>
               </div>
             ))
           )}

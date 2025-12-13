@@ -13,6 +13,9 @@ import type PracticeAnswerDTO from "@/dtos/PracticeAnswerDTO.ts";
 import type Page from "@/dtos/Page.ts";
 import type { UserStatisticDTO } from "@/dtos/UserStatisticDTO.ts";
 import type PracticeAnswerResponseDTO from "@/dtos/PracticeAnswerResponseDTO.ts";
+import type QuestionCommentCreationDTO from "@/dtos/QuestionCommentCreationDTO.ts";
+import type QuestionComment from "@/model/Comment.ts";
+import type QuestionCommentUpdateDTO from "@/dtos/QuestionCommentUpdateDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -168,6 +171,36 @@ export async function deleteQuestion(questionId: string) {
   } catch (error) {
     console.error('Failed to delete question:', error);
     throw error; // rethrow so the caller can handle it
+  }
+}
+
+// ===== QUESTION COMMENTS ENDPOINTS (/questions/comments/) =====
+
+export async function addComment(questionId: string, payload: QuestionCommentCreationDTO) {
+  try {
+    const response = await api.post(`/questions/comments`, payload, {
+      params: {
+        questionId: questionId
+      }
+    });
+    return response.data as QuestionComment;
+  } catch (error) {
+    console.error('Failed to save new comment:', error);
+    throw error;
+  }
+}
+
+export async function updateComment(questionId: string, payload: QuestionCommentUpdateDTO) {
+  try {
+    const response = await api.put(`/questions/comments`, payload, {
+      params: {
+        questionId: questionId
+      }
+    });
+    return response.data as QuestionComment;
+  } catch (error) {
+    console.error('Failed to save new comment:', error);
+    throw error;
   }
 }
 
