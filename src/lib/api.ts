@@ -190,16 +190,12 @@ export async function addComment(questionId: string, payload: QuestionCommentCre
   }
 }
 
-export async function updateComment(questionId: string, payload: QuestionCommentUpdateDTO) {
+export async function updateComment(commentId: string, payload: QuestionCommentUpdateDTO) {
   try {
-    const response = await api.put(`/questions/comments`, payload, {
-      params: {
-        questionId: questionId
-      }
-    });
+    const response = await api.put(`/questions/comments/single/${commentId}`, payload);
     return response.data as QuestionComment;
   } catch (error) {
-    console.error('Failed to save new comment:', error);
+    console.error('Failed to update comment:', error);
     throw error;
   }
 }

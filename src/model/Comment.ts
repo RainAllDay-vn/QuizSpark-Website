@@ -1,9 +1,10 @@
 export default interface QuestionComment{
   id: string;
-  user: string;
+  ownerUsername: string;
+  ownerId: string;
   comment: string;
   createdDate: string;
   editedDate?: string;
-  isAnswer: boolean;
-  isAI: boolean;
+  answer: boolean;
+  ai: boolean;
 }
