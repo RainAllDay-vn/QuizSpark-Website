@@ -7,6 +7,7 @@ import type QuestionComment from "@/model/Comment.ts";
 import {formatRelativeTime} from "@/lib/utils.ts";
 import { addComment } from "@/lib/api.ts";
 import type QuestionCommentCreationDTO from "@/dtos/QuestionCommentCreationDTO.ts";
+import MarkdownRenderer from "@/components/custom/markdown-renderer.tsx";
 
 interface CommentSectionProps {
   question: PracticeQuestion;
@@ -45,7 +46,16 @@ export default function CommentSection({ question, isVisible }: CommentSectionPr
             className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 resize-none"
             rows={3}
           />
-          <Button 
+          {newComment && (
+            <div className="mt-2 p-3 bg-gray-800/50 rounded-lg">
+              <p className="text-xs text-gray-400 mb-1">Preview:</p>
+              <MarkdownRenderer
+                content={newComment}
+                className="text-gray-200 text-sm"
+              />
+            </div>
+          )}
+          <Button
             onClick={handleSubmitComment}
             className="mt-2 bg-purple-600 hover:bg-purple-700 text-white"
           >
@@ -64,7 +74,10 @@ export default function CommentSection({ question, isVisible }: CommentSectionPr
                   <span className="text-sm text-gray-400">{comment.user}</span>
                   <span className="text-xs text-gray-500">{formatRelativeTime(comment.createdDate)}</span>
                 </div>
-                <p className="text-gray-200 text-sm">{comment.comment}</p>
+                <MarkdownRenderer
+                  content={comment.comment}
+                  className="text-gray-200 text-sm"
+                />
               </div>
             ))
           )}
