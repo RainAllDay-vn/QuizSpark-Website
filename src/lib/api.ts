@@ -298,22 +298,17 @@ export async function agentChat(body: Message[], onToken: (token: string) => voi
       buffer += newChunk;
 
       const lines = buffer.split('\n');
-      buffer = lines.pop() ?? ''; 
+      buffer = lines.pop() ?? '';
 
       for (const line of lines) {
         const trimmedLine = line.trim();
         if (!trimmedLine.startsWith('data:')) continue;
-        const jsonString = trimmedLine.replace('data:', '').trim();
-        if (jsonString === '[DONE]') {
+        const dataContent = trimmedLine.replace('data:', '');
+        if (dataContent === '[DONE]') {
           console.log("Stream finished");
-          return; 
+          return;
         }
-        try {
-          const content = JSON.parse(jsonString);
-          onToken(content);
-        } catch (err) {
-          console.error("Error parsing chunk:", err);
-        }
+        onToken(dataContent);
       }
     }
   });

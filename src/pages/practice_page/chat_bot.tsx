@@ -53,6 +53,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         const newMessages = [...prev];
         const lastMessageIndex = newMessages.length - 1;
         let lastMessage = newMessages[lastMessageIndex];
+        console.log(lastMessage.text + token);
         const updatedMessage = {
           ...lastMessage,
           text: lastMessage.text + token
