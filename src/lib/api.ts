@@ -16,6 +16,7 @@ import type PracticeAnswerResponseDTO from "@/dtos/PracticeAnswerResponseDTO.ts"
 import type QuestionCommentCreationDTO from "@/dtos/QuestionCommentCreationDTO.ts";
 import type QuestionComment from "@/model/Comment.ts";
 import type QuestionCommentUpdateDTO from "@/dtos/QuestionCommentUpdateDTO.ts";
+import type Message from "@/model/Message.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -281,4 +282,39 @@ export async function finishPractice(practiceId: string) {
     console.error('Failed to finish practice session:', error);
     throw error;
   }
+}
+
+// ===== AGENT ENDPOINTS (/agent/) =====
+
+export async function agentChat(body: Message[], onToken: (token: string) => void) {
+  let lastSeenLength = 0;
+  let buffer = "";
+  await api.post(`/agent/stream/chat`, body, {
+    responseType: 'text',
+    onDownloadProgress: (progressEvent) => {
+      const fullResponse = progressEvent.event.target.responseText;
+      const newChunk = fullResponse.slice(lastSeenLength);
+      lastSeenLength = fullResponse.length;
+      buffer += newChunk;
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? ''; 
+
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine.startsWith('data:')) continue;
+        const jsonString = trimmedLine.replace('data:', '').trim();
+        if (jsonString === '[DONE]') {
+          console.log("Stream finished");
+          return; 
+        }
+        try {
+          const content = JSON.parse(jsonString);
+          onToken(content);
+        } catch (err) {
+          console.error("Error parsing chunk:", err);
+        }
+      }
+    }
+  });
 }

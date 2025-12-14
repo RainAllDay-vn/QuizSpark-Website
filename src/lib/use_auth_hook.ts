@@ -9,6 +9,7 @@ import {AxiosError} from "axios";
 interface ExtendedUser extends User {
   username: string;
   userId: string;
+  role: 'ROLE_ADMIN'|'ROLE_STUDENT'|'ROLE_TEACHER',
 }
 
 export default function useAuthStatus() {
@@ -26,6 +27,7 @@ export default function useAuthStatus() {
             ...currentUser,
             username: userInfo.username,
             userId: userInfo.id,
+            role: userInfo.role,
           };
           setUser(extendedUser);
         } catch (err: unknown) {
