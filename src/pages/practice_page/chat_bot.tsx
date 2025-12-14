@@ -5,6 +5,7 @@ import { CardContent, CardHeader } from '@/components/ui/card';
 import { X, Send, Bot, User } from 'lucide-react';
 import type Message from '@/model/Message';
 import { agentChat } from '@/lib/api';
+import MarkdownRenderer from '@/components/custom/markdown-renderer';
 
 interface ChatBotProps {
   isOpen: boolean;
@@ -127,7 +128,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                     ? 'bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-500/30'
                     : 'bg-gray-800/50 border border-gray-700/50'
                 }`}>
-                  <p className="text-sm text-white">{message.text}</p>
+                  <MarkdownRenderer content={message.text} className="text-sm text-white"></MarkdownRenderer>
                   <p className="text-xs text-gray-400 mt-1">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>

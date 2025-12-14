@@ -301,14 +301,15 @@ export async function agentChat(body: Message[], onToken: (token: string) => voi
       buffer = lines.pop() ?? '';
 
       for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (!trimmedLine.startsWith('data:')) continue;
-        const dataContent = trimmedLine.replace('data:', '');
-        if (dataContent === '[DONE]') {
+        let data = line.trim();
+        if (!data.startsWith('data:')) continue;
+        data = data.replace('data:', '');
+        if (data.length === 0) data = '\n';
+        if (data === '[DONE]') {
           console.log("Stream finished");
           return;
         }
-        onToken(dataContent);
+        onToken(data);
       }
     }
   });
