@@ -67,7 +67,7 @@ export default function BankEditPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Question Bank Metadata Section */}
         <BankEditSection
-          questionBank={questionBank}
+          questionBankProp={questionBank}
         />
 
         {/* Quiz Questions Section */}

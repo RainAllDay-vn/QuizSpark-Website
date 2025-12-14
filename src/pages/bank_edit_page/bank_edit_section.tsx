@@ -5,15 +5,20 @@ import {updateQuestionBank, deleteQuestionBank} from '@/lib/api';
 import type {QuestionBank} from '@/model/QuestionBank';
 import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
 import {Save, Edit, Trash2} from 'lucide-react';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {useNavigate} from "react-router-dom";
 
-export default function BankEditSection({questionBank}: {questionBank: QuestionBank}) {
+export default function BankEditSection({questionBankProp}: {questionBankProp: QuestionBank}) {
   const navigate = useNavigate();
+  const [questionBank, setQuestionBank] = useState({} as QuestionBank);
   const [editingBank, setEditingBank] = useState<QuestionBank | null>(null);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    setQuestionBank(questionBankProp);
+  }, [questionBankProp]);
 
   const handleEditBank = () => {
     if (questionBank) {
@@ -31,7 +36,8 @@ export default function BankEditSection({questionBank}: {questionBank: QuestionB
         access: editingBank.access,
         status: editingBank.status
       };
-      await updateQuestionBank(questionBank.id, updateData);
+      const savedBank = await updateQuestionBank(questionBank.id, updateData);
+      setQuestionBank(savedBank);
       setEditingBank(null);
     } catch (error) {
       console.error('Failed to update question bank:', error);
