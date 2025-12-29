@@ -48,7 +48,7 @@ export default function BankOverviewPage() {
   };
 
   const getQuestionTypeDisplay = (type: string) => {
-    switch(type) {
+    switch (type) {
       case "SINGLE_ANSWER": return "Single Answer";
       case "MULTIPLE_ANSWER": return "Multiple Answers";
       case "FILL_THE_BLANK": return "Fill in the Blank";
@@ -78,9 +78,9 @@ export default function BankOverviewPage() {
       <div className="border-b border-zinc-800 bg-[#0f0f10] px-6 py-8">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex flex-col mb-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => navigate("/home")}
               className="text-zinc-400 hover:text-white hover:bg-zinc-800 w-fit px-2"
             >
@@ -96,11 +96,11 @@ export default function BankOverviewPage() {
             {questionBank.rating && <span>⭐ {questionBank.rating} stars</span>}
             <span>👥 {questionBank.numberOfAttempts} completions</span>
             <span>🕒 Created {formatRelativeTime(questionBank.createdAt)}</span>
-            <Badge 
+            <Badge
               variant={questionBank.status === "PUBLISHED" ? "default" : "secondary"}
-              className={questionBank.status === "PUBLISHED" 
-                ? "bg-green-600 hover:bg-green-700" 
-                : questionBank.status === "DRAFT" 
+              className={questionBank.status === "PUBLISHED"
+                ? "bg-green-600 hover:bg-green-700"
+                : questionBank.status === "DRAFT"
                   ? "bg-amber-600 hover:bg-amber-700 text-black"
                   : "bg-gray-600 hover:bg-gray-700"
               }
@@ -137,16 +137,16 @@ export default function BankOverviewPage() {
           )}
 
           <div className="flex gap-4 mt-6">
-            <Button 
+            <Button
               onClick={handlePractice}
               className="bg-violet-600 hover:bg-violet-700"
             >
               <Play className="mr-2 h-4 w-4" />
               Start Practice
             </Button>
-            <Button 
+            <Button
               onClick={handleEdit}
-              variant="outline" 
+              variant="outline"
               className="border-zinc-700 text-white hover:bg-zinc-800"
             >
               <Edit className="mr-2 h-4 w-4" />
@@ -181,6 +181,20 @@ export default function BankOverviewPage() {
                     {getQuestionTypeDisplay(question.questionType)}
                   </Badge>
                 </div>
+
+                {question.tags && question.tags.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {question.tags.map((tag, i) => (
+                      <Badge
+                        key={i}
+                        variant="secondary"
+                        className="bg-violet-900/30 text-violet-300 border-violet-800/50 hover:bg-violet-900/50 transition-colors px-2 py-0.5 text-xs"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -208,32 +222,24 @@ export default function BankOverviewPage() {
                             <div
                               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${indicatorClasses}`}
                             >
-                              {isCorrect && <Check className="w-3 h-3 text-white"/>}
+                              {isCorrect && <Check className="w-3 h-3 text-white" />}
                             </div>
                             <div className="text-zinc-200"
-                                  aria-label={isCorrect ? `Correct choice: ${choice}` : choice}>
-                                <MarkdownRenderer content={choice} />
-                              </div>
+                              aria-label={isCorrect ? `Correct choice: ${choice}` : choice}>
+                              <MarkdownRenderer content={choice} />
+                            </div>
                           </div>
                         );
                       })}
                     </div>
                   </div>
 
-                  {question.explanation && (
-                    <div>
-                      <h4 className="font-medium mb-2">Explanation:</h4>
-                      <div className="text-zinc-400 text-sm">
-                        <MarkdownRenderer content={question.explanation} />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       </div>
-    </div>
+    </div >
   );
 }
