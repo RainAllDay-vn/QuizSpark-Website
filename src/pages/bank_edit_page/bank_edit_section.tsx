@@ -1,14 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { updateQuestionBank, deleteQuestionBank, deleteFile, viewFile, downloadFile } from '@/lib/api';
 import type { QuestionBank } from '@/model/QuestionBank';
 import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
-import { Save, Edit, Trash2, FileText, Download, Loader2 } from 'lucide-react';
+import { Save, Edit, Trash2, FileText, Download, Loader2, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { useNavigate } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import type { DbFile } from '@/model/DbFile';
 
 export default function BankEditSection({ questionBankProp }: { questionBankProp: QuestionBank }) {
@@ -22,6 +24,10 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
   const [selectedFile, setSelectedFile] = useState<DbFile | null>(null);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+
+  // AI Options State
+  const [showAiOptions, setShowAiOptions] = useState(false);
+  const [aiOperation, setAiOperation] = useState<string>("pass_content");
 
   useEffect(() => {
     setQuestionBank(questionBankProp);
@@ -148,6 +154,16 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
     } catch (error) {
       console.error("Failed to download file", error);
     }
+  };
+
+  const handleAiButtonClick = () => {
+    setShowAiOptions(true);
+  };
+
+  const handleAiConfirm = () => {
+    setShowAiOptions(false);
+    console.log("AI Operation Triggered:", aiOperation);
+    // API implementation will be added later
   };
 
   return (
@@ -350,6 +366,15 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
               <Button
                 variant="outline"
                 size="sm"
+                onClick={handleAiButtonClick}
+                className="border-violet-600 text-violet-400 bg-transparent hover:bg-violet-900/20 mr-2"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI Generation
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleDownloadFile}
                 className="border-zinc-700 text-zinc-300 bg-transparent hover:bg-zinc-800"
               >
@@ -381,6 +406,70 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAiOptions} onOpenChange={setShowAiOptions}>
+        <DialogContent className="bg-[#151518] border-zinc-800 text-white sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>AI Generation</DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              Choose how you want the AI to process this file.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <RadioGroup value={aiOperation} onValueChange={setAiOperation} className="grid gap-4">
+              <label
+                htmlFor="pass_content"
+                className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-all duration-200 ${aiOperation === "pass_content"
+                    ? "bg-violet-900/10 border-violet-600 ring-1 ring-violet-600"
+                    : "bg-[#0f0f10] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
+                  }`}
+              >
+                <RadioGroupItem value="pass_content" id="pass_content" className="sr-only" />
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`font-medium text-base ${aiOperation === "pass_content" ? "text-violet-400" : "text-zinc-200"}`}>
+                      Extract Questions
+                    </span>
+                    {aiOperation === "pass_content" && <Sparkles className="w-4 h-4 text-violet-500" />}
+                  </div>
+                  <p className="text-zinc-400 text-sm leading-relaxed">
+                    Identify and extract existing questions directly from the uploaded document.
+                  </p>
+                </div>
+              </label>
+
+              <label
+                htmlFor="generate_questions"
+                className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-all duration-200 ${aiOperation === "generate_questions"
+                    ? "bg-violet-900/10 border-violet-600 ring-1 ring-violet-600"
+                    : "bg-[#0f0f10] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
+                  }`}
+              >
+                <RadioGroupItem value="generate_questions" id="generate_questions" className="sr-only" />
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`font-medium text-base ${aiOperation === "generate_questions" ? "text-violet-400" : "text-zinc-200"}`}>
+                      Generate New Questions
+                    </span>
+                    {aiOperation === "generate_questions" && <Sparkles className="w-4 h-4 text-violet-500" />}
+                  </div>
+                  <p className="text-zinc-400 text-sm leading-relaxed">
+                    Create simplified or conceptual questions based on the content found in the document.
+                  </p>
+                </div>
+              </label>
+            </RadioGroup>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAiOptions(false)} className="border-zinc-700 text-zinc-300 bg-transparent hover:bg-zinc-800">
+              Cancel
+            </Button>
+            <Button onClick={handleAiConfirm} className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-900/20">
+              Process File
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
