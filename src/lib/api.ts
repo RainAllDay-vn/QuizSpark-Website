@@ -17,6 +17,7 @@ import type QuestionCommentCreationDTO from "@/dtos/QuestionCommentCreationDTO.t
 import type QuestionComment from "@/model/Comment.ts";
 import type QuestionCommentUpdateDTO from "@/dtos/QuestionCommentUpdateDTO.ts";
 import type Message from "@/model/Message.ts";
+import type { DbFile } from "@/model/DbFile.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -130,6 +131,22 @@ export async function deleteQuestionBank(bankId: string) {
   } catch (error) {
     console.error('Failed to delete question bank:', error);
     throw error; // rethrow so the caller can handle it
+  }
+}
+
+export async function uploadFile(bankId: string, file: File) {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post(`/banks/single/${bankId}/files`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data as DbFile;
+  } catch (error) {
+    console.error('Failed to upload file:', error);
+    throw error;
   }
 }
 
@@ -264,7 +281,7 @@ export async function getPractice(practiceId: string) {
 }
 
 export async function answer(practiceId: string, body: PracticeAnswerDTO) {
-    try {
+  try {
     const response = await api.post(`/practice/id/${practiceId}/answer`, body);
     if (response.data.correctAnswer) return response.data as PracticeAnswerResponseDTO;
     return null;
@@ -275,7 +292,7 @@ export async function answer(practiceId: string, body: PracticeAnswerDTO) {
 }
 
 export async function finishPractice(practiceId: string) {
-    try {
+  try {
     const response = await api.post(`/practice/id/${practiceId}/finish`);
     return response.data as Practice;
   } catch (error) {

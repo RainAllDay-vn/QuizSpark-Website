@@ -1,18 +1,22 @@
 import Loader from '@/components/custom/loader';
 import BankEditSection from '@/pages/bank_edit_page/bank_edit_section';
 import QuestionEditSection from '@/pages/bank_edit_page/question_edit_section';
-import {Button} from '@/components/ui/button';
-import {getQuestionBank} from '@/lib/api';
-import type {QuestionBank} from '@/model/QuestionBank';
-import {useEffect, useState} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
-import {ChevronDown} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { getQuestionBank } from '@/lib/api';
+import type { QuestionBank } from '@/model/QuestionBank';
+import { overwriteQuestion, uploadFile } from '@/lib/api';
+import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ChevronDown } from 'lucide-react';
 
 export default function BankEditPage() {
-  const {bankId} = useParams<{ bankId: string }>();
+  const { bankId } = useParams<{ bankId: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [questionBank, setQuestionBank] = useState<QuestionBank>({} as QuestionBank);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!bankId) {
@@ -31,13 +35,58 @@ export default function BankEditPage() {
       });
   }, [bankId, navigate]);
 
-  if (loading) return <Loader/>
+  if (loading) return <Loader />
 
   const scrollToBottom = () => {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: 'smooth'
     });
+  };
+
+  const handleUploadFile = async (file: File) => {
+    if (!file || !bankId) return;
+    setIsImporting(true);
+    setImportError(null);
+
+    try {
+      if (file.type === 'application/json') {
+        const text = await file.text();
+        const jsonData = JSON.parse(text);
+        if (!Array.isArray(jsonData)) {
+          console.error('Import error:', 'JSON file must contain an array of questions');
+          setImportError('JSON file must contain an array of questions');
+          setIsImporting(false);
+          return;
+        }
+
+        // Validate each question
+        const questionsToImport: QuestionCreationDTO[] = jsonData.map(q => {
+          return {
+            questionType: q.questionType,
+            tags: q.tags || [],
+            description: q.description,
+            choices: q.choices,
+            answer: q.answer,
+            explanation: q.explanation
+          };
+        });
+        // Call the API to overwrite all questions
+        const updatedQuestions = await overwriteQuestion(bankId, questionsToImport);
+        setQuestionBank(prev => ({ ...prev, questions: updatedQuestions }));
+      } else {
+        const newFile = await uploadFile(bankId, file);
+        setQuestionBank(prev => ({
+          ...prev,
+          files: [...(prev.files || []), newFile]
+        }));
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setImportError(error instanceof Error ? error.message : 'Failed to upload file');
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -50,7 +99,7 @@ export default function BankEditPage() {
       >
         <ChevronDown className="h-5 w-5" />
       </Button>
-      
+
       {/* Header Section */}
       <div className="border-b border-zinc-800 bg-[#0f0f10]">
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -72,7 +121,11 @@ export default function BankEditPage() {
 
         {/* Quiz Questions Section */}
         <QuestionEditSection
-          questionBank={questionBank}
+          questions={questionBank.questions}
+          bankId={questionBank.id}
+          onUpload={handleUploadFile}
+          isImporting={isImporting}
+          importError={importError}
         />
 
         {/* Bottom Navigation */}

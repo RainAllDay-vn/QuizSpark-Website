@@ -1,15 +1,15 @@
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {updateQuestionBank, deleteQuestionBank} from '@/lib/api';
-import type {QuestionBank} from '@/model/QuestionBank';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { updateQuestionBank, deleteQuestionBank } from '@/lib/api';
+import type { QuestionBank } from '@/model/QuestionBank';
 import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
-import {Save, Edit, Trash2} from 'lucide-react';
-import {useEffect, useState} from 'react';
-import {Textarea} from "@/components/ui/textarea.tsx";
-import {useNavigate} from "react-router-dom";
+import { Save, Edit, Trash2, FileText } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { useNavigate } from "react-router-dom";
 
-export default function BankEditSection({questionBankProp}: {questionBankProp: QuestionBank}) {
+export default function BankEditSection({ questionBankProp }: { questionBankProp: QuestionBank }) {
   const navigate = useNavigate();
   const [questionBank, setQuestionBank] = useState({} as QuestionBank);
   const [editingBank, setEditingBank] = useState<QuestionBank | null>(null);
@@ -22,8 +22,23 @@ export default function BankEditSection({questionBankProp}: {questionBankProp: Q
 
   const handleEditBank = () => {
     if (questionBank) {
-      setEditingBank({...questionBank});
+      setEditingBank({ ...questionBank });
     }
+  };
+
+
+
+  const getFileStyle = (fileName: string, fileType: string) => {
+    const normalizeType = fileType?.toLowerCase() || '';
+    const normalizeName = fileName?.toLowerCase() || '';
+
+    if (normalizeType.includes('pdf') || normalizeName.endsWith('.pdf')) {
+      return 'bg-pink-950/40 border-pink-800 text-pink-200';
+    }
+    if (normalizeType.includes('word') || normalizeType.includes('document') || normalizeName.endsWith('.doc') || normalizeName.endsWith('.docx')) {
+      return 'bg-blue-950/40 border-blue-800 text-blue-200';
+    }
+    return 'bg-zinc-800 border-zinc-700 text-zinc-300';
   };
 
   const handleSaveBank = async () => {
@@ -50,7 +65,7 @@ export default function BankEditSection({questionBankProp}: {questionBankProp: Q
 
   const handleBankFieldChange = (field: keyof QuestionBank, value: string) => {
     if (!editingBank) return;
-    setEditingBank({...editingBank, [field]: value});
+    setEditingBank({ ...editingBank, [field]: value });
   };
 
   const handleDeleteBank = () => {
@@ -118,7 +133,7 @@ export default function BankEditSection({questionBankProp}: {questionBankProp: Q
               className="border-green-600 text-green-400 bg-[#151518] hover:bg-green-900/20"
               onClick={handleSaveBank}
             >
-              <Save className="w-4 h-4 mr-2"/>
+              <Save className="w-4 h-4 mr-2" />
               Save
             </Button>
             <Button
@@ -138,17 +153,17 @@ export default function BankEditSection({questionBankProp}: {questionBankProp: Q
               className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
               onClick={handleEditBank}
             >
-              <Edit className="w-4 h-4 mr-2"/>
+              <Edit className="w-4 h-4 mr-2" />
               Edit
             </Button>
-            {showDeleteWarning || 
+            {showDeleteWarning ||
               <Button
                 variant="outline"
                 size="sm"
                 className="border-red-600 text-red-400 bg-[#151518] hover:bg-red-900/20"
                 onClick={handleDeleteBank}
               >
-                <Trash2 className="w-4 h-4 mr-2"/>
+                <Trash2 className="w-4 h-4 mr-2" />
                 Delete
               </Button>
             }
@@ -232,6 +247,25 @@ export default function BankEditSection({questionBankProp}: {questionBankProp: Q
           )}
         </div>
       )}
+      {questionBank?.files && questionBank.files.length > 0 && (
+        <div className="md:col-span-2 pt-4 border-t border-zinc-800/50">
+          <p className="text-sm font-medium text-zinc-400 mb-3">Attached Files</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {questionBank.files.map((file) => (
+              <div
+                key={file.id}
+                className={`flex items-center p-3 rounded-lg border ${getFileStyle(file.fileName, file.fileType)}`}
+              >
+                <FileText className="w-5 h-5 mr-3 shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium truncate text-sm">{file.fileName}</p>
+                  <p className="text-xs opacity-70">{new Date(file.uploadDate).toLocaleDateString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  );
+  )
 }

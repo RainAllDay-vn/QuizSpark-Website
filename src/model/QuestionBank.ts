@@ -1,3 +1,4 @@
+import type { DbFile } from "./DbFile";
 import type { Question } from "./Question";
 
 export interface QuestionBank {
@@ -12,5 +13,6 @@ export interface QuestionBank {
   numberOfQuestions: number;
   numberOfAttempts: number;
   tags: string[];
+  files: DbFile[];
   questions: Question[];
 }
