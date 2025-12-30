@@ -160,6 +160,50 @@ export async function deleteFile(bankId: string, fileId: string) {
   }
 }
 
+export async function viewFile(bankId: string, fileId: string) {
+  try {
+    const response = await api.get(`/banks/single/${bankId}/files/${fileId}/view`, {
+      responseType: 'blob'
+    });
+    return response.data as Blob;
+  } catch (error) {
+    console.error('Failed to view file:', error);
+    throw error;
+  }
+}
+
+export async function downloadFile(bankId: string, fileId: string, knownFileName?: string) {
+  try {
+    const response = await api.get(`/banks/single/${bankId}/files/${fileId}/download`, {
+      responseType: 'blob'
+    });
+    // Triggers download in the browser
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+
+    // Try to get filename from content-disposition header
+    const contentDisposition = response.headers['content-disposition'];
+    let fileName = knownFileName || 'download';
+    if (!knownFileName && contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (fileNameMatch && fileNameMatch.length === 2)
+        fileName = fileNameMatch[1];
+    }
+
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+
+    return true;
+  } catch (error) {
+    console.error('Failed to download file:', error);
+    throw error;
+  }
+}
+
 // ===== QUESTION ENDPOINTS (/questions/) =====
 
 export async function overwriteQuestion(bankId: string, questionsData: QuestionCreationDTO[]) {

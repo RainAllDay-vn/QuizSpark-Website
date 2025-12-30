@@ -1,13 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { updateQuestionBank, deleteQuestionBank, deleteFile } from '@/lib/api';
+import { updateQuestionBank, deleteQuestionBank, deleteFile, viewFile, downloadFile } from '@/lib/api';
 import type { QuestionBank } from '@/model/QuestionBank';
 import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
-import { Save, Edit, Trash2, FileText } from 'lucide-react';
+import { Save, Edit, Trash2, FileText, Download, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import type { DbFile } from '@/model/DbFile';
 
 export default function BankEditSection({ questionBankProp }: { questionBankProp: QuestionBank }) {
   const navigate = useNavigate();
@@ -15,6 +17,11 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
   const [editingBank, setEditingBank] = useState<QuestionBank | null>(null);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // File Preview State
+  const [selectedFile, setSelectedFile] = useState<DbFile | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   useEffect(() => {
     setQuestionBank(questionBankProp);
@@ -25,8 +32,6 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
       setEditingBank({ ...questionBank });
     }
   };
-
-
 
   const getFileStyle = (fileName: string, fileType: string) => {
     const normalizeType = fileType?.toLowerCase() || '';
@@ -85,7 +90,8 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
     }
   };
 
-  const handleDeleteFile = async (fileId: string) => {
+  const handleDeleteFile = async (e: React.MouseEvent, fileId: string) => {
+    e.stopPropagation(); // Prevent opening preview when deleting
     if (!questionBank) return;
 
     if (!window.confirm("Are you sure you want to delete this file?")) return;
@@ -104,6 +110,44 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
 
   const cancelDeleteBank = () => {
     setShowDeleteWarning(false);
+  };
+
+  const handleFileClick = async (file: DbFile) => {
+    setSelectedFile(file);
+
+    // Only fetch content for PDFs
+    if (file.fileType.includes('pdf') || file.fileName.toLowerCase().endsWith('.pdf')) {
+      setIsLoadingPreview(true);
+      try {
+        const blob = await viewFile(questionBank.id, file.id);
+        const url = URL.createObjectURL(blob);
+        setFilePreviewUrl(url);
+      } catch (error) {
+        console.error("Failed to load file preview", error);
+        // Optionally handle error state here
+      } finally {
+        setIsLoadingPreview(false);
+      }
+    } else {
+      setFilePreviewUrl(null);
+    }
+  };
+
+  const handleClosePreview = () => {
+    if (filePreviewUrl) {
+      URL.revokeObjectURL(filePreviewUrl);
+    }
+    setFilePreviewUrl(null);
+    setSelectedFile(null);
+  };
+
+  const handleDownloadFile = async () => {
+    if (!questionBank || !selectedFile) return;
+    try {
+      await downloadFile(questionBank.id, selectedFile.id);
+    } catch (error) {
+      console.error("Failed to download file", error);
+    }
   };
 
   return (
@@ -173,7 +217,7 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
               <Edit className="w-4 h-4 mr-2" />
               Edit
             </Button>
-            {showDeleteWarning ||
+            {!showDeleteWarning && (
               <Button
                 variant="outline"
                 size="sm"
@@ -183,7 +227,7 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete
               </Button>
-            }
+            )}
           </div>
         )}
       </div>
@@ -271,7 +315,8 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
             {questionBank.files.map((file) => (
               <div
                 key={file.id}
-                className={`flex items-center justify-between p-3 rounded-lg border ${getFileStyle(file.fileName, file.fileType)}`}
+                onClick={() => handleFileClick(file)}
+                className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:opacity-80 transition-opacity ${getFileStyle(file.fileName, file.fileType)}`}
               >
                 <div className="flex items-center min-w-0 overflow-hidden">
                   <FileText className="w-5 h-5 mr-3 shrink-0" />
@@ -280,19 +325,64 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
                     <p className="text-xs opacity-70">{new Date(file.uploadDate).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="ml-2 hover:bg-red-900/20 hover:text-red-400 text-zinc-400 shrink-0 h-8 w-8"
-                  onClick={() => handleDeleteFile(file.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center">
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hover:bg-red-900/20 hover:text-red-400 text-current opacity-70 hover:opacity-100 shrink-0 h-8 w-8"
+                    onClick={(e) => handleDeleteFile(e, file.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      <Dialog open={!!selectedFile} onOpenChange={(open) => !open && handleClosePreview()}>
+        <DialogContent className="bg-[#151518] border-zinc-800 text-white max-w-5xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="pl-6 pr-10 py-4 border-b border-zinc-800 flex flex-row items-center justify-between space-y-0">
+            <DialogTitle className="truncate pr-4">{selectedFile?.fileName}</DialogTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadFile}
+                className="border-zinc-700 text-zinc-300 bg-transparent hover:bg-zinc-800"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 bg-[#0f0f10] w-full h-full overflow-hidden flex items-center justify-center relative">
+            {isLoadingPreview ? (
+              <div className="flex flex-col items-center justify-center text-zinc-400">
+                <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                <p>Loading preview...</p>
+              </div>
+            ) : filePreviewUrl ? (
+              <iframe
+                src={filePreviewUrl}
+                className="w-full h-full border-none"
+                title="File Preview"
+              />
+            ) : (
+              <div className="text-center p-8 text-zinc-400">
+                <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium text-white mb-2">Preview not available</h3>
+                <p className="max-w-md mx-auto mb-6">
+                  This file type cannot be previewed in the browser.
+                  Please download the file to view it.
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
