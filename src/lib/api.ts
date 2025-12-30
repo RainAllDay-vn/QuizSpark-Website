@@ -150,6 +150,16 @@ export async function uploadFile(bankId: string, file: File) {
   }
 }
 
+export async function deleteFile(bankId: string, fileId: string) {
+  try {
+    await api.delete(`/banks/single/${bankId}/files/${fileId}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to delete file:', error);
+    throw error;
+  }
+}
+
 // ===== QUESTION ENDPOINTS (/questions/) =====
 
 export async function overwriteQuestion(bankId: string, questionsData: QuestionCreationDTO[]) {
