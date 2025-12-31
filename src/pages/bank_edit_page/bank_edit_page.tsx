@@ -47,9 +47,6 @@ export default function BankEditPage() {
 
   const handleStartAiProcessing = (fileId: string, operation: string) => {
     setAiRequest({ fileId, operation });
-    setTimeout(() => {
-      scrollToBottom();
-    }, 100);
   };
 
   const handleUploadFile = async (file: File) => {

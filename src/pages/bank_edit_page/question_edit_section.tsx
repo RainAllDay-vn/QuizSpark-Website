@@ -19,10 +19,18 @@ interface Props {
 
 export default function QuestionEditSection({ questions: initialQuestions, bankId, onUpload, isImporting, aiRequest = null, importError }: Props) {
   const [questions, setQuestions] = useState(initialQuestions);
+  const [aiQuestions, setAiQuestions] = useState<Question[]>([]);
   const [newQuestion, setNewQuestion] = useState<Question | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
 
   const [processingStage, setProcessingStage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (statusRef.current) {
+      statusRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [aiQuestions, processingStage]);
 
   useEffect(() => {
     setQuestions(initialQuestions);
@@ -38,13 +46,15 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
             setProcessingStage("thinking");
           }
           if (aiResponse.status === "data") {
-            setProcessingStage("data");
             if (!aiResponse.data) return;
             const newQuestion: Question = JSON.parse(aiResponse.data);
             newQuestion.id = "AI_" + index.toString();
             console.log(newQuestion);
             index++;
-            setQuestions(prev => [...prev, newQuestion]);
+            setAiQuestions(prev => [...prev, newQuestion]);
+          }
+          if (aiResponse.status === "finish") {
+            setProcessingStage("finish");
           }
         });
       }
@@ -159,8 +169,16 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
         </div>}
 
       {processingStage && (
-        <div className="mt-8">
-          <AiProcessingStatus stage={processingStage} />
+        <div className="mt-6 border-2 border-dashed border-zinc-700 rounded-lg p-4 flex flex-col justify-center">
+          <div className="space-y-4">
+            {aiQuestions.map((q, index) =>
+              <QuestionCard key={q.id} questionProp={q} bankId={bankId} index={index} isEditingProp={false}
+                appendQuestion={handleAppendQuestion} removeQuestion={handleRemoveQuestion} />
+            )}
+          </div>
+          <div ref={statusRef} className="mt-12">
+            <AiProcessingStatus stage={processingStage} />
+          </div>
         </div>
       )}
     </div>

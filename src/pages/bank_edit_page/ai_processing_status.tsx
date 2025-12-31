@@ -1,4 +1,4 @@
-import { Bot, FileText } from 'lucide-react';
+import { Bot, FileText, CheckCircle } from 'lucide-react';
 
 interface Props {
     stage: string;
@@ -43,7 +43,19 @@ export default function AiProcessingStatus({ stage }: Props) {
                     <p className="text-zinc-500 text-sm mt-1">The AI is analyzing your document</p>
                 </div>
             );
+
+        case 'finish':
+            return (
+                <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500">
+                    <div className="bg-green-500/20 p-4 rounded-full mb-4 ring-1 ring-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                        <CheckCircle className="w-12 h-12 text-green-400" />
+                    </div>
+                    <p className="text-green-400 font-medium">Processing Complete!</p>
+                    <p className="text-zinc-500 text-sm mt-1">AI has finished generating questions</p>
+                </div>
+            );
+
         default:
-            <></>
+            return <></>;
     }
 }
