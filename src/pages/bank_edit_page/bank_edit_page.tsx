@@ -124,7 +124,8 @@ export default function BankEditPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Question Bank Metadata Section */}
         <BankEditSection
-          questionBankProp={questionBank}
+          questionBank={questionBank}
+          setQuestionBank={setQuestionBank}
           onStartAiProcessing={handleStartAiProcessing}
         />
 

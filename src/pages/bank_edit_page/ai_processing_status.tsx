@@ -25,7 +25,7 @@ export default function AiProcessingStatus({ stage }: Props) {
                 </div>
             );
 
-        default:
+        case 'thinking':
             return (
                 <div className="flex flex-col items-center justify-center animate-in fade-in duration-500">
                     <div className="relative">
@@ -43,5 +43,7 @@ export default function AiProcessingStatus({ stage }: Props) {
                     <p className="text-zinc-500 text-sm mt-1">The AI is analyzing your document</p>
                 </div>
             );
+        default:
+            <></>
     }
 }

@@ -16,8 +16,8 @@ import type PracticeAnswerResponseDTO from "@/dtos/PracticeAnswerResponseDTO.ts"
 import type QuestionCommentCreationDTO from "@/dtos/QuestionCommentCreationDTO.ts";
 import type QuestionComment from "@/model/Comment.ts";
 import type QuestionCommentUpdateDTO from "@/dtos/QuestionCommentUpdateDTO.ts";
-import type Message from "@/model/Message.ts";
 import type { DbFile } from "@/model/DbFile.ts";
+import type AiResponseDTO from "@/dtos/AiResponseDTO";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -355,12 +355,13 @@ export async function finishPractice(practiceId: string) {
   }
 }
 
-// ===== AGENT ENDPOINTS (/agent/) =====
+// ===== AI ENDPOINTS (/ai/) =====
 
-export async function agentChat(body: Message[], onToken: (token: string) => void) {
+export async function parseAiFile(fileId: string, onResponse: (data: AiResponseDTO) => void) {
   let lastSeenLength = 0;
   let buffer = "";
-  await api.post(`/agent/stream/chat`, body, {
+
+  await api.post(`/ai/parse/${fileId}`, {}, {
     responseType: 'text',
     onDownloadProgress: (progressEvent) => {
       const fullResponse = progressEvent.event.target.responseText;
@@ -374,13 +375,15 @@ export async function agentChat(body: Message[], onToken: (token: string) => voi
       for (const line of lines) {
         let data = line.trim();
         if (!data.startsWith('data:')) continue;
-        data = data.replace('data:', '');
-        if (data.length === 0) data = '\n';
-        if (data === '[DONE]') {
-          console.log("Stream finished");
-          return;
+        data = data.replace('data:', '').trim();
+        if (data.length === 0) continue;
+        if (data === '[DONE]') return;
+        try {
+          const parsedData: AiResponseDTO = JSON.parse(data);
+          onResponse(parsedData);
+        } catch (error) {
+          console.error('Error parsing SSE data:', error);
         }
-        onToken(data);
       }
     }
   });

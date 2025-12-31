@@ -6,6 +6,7 @@ import QuestionCard from "@/pages/bank_edit_page/question_card.tsx";
 import AiProcessingStatus from "@/pages/bank_edit_page/ai_processing_status";
 
 import type { Question } from '@/model/Question';
+import { parseAiFile } from '@/lib/api';
 
 interface Props {
   questions: Question[];
@@ -30,7 +31,23 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
   useEffect(() => {
     if (aiRequest) {
       setProcessingStage("analyzing");
-      // API call will be implemented here
+      if (aiRequest.operation === "parse") {
+        let index = 0;
+        parseAiFile(aiRequest.fileId, (aiResponse) => {
+          if (aiResponse.status === "start") {
+            setProcessingStage("thinking");
+          }
+          if (aiResponse.status === "data") {
+            setProcessingStage("data");
+            if (!aiResponse.data) return;
+            const newQuestion: Question = JSON.parse(aiResponse.data);
+            newQuestion.id = "AI_" + index.toString();
+            console.log(newQuestion);
+            index++;
+            setQuestions(prev => [...prev, newQuestion]);
+          }
+        });
+      }
     }
   }, [aiRequest]);
 

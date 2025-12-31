@@ -6,15 +6,15 @@ import { updateQuestionBank, deleteQuestionBank, deleteFile, viewFile, downloadF
 import type { QuestionBank } from '@/model/QuestionBank';
 import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
 import { Save, Edit, Trash2, FileText, Download, Loader2, Sparkles } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import type { DbFile } from '@/model/DbFile';
 
-export default function BankEditSection({ questionBankProp, onStartAiProcessing }: { questionBankProp: QuestionBank, onStartAiProcessing: (fileId: string, operation: string) => void }) {
+export default function BankEditSection({ questionBank, setQuestionBank, onStartAiProcessing }: { questionBank: QuestionBank, setQuestionBank: Dispatch<SetStateAction<QuestionBank>>, onStartAiProcessing: (fileId: string, operation: string) => void }) {
   const navigate = useNavigate();
-  const [questionBank, setQuestionBank] = useState({} as QuestionBank);
   const [editingBank, setEditingBank] = useState<QuestionBank | null>(null);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -26,11 +26,7 @@ export default function BankEditSection({ questionBankProp, onStartAiProcessing 
 
   // AI Options State
   const [showAiOptions, setShowAiOptions] = useState(false);
-  const [aiOperation, setAiOperation] = useState<string>("pass_content");
-
-  useEffect(() => {
-    setQuestionBank(questionBankProp);
-  }, [questionBankProp]);
+  const [aiOperation, setAiOperation] = useState<string>("parse");
 
   const handleEditBank = () => {
     if (questionBank) {
@@ -98,9 +94,7 @@ export default function BankEditSection({ questionBankProp, onStartAiProcessing 
   const handleDeleteFile = async (e: React.MouseEvent, fileId: string) => {
     e.stopPropagation(); // Prevent opening preview when deleting
     if (!questionBank) return;
-
     if (!window.confirm("Are you sure you want to delete this file?")) return;
-
     try {
       await deleteFile(questionBank.id, fileId);
       setQuestionBank(prev => ({
@@ -420,19 +414,19 @@ export default function BankEditSection({ questionBankProp, onStartAiProcessing 
           <div className="grid gap-4 py-4">
             <RadioGroup value={aiOperation} onValueChange={setAiOperation} className="grid gap-4">
               <label
-                htmlFor="pass_content"
-                className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-all duration-200 ${aiOperation === "pass_content"
+                htmlFor="parse"
+                className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-all duration-200 ${aiOperation === "parse"
                   ? "bg-violet-900/10 border-violet-600 ring-1 ring-violet-600"
                   : "bg-[#0f0f10] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
                   }`}
               >
-                <RadioGroupItem value="pass_content" id="pass_content" className="sr-only" />
+                <RadioGroupItem value="parse" id="parse" className="sr-only" />
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className={`font-medium text-base ${aiOperation === "pass_content" ? "text-violet-400" : "text-zinc-200"}`}>
+                    <span className={`font-medium text-base ${aiOperation === "parse" ? "text-violet-400" : "text-zinc-200"}`}>
                       Extract Questions
                     </span>
-                    {aiOperation === "pass_content" && <Sparkles className="w-4 h-4 text-violet-500" />}
+                    {aiOperation === "parse" && <Sparkles className="w-4 h-4 text-violet-500" />}
                   </div>
                   <p className="text-zinc-400 text-sm leading-relaxed">
                     Identify and extract existing questions directly from the uploaded document.
