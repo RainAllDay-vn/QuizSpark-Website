@@ -3,6 +3,7 @@ import { Plus, Upload } from 'lucide-react';
 import { useState, useCallback, useEffect, useRef } from 'react';
 
 import QuestionCard from "@/pages/bank_edit_page/question_card.tsx";
+import AiProcessingStatus from "@/pages/bank_edit_page/ai_processing_status";
 
 import type { Question } from '@/model/Question';
 
@@ -11,17 +12,27 @@ interface Props {
   bankId: string;
   onUpload: (file: File) => void;
   isImporting: boolean;
+  aiRequest?: { fileId: string, operation: string } | null;
   importError: string | null;
 }
 
-export default function QuestionEditSection({ questions: initialQuestions, bankId, onUpload, isImporting, importError }: Props) {
+export default function QuestionEditSection({ questions: initialQuestions, bankId, onUpload, isImporting, aiRequest = null, importError }: Props) {
   const [questions, setQuestions] = useState(initialQuestions);
   const [newQuestion, setNewQuestion] = useState<Question | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [processingStage, setProcessingStage] = useState<string | null>(null);
+
   useEffect(() => {
     setQuestions(initialQuestions);
   }, [initialQuestions]);
+
+  useEffect(() => {
+    if (aiRequest) {
+      setProcessingStage("analyzing");
+      // API call will be implemented here
+    }
+  }, [aiRequest]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -118,7 +129,7 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
       </div>
 
       {/* Add Question Button at Bottom */}
-      {!newQuestion &&
+      {!newQuestion && !processingStage &&
         <div className="mt-6 border-2 border-dashed border-zinc-700 rounded-lg p-4 flex justify-center">
           <Button
             variant="outline"
@@ -129,6 +140,12 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
             Add New Question
           </Button>
         </div>}
+
+      {processingStage && (
+        <div className="mt-8">
+          <AiProcessingStatus stage={processingStage} />
+        </div>
+      )}
     </div>
   );
 }

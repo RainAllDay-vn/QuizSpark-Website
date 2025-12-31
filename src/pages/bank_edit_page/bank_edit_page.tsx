@@ -17,6 +17,7 @@ export default function BankEditPage() {
   const [questionBank, setQuestionBank] = useState<QuestionBank>({} as QuestionBank);
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [aiRequest, setAiRequest] = useState<{ fileId: string, operation: string } | null>(null);
 
   useEffect(() => {
     if (!bankId) {
@@ -42,6 +43,13 @@ export default function BankEditPage() {
       top: document.documentElement.scrollHeight,
       behavior: 'smooth'
     });
+  };
+
+  const handleStartAiProcessing = (fileId: string, operation: string) => {
+    setAiRequest({ fileId, operation });
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
   };
 
   const handleUploadFile = async (file: File) => {
@@ -117,6 +125,7 @@ export default function BankEditPage() {
         {/* Question Bank Metadata Section */}
         <BankEditSection
           questionBankProp={questionBank}
+          onStartAiProcessing={handleStartAiProcessing}
         />
 
         {/* Quiz Questions Section */}
@@ -125,6 +134,7 @@ export default function BankEditPage() {
           bankId={questionBank.id}
           onUpload={handleUploadFile}
           isImporting={isImporting}
+          aiRequest={aiRequest}
           importError={importError}
         />
 

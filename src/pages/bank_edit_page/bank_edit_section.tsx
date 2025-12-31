@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 import { updateQuestionBank, deleteQuestionBank, deleteFile, viewFile, downloadFile } from '@/lib/api';
 import type { QuestionBank } from '@/model/QuestionBank';
 import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
@@ -13,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import type { DbFile } from '@/model/DbFile';
 
-export default function BankEditSection({ questionBankProp }: { questionBankProp: QuestionBank }) {
+export default function BankEditSection({ questionBankProp, onStartAiProcessing }: { questionBankProp: QuestionBank, onStartAiProcessing: (fileId: string, operation: string) => void }) {
   const navigate = useNavigate();
   const [questionBank, setQuestionBank] = useState({} as QuestionBank);
   const [editingBank, setEditingBank] = useState<QuestionBank | null>(null);
@@ -161,9 +160,10 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
   };
 
   const handleAiConfirm = () => {
+    if (!selectedFile) return;
     setShowAiOptions(false);
-    console.log("AI Operation Triggered:", aiOperation);
-    // API implementation will be added later
+    handleClosePreview(); // Close the file preview dialog
+    onStartAiProcessing(selectedFile.id, aiOperation);
   };
 
   return (
@@ -422,8 +422,8 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
               <label
                 htmlFor="pass_content"
                 className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-all duration-200 ${aiOperation === "pass_content"
-                    ? "bg-violet-900/10 border-violet-600 ring-1 ring-violet-600"
-                    : "bg-[#0f0f10] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
+                  ? "bg-violet-900/10 border-violet-600 ring-1 ring-violet-600"
+                  : "bg-[#0f0f10] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
                   }`}
               >
                 <RadioGroupItem value="pass_content" id="pass_content" className="sr-only" />
@@ -443,8 +443,8 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
               <label
                 htmlFor="generate_questions"
                 className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-all duration-200 ${aiOperation === "generate_questions"
-                    ? "bg-violet-900/10 border-violet-600 ring-1 ring-violet-600"
-                    : "bg-[#0f0f10] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
+                  ? "bg-violet-900/10 border-violet-600 ring-1 ring-violet-600"
+                  : "bg-[#0f0f10] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"
                   }`}
               >
                 <RadioGroupItem value="generate_questions" id="generate_questions" className="sr-only" />
@@ -472,6 +472,7 @@ export default function BankEditSection({ questionBankProp }: { questionBankProp
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+
+    </div >
   )
 }
