@@ -206,13 +206,27 @@ export async function downloadFile(bankId: string, fileId: string, knownFileName
 
 // ===== QUESTION ENDPOINTS (/questions/) =====
 
-export async function overwriteQuestion(bankId: string, questionsData: QuestionCreationDTO[]) {
+export async function overwriteAllQuestions(bankId: string, questionsData: QuestionCreationDTO[]) {
   try {
-    const response = await api.post(`/questions/all?bankId=${bankId}`, questionsData);
+    const response = await api.post(`/questions/all/overwrite`, questionsData, {
+      params: { bankId }
+    });
     return response.data as Question[];
   } catch (error) {
-    console.error('Failed to create new questions:', error);
-    throw error; // rethrow so the caller can handle it
+    console.error('Failed to overwrite questions:', error);
+    throw error;
+  }
+}
+
+export async function addAllQuestions(bankId: string, questionsData: QuestionCreationDTO[]) {
+  try {
+    const response = await api.post(`/questions/all`, questionsData, {
+      params: { bankId }
+    });
+    return response.data as Question[];
+  } catch (error) {
+    console.error('Failed to add questions:', error);
+    throw error;
   }
 }
 
@@ -228,7 +242,7 @@ export async function addQuestion(bankId: string, questionData: QuestionCreation
 
 export async function updateQuestion(questionId: string, questionData: QuestionUpdateDTO) {
   try {
-    const response = await api.put(`/questions/${questionId}`, questionData);
+    const response = await api.put(`/questions/single/${questionId}`, questionData);
     return response.data as Question;
   } catch (error) {
     console.error('Failed to update question:', error);
@@ -238,7 +252,7 @@ export async function updateQuestion(questionId: string, questionData: QuestionU
 
 export async function deleteQuestion(questionId: string) {
   try {
-    await api.delete(`/questions/${questionId}`);
+    await api.delete(`/questions/single/${questionId}`);
     return true;
   } catch (error) {
     console.error('Failed to delete question:', error);

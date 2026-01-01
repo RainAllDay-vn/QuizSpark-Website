@@ -4,7 +4,7 @@ import QuestionEditSection from '@/pages/bank_edit_page/question_edit_section';
 import { Button } from '@/components/ui/button';
 import { getQuestionBank } from '@/lib/api';
 import type { QuestionBank } from '@/model/QuestionBank';
-import { overwriteQuestion, uploadFile } from '@/lib/api';
+import { overwriteAllQuestions, uploadFile } from '@/lib/api';
 import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -77,7 +77,7 @@ export default function BankEditPage() {
           };
         });
         // Call the API to overwrite all questions
-        const updatedQuestions = await overwriteQuestion(bankId, questionsToImport);
+        const updatedQuestions = await overwriteAllQuestions(bankId, questionsToImport);
         setQuestionBank(prev => ({ ...prev, questions: updatedQuestions }));
       } else {
         const newFile = await uploadFile(bankId, file);

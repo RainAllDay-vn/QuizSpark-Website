@@ -6,7 +6,8 @@ import QuestionCard from "@/pages/bank_edit_page/question_card.tsx";
 import AiProcessingStatus from "@/pages/bank_edit_page/ai_processing_status";
 
 import type { Question } from '@/model/Question';
-import { parseAiFile } from '@/lib/api';
+import { parseAiFile, addAllQuestions } from '@/lib/api';
+import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
 
 interface Props {
   questions: Question[];
@@ -38,11 +39,11 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
 
   useEffect(() => {
     if (aiRequest) {
-      setProcessingStage("analyzing");
+      setProcessingStage("start");
       if (aiRequest.operation === "parse") {
         let index = 0;
         parseAiFile(aiRequest.fileId, (aiResponse) => {
-          if (aiResponse.status === "start") {
+          if (aiResponse.status === "thinking") {
             setProcessingStage("thinking");
           }
           if (aiResponse.status === "data") {
@@ -103,6 +104,28 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
     }
     setQuestions(questions.filter(q => q.id !== question.id));
   }, [questions]);
+
+  const handleConfirmAiQuestions = async () => {
+    if (aiQuestions.length === 0) return;
+
+    try {
+      const dtos: QuestionCreationDTO[] = aiQuestions.map(q => ({
+        description: q.description,
+        choices: q.choices,
+        answer: q.answer,
+        questionType: q.questionType,
+        tags: q.tags || [],
+        explanation: q.explanation
+      }));
+
+      const newQuestions = await addAllQuestions(bankId, dtos);
+      setQuestions([...questions, ...newQuestions]);
+      setAiQuestions([]);
+      setProcessingStage(null);
+    } catch (error) {
+      console.error("Failed to add AI questions", error);
+    }
+  };
 
   return (
     <div className="bg-[#0f0f10] border border-zinc-800 rounded-lg p-6 mb-6">
@@ -178,6 +201,17 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
           </div>
           <div ref={statusRef} className="mt-12">
             <AiProcessingStatus stage={processingStage} />
+            {processingStage === "finish" && (
+              <div className="flex justify-center mt-4">
+                <Button
+                  className="bg-violet-600 hover:bg-violet-700 text-white"
+                  onClick={handleConfirmAiQuestions}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add All {aiQuestions.length} Questions to Bank
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
