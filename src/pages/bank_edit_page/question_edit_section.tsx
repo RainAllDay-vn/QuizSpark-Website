@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { Plus, Upload } from 'lucide-react';
+import { Plus, Upload, Sparkles, Trash2 } from 'lucide-react';
 import { useState, useCallback, useEffect, useRef } from 'react';
 
 import QuestionCard from "@/pages/bank_edit_page/question_card.tsx";
 import AiProcessingStatus from "@/pages/bank_edit_page/ai_processing_status";
 
 import type { Question } from '@/model/Question';
-import { parseAiFile, addAllQuestions } from '@/lib/api';
+import { parseAiFile, addAllQuestions, generateAdaptiveQuestions } from '@/lib/api';
 import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
 
 interface Props {
@@ -37,27 +37,32 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
     setQuestions(initialQuestions);
   }, [initialQuestions]);
 
+  const createAiResponseHandler = () => {
+    let index = 0;
+    return (aiResponse: { status: string; data?: string }) => {
+      if (aiResponse.status === "thinking") {
+        setProcessingStage("thinking");
+      }
+      if (aiResponse.status === "data") {
+        if (!aiResponse.data) return;
+        const newQuestion: Question = JSON.parse(aiResponse.data);
+        newQuestion.id = "AI_" + index.toString();
+        console.log(newQuestion);
+        index++;
+        setAiQuestions(prev => [...prev, newQuestion]);
+      }
+      if (aiResponse.status === "finish") {
+        setProcessingStage("finish");
+      }
+    };
+  };
+
   useEffect(() => {
     if (aiRequest) {
       setProcessingStage("start");
+      setAiQuestions([]);
       if (aiRequest.operation === "parse") {
-        let index = 0;
-        parseAiFile(aiRequest.fileId, (aiResponse) => {
-          if (aiResponse.status === "thinking") {
-            setProcessingStage("thinking");
-          }
-          if (aiResponse.status === "data") {
-            if (!aiResponse.data) return;
-            const newQuestion: Question = JSON.parse(aiResponse.data);
-            newQuestion.id = "AI_" + index.toString();
-            console.log(newQuestion);
-            index++;
-            setAiQuestions(prev => [...prev, newQuestion]);
-          }
-          if (aiResponse.status === "finish") {
-            setProcessingStage("finish");
-          }
-        });
+        parseAiFile(aiRequest.fileId, createAiResponseHandler());
       }
     }
   }, [aiRequest]);
@@ -93,6 +98,12 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
     scrollToBottom();
   };
 
+  const handleGenerateWithAi = () => {
+    setProcessingStage("start");
+    setAiQuestions([]);
+    generateAdaptiveQuestions(bankId, createAiResponseHandler());
+  };
+
   const handleAppendQuestion = useCallback((question: Question) => {
     setQuestions([...questions, question]);
   }, [questions]);
@@ -100,6 +111,10 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
   const handleRemoveQuestion = useCallback((question: Question) => {
     if (question.id === 'new') {
       setNewQuestion(null);
+      return;
+    }
+    if (question.id.startsWith('AI_')) {
+      setAiQuestions(prev => prev.filter(q => q.id !== question.id));
       return;
     }
     setQuestions(questions.filter(q => q.id !== question.id));
@@ -125,6 +140,11 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
     } catch (error) {
       console.error("Failed to add AI questions", error);
     }
+  };
+
+  const handleDiscardAiQuestions = () => {
+    setAiQuestions([]);
+    setProcessingStage(null);
   };
 
   return (
@@ -155,6 +175,15 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Question
+          </Button>
+          <Button
+            variant="outline"
+            className="border-violet-600 text-violet-300 bg-violet-950/30 hover:bg-violet-900/40"
+            onClick={handleGenerateWithAi}
+            disabled={!!processingStage}
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            AI Generate
           </Button>
         </div>
       </div>
@@ -202,7 +231,15 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
           <div ref={statusRef} className="mt-12">
             <AiProcessingStatus stage={processingStage} />
             {processingStage === "finish" && (
-              <div className="flex justify-center mt-4">
+              <div className="flex justify-center mt-4 space-x-2">
+                <Button
+                  variant="outline"
+                  className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-zinc-900"
+                  onClick={handleDiscardAiQuestions}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Discard All
+                </Button>
                 <Button
                   className="bg-violet-600 hover:bg-violet-700 text-white"
                   onClick={handleConfirmAiQuestions}

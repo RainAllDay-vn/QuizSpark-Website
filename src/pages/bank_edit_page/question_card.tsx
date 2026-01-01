@@ -108,7 +108,9 @@ function QuestionCard({
 
   const handleDeleteQuestion = async (question: Question) => {
     try {
-      await deleteQuestion(question.id);
+      if (!question.id.startsWith("AI_")) {
+        await deleteQuestion(question.id);
+      }
       removeQuestion(question);
     } catch (error) {
       console.error('Failed to delete question:', error);
