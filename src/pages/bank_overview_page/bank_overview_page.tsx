@@ -1,16 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Play, Check } from "lucide-react";
+import { ArrowLeft, Edit, Play, Check, FileText, Download, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { QuestionBank } from "@/model/QuestionBank";
 import type { Question } from "@/model/Question";
-import { getQuestionBank } from "@/lib/api";
+import type { DbFile } from "@/model/DbFile";
+import { getQuestionBank, viewFile, downloadFile } from "@/lib/api";
 import { useNavigate, useParams } from "react-router-dom";
 import Loader from "@/components/custom/loader";
 import { formatRelativeTime } from "@/lib/utils";
 import PracticeOptionsDialog from "@/components/custom/practice_options_dialog";
 import MarkdownRenderer from "@/components/custom/markdown-renderer";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function BankOverviewPage() {
   const { bankId } = useParams<{ bankId: string }>();
@@ -18,6 +20,11 @@ export default function BankOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [questionBank, setQuestionBank] = useState<QuestionBank | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // File Preview State
+  const [selectedFile, setSelectedFile] = useState<DbFile | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   useEffect(() => {
     if (!bankId) {
@@ -54,6 +61,57 @@ export default function BankOverviewPage() {
       case "FILL_THE_BLANK": return "Fill in the Blank";
       case "OPEN_ANSWER": return "Open Answer";
       default: return type;
+    }
+  };
+
+  const getFileStyle = (fileName: string, fileType: string) => {
+    const normalizeType = fileType?.toLowerCase() || '';
+    const normalizeName = fileName?.toLowerCase() || '';
+
+    if (normalizeType.includes('pdf') || normalizeName.endsWith('.pdf')) {
+      return 'bg-pink-950/40 border-pink-800 text-pink-200';
+    }
+    if (normalizeType.includes('word') || normalizeType.includes('document') || normalizeName.endsWith('.doc') || normalizeName.endsWith('.docx')) {
+      return 'bg-blue-950/40 border-blue-800 text-blue-200';
+    }
+    return 'bg-zinc-800 border-zinc-700 text-zinc-300';
+  };
+
+  const handleFileClick = async (file: DbFile) => {
+    if (!questionBank) return;
+    setSelectedFile(file);
+
+    // Only fetch content for PDFs
+    if (file.fileType.includes('pdf') || file.fileName.toLowerCase().endsWith('.pdf')) {
+      setIsLoadingPreview(true);
+      try {
+        const blob = await viewFile(questionBank.id, file.id);
+        const url = URL.createObjectURL(blob);
+        setFilePreviewUrl(url);
+      } catch (error) {
+        console.error("Failed to load file preview", error);
+      } finally {
+        setIsLoadingPreview(false);
+      }
+    } else {
+      setFilePreviewUrl(null);
+    }
+  };
+
+  const handleClosePreview = () => {
+    if (filePreviewUrl) {
+      URL.revokeObjectURL(filePreviewUrl);
+    }
+    setFilePreviewUrl(null);
+    setSelectedFile(null);
+  };
+
+  const handleDownloadFile = async () => {
+    if (!questionBank || !selectedFile) return;
+    try {
+      await downloadFile(questionBank.id, selectedFile.id);
+    } catch (error) {
+      console.error("Failed to download file", error);
     }
   };
 
@@ -136,6 +194,29 @@ export default function BankOverviewPage() {
             </div>
           )}
 
+          {questionBank.files && questionBank.files.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-zinc-400 mb-3">Attached Files:</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {questionBank.files.map((file) => (
+                  <div
+                    key={file.id}
+                    onClick={() => handleFileClick(file)}
+                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:opacity-80 transition-opacity ${getFileStyle(file.fileName, file.fileType)}`}
+                  >
+                    <div className="flex items-center min-w-0 overflow-hidden">
+                      <FileText className="w-5 h-5 mr-3 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium truncate text-sm">{file.fileName}</p>
+                        <p className="text-xs opacity-70">{new Date(file.uploadDate).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-4 mt-6">
             <Button
               onClick={handlePractice}
@@ -165,6 +246,47 @@ export default function BankOverviewPage() {
         />
       )}
 
+      {/* File Preview Dialog */}
+      <Dialog open={!!selectedFile} onOpenChange={(open) => !open && handleClosePreview()}>
+        <DialogContent className="bg-[#151518] border-zinc-800 text-white max-w-5xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="pl-6 pr-10 py-4 border-b border-zinc-800 flex flex-row items-center justify-between space-y-0">
+            <DialogTitle className="truncate pr-4">{selectedFile?.fileName}</DialogTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadFile}
+              className="border-zinc-700 text-zinc-300 bg-transparent hover:bg-zinc-800"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download
+            </Button>
+          </DialogHeader>
+          <div className="flex-1 bg-[#0f0f10] w-full h-full overflow-hidden flex items-center justify-center relative">
+            {isLoadingPreview ? (
+              <div className="flex flex-col items-center justify-center text-zinc-400">
+                <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                <p>Loading preview...</p>
+              </div>
+            ) : filePreviewUrl ? (
+              <iframe
+                src={filePreviewUrl}
+                className="w-full h-full border-none"
+                title="File Preview"
+              />
+            ) : (
+              <div className="text-center p-8 text-zinc-400">
+                <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium text-white mb-2">Preview not available</h3>
+                <p className="max-w-md mx-auto mb-6">
+                  This file type cannot be previewed in the browser.
+                  Please download the file to view it.
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Questions Section */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         <h2 className="text-xl font-semibold mb-4">Questions</h2>
@@ -177,9 +299,31 @@ export default function BankOverviewPage() {
                     <span className="text-sm font-medium text-violet-400 mr-3">#{index + 1}</span>
                     <MarkdownRenderer content={question.description} />
                   </CardTitle>
-                  <Badge variant="outline" className="border-zinc-700 text-zinc-300">
-                    {getQuestionTypeDisplay(question.questionType)}
-                  </Badge>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {question.totalAttempts !== undefined && question.totalAttempts > 0 && (
+                      <Badge
+                        variant="outline"
+                        className={`${question.correctAttempts !== undefined && question.totalAttempts > 0
+                            ? (question.correctAttempts / question.totalAttempts) >= 0.7
+                              ? "border-green-700 text-green-400"
+                              : (question.correctAttempts / question.totalAttempts) >= 0.4
+                                ? "border-amber-700 text-amber-400"
+                                : "border-red-700 text-red-400"
+                            : "border-zinc-700 text-zinc-300"
+                          }`}
+                      >
+                        {question.correctAttempts ?? 0}/{question.totalAttempts} correct
+                        {question.totalAttempts > 0 && (
+                          <span className="ml-1 opacity-70">
+                            ({Math.round(((question.correctAttempts ?? 0) / question.totalAttempts) * 100)}%)
+                          </span>
+                        )}
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className="border-zinc-700 text-zinc-300">
+                      {getQuestionTypeDisplay(question.questionType)}
+                    </Badge>
+                  </div>
                 </div>
 
                 {question.tags && question.tags.length > 0 && (

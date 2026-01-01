@@ -9,4 +9,6 @@ export interface Question {
   tags: string[];
   comments?: QuestionComment[];
   explanation?: string;
+  totalAttempts?: number;
+  correctAttempts?: number;
 }

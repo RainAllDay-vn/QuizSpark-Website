@@ -375,7 +375,7 @@ export async function parseAiFile(fileId: string, onResponse: (data: AiResponseD
   let lastSeenLength = 0;
   let buffer = "";
 
-  await api.post(`/ai/parse/${fileId}`, {}, {
+  await api.post(`/ai/parse/file/${fileId}`, {}, {
     responseType: 'text',
     onDownloadProgress: (progressEvent) => {
       const fullResponse = progressEvent.event.target.responseText;
