@@ -18,6 +18,9 @@ import type QuestionComment from "@/model/Comment.ts";
 import type QuestionCommentUpdateDTO from "@/dtos/QuestionCommentUpdateDTO.ts";
 import type { DbFile } from "@/model/DbFile.ts";
 import type AiResponseDTO from "@/dtos/AiResponseDTO";
+import type Tag from "@/model/Tag.ts";
+import type { TagCreationDTO } from "@/dtos/TagCreationDTO.ts";
+import type { TagUpdateDTO } from "@/dtos/TagUpdateDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -200,6 +203,38 @@ export async function downloadFile(bankId: string, fileId: string, knownFileName
     return true;
   } catch (error) {
     console.error('Failed to download file:', error);
+    throw error;
+  }
+}
+
+// ===== TAG ENDPOINTS (/tags/) =====
+
+export async function addTag(bankId: string, payload: TagCreationDTO) {
+  try {
+    const response = await api.post(`/tags/bank/${bankId}`, payload);
+    return response.data as Tag;
+  } catch (error) {
+    console.error('Failed to add tag:', error);
+    throw error;
+  }
+}
+
+export async function updateTag(tagId: string, payload: TagUpdateDTO) {
+  try {
+    const response = await api.put(`/tags/single/${tagId}`, payload);
+    return response.data as Tag;
+  } catch (error) {
+    console.error('Failed to update tag:', error);
+    throw error;
+  }
+}
+
+export async function deleteTag(tagId: string) {
+  try {
+    await api.delete(`/tags/single/${tagId}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to delete tag:', error);
     throw error;
   }
 }

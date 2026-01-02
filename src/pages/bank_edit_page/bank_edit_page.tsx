@@ -1,5 +1,6 @@
 import Loader from '@/components/custom/loader';
 import BankEditSection from '@/pages/bank_edit_page/bank_edit_section';
+import TagManagementSection from '@/pages/bank_edit_page/tag_management_section';
 import QuestionEditSection from '@/pages/bank_edit_page/question_edit_section';
 import { Button } from '@/components/ui/button';
 import { getQuestionBank } from '@/lib/api';
@@ -126,6 +127,12 @@ export default function BankEditPage() {
           onStartAiProcessing={handleStartAiProcessing}
         />
 
+        {/* Tags Management Section */}
+        <TagManagementSection
+          questionBank={questionBank}
+          setQuestionBank={setQuestionBank}
+        />
+
         {/* Quiz Questions Section */}
         <QuestionEditSection
           questions={questionBank.questions}
@@ -134,6 +141,7 @@ export default function BankEditPage() {
           isImporting={isImporting}
           aiRequest={aiRequest}
           importError={importError}
+          availableTags={questionBank.tags || []}
         />
 
         {/* Bottom Navigation */}

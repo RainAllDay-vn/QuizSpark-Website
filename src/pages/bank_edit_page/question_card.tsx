@@ -10,6 +10,7 @@ import type QuestionCreationDTO from "@/dtos/QuestionCreationDTO.ts";
 import { addQuestion, deleteQuestion, updateQuestion } from "@/lib/api.ts";
 import type QuestionUpdateDTO from "@/dtos/QuestionUpdateDTO.ts";
 import * as React from "react";
+import type Tag from "@/model/Tag.ts";
 import TagDisplay from "@/components/custom/tag_display";
 
 interface QuestionCardProps {
@@ -19,6 +20,7 @@ interface QuestionCardProps {
   isEditingProp: boolean;
   appendQuestion: (question: Question) => void;
   removeQuestion: (question: Question) => void;
+  availableTags: Tag[];
 }
 
 function QuestionCard({
@@ -28,6 +30,7 @@ function QuestionCard({
   isEditingProp,
   appendQuestion,
   removeQuestion,
+  availableTags,
 }: QuestionCardProps) {
   const [question, setQuestion] = useState(questionProp);
   const [isEditing, setIsEditing] = useState(isEditingProp);
@@ -66,7 +69,7 @@ function QuestionCard({
         // This is a new question, create it
         const questionData: QuestionCreationDTO = {
           questionType: tempQuestion.questionType,
-          tags: tempQuestion.tags?.map(t => typeof t === 'string' ? t : t.name) || [],
+          tags: tempQuestion.tags?.map(tag => tag.id) || [],
           description: tempQuestion.description,
           answer: tempQuestion.answer,
           choices: tempQuestion.choices,
@@ -81,7 +84,7 @@ function QuestionCard({
           description: tempQuestion.description,
           answer: tempQuestion.answer,
           choices: tempQuestion.choices,
-          tags: tempQuestion.tags?.map(t => typeof t === 'string' ? t : t.name) || [],
+          tags: tempQuestion.tags?.map(tag => tag.id) || [],
         };
         const updatedQuestion = await updateQuestion(tempQuestion.id, questionData);
         setQuestion(updatedQuestion);
@@ -156,6 +159,21 @@ function QuestionCard({
 
   const handleQuestionTypeChange = (value: string) => {
     setTempQuestion({ ...tempQuestion, questionType: value as Question['questionType'] });
+  };
+
+  const handleTagToggle = (tag: Tag) => {
+    const isTagAlreadySelected = tempQuestion.tags.some(t => t.id === tag.id);
+    if (isTagAlreadySelected) {
+      setTempQuestion({
+        ...tempQuestion,
+        tags: tempQuestion.tags.filter(t => t.id !== tag.id)
+      });
+    } else {
+      setTempQuestion({
+        ...tempQuestion,
+        tags: [...tempQuestion.tags, tag]
+      });
+    }
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -258,6 +276,34 @@ function QuestionCard({
                   <Plus className="w-4 h-4 mr-2" />
                   Add Option
                 </Button>
+              </div>
+
+              {/* Tag Selection Section */}
+              <div className="mt-4 pt-4 border-t border-zinc-800">
+                <p className="text-sm text-zinc-400 mb-2">Question Tags:</p>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {availableTags.length > 0 ? (
+                    availableTags.map(tag => {
+                      const isSelected = tempQuestion.tags.some(t => t.id === tag.id);
+                      return (
+                        <Button
+                          key={tag.id}
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 px-2 rounded-full border transition-all ${isSelected
+                            ? "bg-violet-900/40 border-violet-500 text-violet-200"
+                            : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                            }`}
+                          onClick={() => handleTagToggle(tag)}
+                        >
+                          {tag.name}
+                        </Button>
+                      );
+                    })
+                  ) : (
+                    <p className="text-xs text-zinc-600 italic">No tags available in this bank. Create tags in the Tag Management section above.</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
