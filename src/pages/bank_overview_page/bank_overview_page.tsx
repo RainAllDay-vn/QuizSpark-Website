@@ -86,7 +86,7 @@ export default function BankOverviewPage() {
     if (file.fileType.includes('pdf') || file.fileName.toLowerCase().endsWith('.pdf')) {
       setIsLoadingPreview(true);
       try {
-        const blob = await viewFile(questionBank.id, file.id);
+        const blob = await viewFile(file.id);
         const url = URL.createObjectURL(blob);
         setFilePreviewUrl(url);
       } catch (error) {
@@ -110,7 +110,7 @@ export default function BankOverviewPage() {
   const handleDownloadFile = async () => {
     if (!questionBank || !selectedFile) return;
     try {
-      await downloadFile(questionBank.id, selectedFile.id);
+      await downloadFile(selectedFile.id);
     } catch (error) {
       console.error("Failed to download file", error);
     }

@@ -5,7 +5,7 @@ import QuestionEditSection from '@/pages/bank_edit_page/question_edit_section';
 import { Button } from '@/components/ui/button';
 import { getQuestionBank } from '@/lib/api';
 import type { QuestionBank } from '@/model/QuestionBank';
-import { overwriteAllQuestions, uploadFile } from '@/lib/api';
+import { overwriteAllQuestions, uploadFile, assignFileToBank } from '@/lib/api';
 import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -95,6 +95,20 @@ export default function BankEditPage() {
     }
   };
 
+  const handleAttachExistingFile = async (fileId: string) => {
+    if (!bankId) return;
+    try {
+      const newFile = await assignFileToBank(bankId, fileId);
+      setQuestionBank(prev => ({
+        ...prev,
+        files: [...(prev.files || []), newFile]
+      }));
+    } catch (error) {
+      console.error('Attach file error:', error);
+      setImportError(error instanceof Error ? error.message : 'Failed to attach file');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white w-full relative">
       {/* Scroll to Bottom Button */}
@@ -138,6 +152,8 @@ export default function BankEditPage() {
           questions={questionBank.questions}
           bankId={questionBank.id}
           onUpload={handleUploadFile}
+          onAttachExistingFile={handleAttachExistingFile}
+          linkedFiles={questionBank.files || []}
           isImporting={isImporting}
           aiRequest={aiRequest}
           importError={importError}

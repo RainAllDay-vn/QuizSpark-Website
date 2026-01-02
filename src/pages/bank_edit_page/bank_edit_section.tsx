@@ -94,7 +94,7 @@ export default function BankEditSection({ questionBank, setQuestionBank, onStart
   const handleDeleteFile = async (e: React.MouseEvent, fileId: string) => {
     e.stopPropagation(); // Prevent opening preview when deleting
     if (!questionBank) return;
-    if (!window.confirm("Are you sure you want to delete this file?")) return;
+    if (!window.confirm("Are you sure you want to unassign this file from the bank? The file will still be available in your library.")) return;
     try {
       await deleteFile(questionBank.id, fileId);
       setQuestionBank(prev => ({
@@ -102,8 +102,8 @@ export default function BankEditSection({ questionBank, setQuestionBank, onStart
         files: prev.files.filter(f => f.id !== fileId)
       }));
     } catch (error) {
-      console.error('Failed to delete file:', error);
-      alert('Failed to delete file');
+      console.error('Failed to unassign file:', error);
+      alert('Failed to unassign file');
     }
   };
 
@@ -118,7 +118,7 @@ export default function BankEditSection({ questionBank, setQuestionBank, onStart
     if (file.fileType.includes('pdf') || file.fileName.toLowerCase().endsWith('.pdf')) {
       setIsLoadingPreview(true);
       try {
-        const blob = await viewFile(questionBank.id, file.id);
+        const blob = await viewFile(file.id);
         const url = URL.createObjectURL(blob);
         setFilePreviewUrl(url);
       } catch (error) {
@@ -143,7 +143,7 @@ export default function BankEditSection({ questionBank, setQuestionBank, onStart
   const handleDownloadFile = async () => {
     if (!questionBank || !selectedFile) return;
     try {
-      await downloadFile(questionBank.id, selectedFile.id);
+      await downloadFile(selectedFile.id);
     } catch (error) {
       console.error("Failed to download file", error);
     }

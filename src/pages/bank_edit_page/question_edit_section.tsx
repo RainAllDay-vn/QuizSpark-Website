@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Plus, Upload, Sparkles, Trash2 } from 'lucide-react';
+import { Plus, Upload, Sparkles, Trash2, Library, FileText, Loader2 } from 'lucide-react';
 import { useState, useCallback, useEffect, useRef } from 'react';
 
 import QuestionCard from "@/pages/bank_edit_page/question_card.tsx";
@@ -10,18 +10,23 @@ import { parseAiFile, addAllQuestions, generateAdaptiveQuestions } from '@/lib/a
 import type QuestionCreationDTO from '@/dtos/QuestionCreationDTO';
 import type Tag from '@/model/Tag';
 import type { AiQuestionDTO } from '@/dtos/AiQuestionDTO';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { getUserFiles } from '@/lib/api';
+import type { DbFile } from '@/model/DbFile';
 
 interface Props {
   questions: Question[];
   bankId: string;
   onUpload: (file: File) => void;
+  onAttachExistingFile: (fileId: string) => void;
+  linkedFiles: DbFile[];
   isImporting: boolean;
   aiRequest?: { fileId: string, operation: string } | null;
   importError: string | null;
   availableTags: Tag[];
 }
 
-export default function QuestionEditSection({ questions: initialQuestions, bankId, onUpload, isImporting, aiRequest = null, importError, availableTags }: Props) {
+export default function QuestionEditSection({ questions: initialQuestions, bankId, onUpload, onAttachExistingFile, linkedFiles, isImporting, aiRequest = null, importError, availableTags }: Props) {
   const [questions, setQuestions] = useState(initialQuestions);
   const [aiQuestions, setAiQuestions] = useState<Question[]>([]);
   const [newQuestion, setNewQuestion] = useState<Question | null>(null);
@@ -29,6 +34,34 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
   const statusRef = useRef<HTMLDivElement>(null);
 
   const [processingStage, setProcessingStage] = useState<string | null>(null);
+
+  // File Upload Dialog State
+  const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
+  const [libraryFiles, setLibraryFiles] = useState<DbFile[]>([]);
+  const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
+
+  useEffect(() => {
+    if (isFileDialogOpen) {
+      loadLibraryFiles();
+    }
+  }, [isFileDialogOpen]);
+
+  const loadLibraryFiles = async () => {
+    setIsLoadingLibrary(true);
+    try {
+      const files = await getUserFiles();
+      setLibraryFiles(files);
+    } catch (error) {
+      console.error("Failed to load library files", error);
+    } finally {
+      setIsLoadingLibrary(false);
+    }
+  };
+
+  const handleSelectFromLibrary = (fileId: string) => {
+    onAttachExistingFile(fileId);
+    setIsFileDialogOpen(false);
+  };
 
   useEffect(() => {
     if (statusRef.current) {
@@ -178,7 +211,7 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
           <Button
             variant="outline"
             className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => setIsFileDialogOpen(true)}
             disabled={isImporting}
           >
             <Upload className="w-4 h-4 mr-2" />
@@ -255,7 +288,7 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
               <div className="flex justify-center mt-4 space-x-2">
                 <Button
                   variant="outline"
-                  className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-zinc-900"
+                  className="border-zinc-700 text-zinc-300 bg-[#151518] hover:bg-[#1a1a1c]"
                   onClick={handleDiscardAiQuestions}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -273,6 +306,69 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
           </div>
         </div>
       )}
+
+      <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
+        <DialogContent className="bg-[#151518] border-zinc-800 text-white sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Add File to Question Bank</DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              Upload a new file or choose an existing one from your library.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-6 py-4">
+            <div className="flex flex-col gap-3">
+              <h3 className="text-sm font-medium text-zinc-300">Upload New</h3>
+              <Button
+                variant="outline"
+                className="w-full border-zinc-700 border-dashed bg-[#0f0f10] hover:bg-zinc-900 h-20 flex flex-col gap-2"
+                onClick={() => {
+                  fileInputRef.current?.click();
+                  setIsFileDialogOpen(false);
+                }}
+              >
+                <Upload className="w-5 h-5 text-zinc-500" />
+                <span className="text-xs text-zinc-400">Click to upload from computer</span>
+              </Button>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h3 className="text-sm font-medium text-zinc-300">Choose from Library</h3>
+              <div className="max-h-[300px] overflow-y-auto pr-2 flex flex-col gap-2">
+                {isLoadingLibrary ? (
+                  <div className="flex items-center justify-center py-8 text-zinc-500">
+                    <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                    <span>Loading library...</span>
+                  </div>
+                ) : libraryFiles.filter(f => !linkedFiles.some(lf => lf.id === f.id)).length > 0 ? (
+                  libraryFiles
+                    .filter(f => !linkedFiles.some(lf => lf.id === f.id))
+                    .map(file => (
+                      <div
+                        key={file.id}
+                        onClick={() => handleSelectFromLibrary(file.id)}
+                        className="flex items-center justify-between p-3 rounded-lg border border-zinc-800 bg-[#0f0f10] hover:border-violet-600/50 hover:bg-violet-900/10 cursor-pointer transition-all group"
+                      >
+                        <div className="flex items-center min-w-0">
+                          <FileText className="w-4 h-4 mr-3 text-zinc-500 group-hover:text-violet-400" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{file.fileName}</p>
+                            <p className="text-[10px] text-zinc-500">{new Date(file.uploadDate).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <Library className="w-4 h-4 text-zinc-700 group-hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    ))
+                ) : (
+                  <div className="text-center py-8 text-zinc-500 text-sm">
+                    No files found in your library.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

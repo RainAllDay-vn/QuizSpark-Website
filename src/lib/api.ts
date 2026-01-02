@@ -158,14 +158,66 @@ export async function deleteFile(bankId: string, fileId: string) {
     await api.delete(`/banks/single/${bankId}/files/${fileId}`);
     return true;
   } catch (error) {
-    console.error('Failed to delete file:', error);
+    console.error('Failed to unassign file:', error);
     throw error;
   }
 }
 
-export async function viewFile(bankId: string, fileId: string) {
+export async function unassignFileFromBank(bankId: string, fileId: string) {
+  return deleteFile(bankId, fileId);
+}
+
+export async function assignFileToBank(bankId: string, fileId: string) {
   try {
-    const response = await api.get(`/banks/single/${bankId}/files/${fileId}/view`, {
+    const response = await api.post(`/banks/single/${bankId}/files/${fileId}`);
+    return response.data as DbFile;
+  } catch (error) {
+    console.error('Failed to assign file to bank:', error);
+    throw error;
+  }
+}
+
+// ===== INDEPENDENT FILE ENDPOINTS (/files/) =====
+
+export async function uploadFileIndependent(file: File) {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post(`/files`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data as DbFile;
+  } catch (error) {
+    console.error('Failed to upload file independently:', error);
+    throw error;
+  }
+}
+
+export async function getUserFiles() {
+  try {
+    const response = await api.get('/files');
+    return response.data as DbFile[];
+  } catch (error) {
+    console.error('Failed to fetch user files:', error);
+    throw error;
+  }
+}
+
+export async function deleteFilePermanent(fileId: string) {
+  try {
+    await api.delete(`/files/${fileId}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to delete file permanently:', error);
+    throw error;
+  }
+}
+
+export async function viewFile(fileId: string) {
+  try {
+    const response = await api.get(`/files/${fileId}/view`, {
       responseType: 'blob'
     });
     return response.data as Blob;
@@ -175,9 +227,9 @@ export async function viewFile(bankId: string, fileId: string) {
   }
 }
 
-export async function downloadFile(bankId: string, fileId: string, knownFileName?: string) {
+export async function downloadFile(fileId: string, knownFileName?: string) {
   try {
-    const response = await api.get(`/banks/single/${bankId}/files/${fileId}/download`, {
+    const response = await api.get(`/files/${fileId}/download`, {
       responseType: 'blob'
     });
     // Triggers download in the browser
