@@ -38,6 +38,13 @@ function QuestionCard({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [showPreview, setShowPreview] = useState(false);
 
+  React.useEffect(() => {
+    setQuestion(questionProp);
+    if (!isEditing) {
+      setTempQuestion({ ...questionProp });
+    }
+  }, [questionProp, isEditing]);
+
   const validateQuestionData = (): Record<string, string> => {
     const errors: Record<string, string> = {};
     if (!tempQuestion.description || tempQuestion.description.trim() === '') {

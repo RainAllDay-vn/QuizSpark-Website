@@ -54,7 +54,11 @@ export default function TagManagementSection({ questionBank, setQuestionBank }: 
                 const updated = await updateTag(editingTag.id, payload);
                 setQuestionBank(prev => ({
                     ...prev,
-                    tags: prev.tags.map(t => t.id === updated.id ? updated : t)
+                    tags: prev.tags.map(t => t.id === updated.id ? updated : t),
+                    questions: prev.questions.map(q => ({
+                        ...q,
+                        tags: q.tags.map(t => t.id === updated.id ? updated : t)
+                    }))
                 }));
             } else {
                 const payload: TagCreationDTO = {
@@ -83,7 +87,11 @@ export default function TagManagementSection({ questionBank, setQuestionBank }: 
             await archiveTag(tagId);
             setQuestionBank(prev => ({
                 ...prev,
-                tags: prev.tags.filter(t => t.id !== tagId)
+                tags: prev.tags.filter(t => t.id !== tagId),
+                questions: prev.questions.map(q => ({
+                    ...q,
+                    tags: q.tags.filter(t => t.id !== tagId)
+                }))
             }));
         } catch (error) {
             console.error('Failed to delete tag:', error);
