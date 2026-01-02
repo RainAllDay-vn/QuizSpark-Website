@@ -13,9 +13,9 @@ import { NumberInput } from "@/components/ui/number-input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { QuestionBank } from "@/model/QuestionBank";
 import useAuthStatus from "@/lib/use_auth_hook";
-import {useState} from "react";
-import {startNewPractice} from "@/lib/api.ts";
-import {useNavigate} from "react-router-dom";
+import { useState } from "react";
+import { startNewPractice } from "@/lib/api.ts";
+import { useNavigate } from "react-router-dom";
 
 interface PracticeOptionsDialogProps {
   isOpen: boolean;
@@ -23,9 +23,9 @@ interface PracticeOptionsDialogProps {
   questionBank: QuestionBank;
 }
 
-export default function PracticeOptionsDialog({ 
-  isOpen, 
-  onClose, 
+export default function PracticeOptionsDialog({
+  isOpen,
+  onClose,
   questionBank
 }: PracticeOptionsDialogProps) {
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ export default function PracticeOptionsDialog({
       if (user) {
         const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer, selectedTags);
         const practiceId = response.id;
-        navigate('/practice/'+practiceId);
+        navigate('/practice/' + practiceId);
       } else {
         const searchParams = new URLSearchParams();
         searchParams.append("size", practiceSize.toString());

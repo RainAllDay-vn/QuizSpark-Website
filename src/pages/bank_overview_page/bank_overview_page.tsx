@@ -13,6 +13,7 @@ import { formatRelativeTime } from "@/lib/utils";
 import PracticeOptionsDialog from "@/components/custom/practice_options_dialog";
 import MarkdownRenderer from "@/components/custom/markdown-renderer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import TagDisplay from "@/components/custom/tag_display";
 
 export default function BankOverviewPage() {
   const { bankId } = useParams<{ bankId: string }>();
@@ -184,13 +185,9 @@ export default function BankOverviewPage() {
           )}
 
           {questionBank.tags.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              <h3 className="text-sm font-medium text-zinc-400 w-full mb-1">Tags:</h3>
-              {questionBank.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary" className="bg-violet-900/30 text-violet-300 border-violet-800/50 hover:bg-violet-900/50 transition-colors px-3 py-1">
-                  {tag}
-                </Badge>
-              ))}
+            <div className="mt-4">
+              <h3 className="text-sm font-medium text-zinc-400 mb-1">Tags:</h3>
+              <TagDisplay tags={questionBank.tags} />
             </div>
           )}
 
@@ -304,12 +301,12 @@ export default function BankOverviewPage() {
                       <Badge
                         variant="outline"
                         className={`${question.correctAttempts !== undefined && question.totalAttempts > 0
-                            ? (question.correctAttempts / question.totalAttempts) >= 0.7
-                              ? "border-green-700 text-green-400"
-                              : (question.correctAttempts / question.totalAttempts) >= 0.4
-                                ? "border-amber-700 text-amber-400"
-                                : "border-red-700 text-red-400"
-                            : "border-zinc-700 text-zinc-300"
+                          ? (question.correctAttempts / question.totalAttempts) >= 0.7
+                            ? "border-green-700 text-green-400"
+                            : (question.correctAttempts / question.totalAttempts) >= 0.4
+                              ? "border-amber-700 text-amber-400"
+                              : "border-red-700 text-red-400"
+                          : "border-zinc-700 text-zinc-300"
                           }`}
                       >
                         {question.correctAttempts ?? 0}/{question.totalAttempts} correct
@@ -327,17 +324,11 @@ export default function BankOverviewPage() {
                 </div>
 
                 {question.tags && question.tags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {question.tags.map((tag, i) => (
-                      <Badge
-                        key={i}
-                        variant="secondary"
-                        className="bg-violet-900/30 text-violet-300 border-violet-800/50 hover:bg-violet-900/50 transition-colors px-2 py-0.5 text-xs"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+                  <TagDisplay
+                    tags={question.tags}
+                    size="sm"
+                    className="mt-3"
+                  />
                 )}
               </CardHeader>
               <CardContent>

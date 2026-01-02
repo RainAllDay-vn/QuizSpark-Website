@@ -1,4 +1,5 @@
 import type QuestionComment from "@/model/Comment.ts";
+import type Tag from "./Tag";
 
 export interface Question {
   id: string;
@@ -6,9 +7,8 @@ export interface Question {
   choices: string[];
   answer: string[];
   questionType: "SINGLE_ANSWER" | "MULTIPLE_ANSWER" | "FILL_THE_BLANK" | "OPEN_ANSWER";
-  tags: string[];
+  tags: Tag[];
   comments?: QuestionComment[];
-  explanation?: string;
   totalAttempts?: number;
   correctAttempts?: number;
 }

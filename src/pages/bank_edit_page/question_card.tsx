@@ -10,7 +10,7 @@ import type QuestionCreationDTO from "@/dtos/QuestionCreationDTO.ts";
 import { addQuestion, deleteQuestion, updateQuestion } from "@/lib/api.ts";
 import type QuestionUpdateDTO from "@/dtos/QuestionUpdateDTO.ts";
 import * as React from "react";
-import { Badge } from "@/components/ui/badge.tsx";
+import TagDisplay from "@/components/custom/tag_display";
 
 interface QuestionCardProps {
   questionProp: Question;
@@ -66,7 +66,7 @@ function QuestionCard({
         // This is a new question, create it
         const questionData: QuestionCreationDTO = {
           questionType: tempQuestion.questionType,
-          tags: tempQuestion.tags || [],
+          tags: tempQuestion.tags?.map(t => typeof t === 'string' ? t : t.name) || [],
           description: tempQuestion.description,
           answer: tempQuestion.answer,
           choices: tempQuestion.choices,
@@ -81,7 +81,7 @@ function QuestionCard({
           description: tempQuestion.description,
           answer: tempQuestion.answer,
           choices: tempQuestion.choices,
-          tags: tempQuestion.tags,
+          tags: tempQuestion.tags?.map(t => typeof t === 'string' ? t : t.name) || [],
         };
         const updatedQuestion = await updateQuestion(tempQuestion.id, questionData);
         setQuestion(updatedQuestion);
@@ -307,17 +307,11 @@ function QuestionCard({
             <div className="text-lg font-medium text-white"><MarkdownRenderer content={question.description} /></div>
           </div>
           {question.tags && question.tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {question.tags.map((tag, i) => (
-                <Badge
-                  key={i}
-                  variant="secondary"
-                  className="bg-violet-900/30 text-violet-300 border-violet-800/50 hover:bg-violet-900/50 transition-colors px-2 py-0.5 text-xs"
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+            <TagDisplay
+              tags={question.tags}
+              size="sm"
+              className="mt-2"
+            />
           )}
           <div className="mt-3 space-y-2">
             {(question.questionType == "SINGLE_ANSWER" || question.questionType == "MULTIPLE_ANSWER")

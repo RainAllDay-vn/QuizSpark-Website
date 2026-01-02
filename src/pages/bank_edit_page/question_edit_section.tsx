@@ -129,8 +129,7 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
         choices: q.choices,
         answer: q.answer,
         questionType: q.questionType,
-        tags: q.tags || [],
-        explanation: q.explanation
+        tags: q.tags?.map(t => typeof t === 'string' ? t : t.name) || [],
       }));
 
       const newQuestions = await addAllQuestions(bankId, dtos);

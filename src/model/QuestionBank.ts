@@ -1,5 +1,6 @@
 import type { DbFile } from "./DbFile";
 import type { Question } from "./Question";
+import type Tag from "./Tag";
 
 export interface QuestionBank {
   id: string;
@@ -12,7 +13,7 @@ export interface QuestionBank {
   rating?: number;
   numberOfQuestions: number;
   numberOfAttempts: number;
-  tags: string[];
+  tags: Tag[];
   files: DbFile[];
   questions: Question[];
 }

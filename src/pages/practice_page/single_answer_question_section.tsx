@@ -1,18 +1,19 @@
-import {Button} from "@/components/ui/button";
-import {Card, CardContent} from "@/components/ui/card";
-import type {QuestionSectionProps} from "@/pages/practice_page/practice_section.tsx";
-import {useEffect} from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import type { QuestionSectionProps } from "@/pages/practice_page/practice_section.tsx";
+import { useEffect } from "react";
 import MarkdownRenderer from "@/components/custom/markdown-renderer";
+import TagDisplay from "@/components/custom/tag_display";
 
 export default function SingleAnswerQuestionSection({
-                                                      state,
-                                                      handleSubmitAnswer,
-                                                      handleNextQuestion,
-                                                      handleCompletePractice,
-                                                    }: QuestionSectionProps) {
-  const {questions, currentQuestionIndex, encouragement} = state;
+  state,
+  handleSubmitAnswer,
+  handleNextQuestion,
+  handleCompletePractice,
+}: QuestionSectionProps) {
+  const { questions, currentQuestionIndex, encouragement } = state;
   const question = questions[currentQuestionIndex];
-  const isLastQuestion = questions.length-1 === currentQuestionIndex;
+  const isLastQuestion = questions.length - 1 === currentQuestionIndex;
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -38,13 +39,13 @@ export default function SingleAnswerQuestionSection({
   }
 
   const calAnswerButtonStyle = (index: number) => {
-    if (userAnswer==-1) return "";
-    if (correctAnswer==-1){
-      if (index===userAnswer) return "bg-purple-400";
+    if (userAnswer == -1) return "";
+    if (correctAnswer == -1) {
+      if (index === userAnswer) return "bg-purple-400";
       return "";
     }
-    if (index===correctAnswer) return "bg-green-500 text-white border-green-600";
-    if (index===userAnswer) return "bg-red-500 text-white border-red-600";
+    if (index === correctAnswer) return "bg-green-500 text-white border-green-600";
+    if (index === userAnswer) return "bg-red-500 text-white border-red-600";
     return "";
   }
 
@@ -53,23 +54,19 @@ export default function SingleAnswerQuestionSection({
       <Card className="h-full bg-gray-900/60 border border-gray-700 w-full text-white">
         <CardContent className="h-full p-6 space-y-4 flex flex-col">
           <div className="flex items-center justify-between">
-                <span className="bg-purple-500 text-sm px-3 py-1 rounded-full font-medium">
-                  100 points
-                </span>
+            <span className="bg-purple-500 text-sm px-3 py-1 rounded-full font-medium">
+              100 points
+            </span>
           </div>
 
           {/* Question Tags */}
           {question.tags && question.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {question.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded-md border border-blue-500/30"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+            <TagDisplay
+              tags={question.tags}
+              variant="default"
+              size="sm"
+              badgeClassName="bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/30"
+            />
           )}
 
           <div className="grow"></div>
@@ -92,11 +89,10 @@ export default function SingleAnswerQuestionSection({
           </div>
           {/* Encouragement Message */}
           {encouragement && (
-            <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
-              encouragement.type === "CORRECT"
-                ? "bg-green-500/20 border border-green-500/30 text-green-300"
-                : "bg-orange-500/20 border border-orange-500/30 text-orange-300"
-            }`}>
+            <div className={`mt-4 p-3 rounded-lg text-center font-medium ${encouragement.type === "CORRECT"
+              ? "bg-green-500/20 border border-green-500/30 text-green-300"
+              : "bg-orange-500/20 border border-orange-500/30 text-orange-300"
+              }`}>
               <span className="text-2xl mr-2">{encouragement.emoji}</span>
               {encouragement.message}
               <span className="text-2xl ml-2">{encouragement.emoji}</span>
