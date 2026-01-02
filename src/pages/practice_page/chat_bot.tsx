@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CardContent, CardHeader } from '@/components/ui/card';
-import { X, Send, Bot, User } from 'lucide-react';
+import { X, Send, Bot, User, GripVertical } from 'lucide-react';
 import type Message from '@/model/Message';
 import MarkdownRenderer from '@/components/custom/markdown-renderer';
 
@@ -21,6 +21,16 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
   ]);
   const [inputText, setInputText] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
+  const [width, setWidth] = useState(() => {
+    const savedWidth = localStorage.getItem('chatbot-width');
+    return savedWidth ? parseInt(savedWidth, 10) : 350;
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('chatbot-width', width.toString());
+  }, [width]);
 
   useEffect(() => {
     if (isOpen) {
@@ -29,6 +39,38 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
       setIsAnimating(false);
     }
   }, [isOpen]);
+
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback((e: MouseEvent) => {
+    if (isResizing) {
+      const newWidth = window.innerWidth - e.clientX;
+      if (newWidth > 280 && newWidth < 800) {
+        setWidth(newWidth);
+      }
+    }
+  }, [isResizing]);
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener('mousemove', resize);
+      window.addEventListener('mouseup', stopResizing);
+    } else {
+      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mouseup', stopResizing);
+    }
+    return () => {
+      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mouseup', stopResizing);
+    };
+  }, [isResizing, resize, stopResizing]);
 
   const handleSendMessage = () => {
     if (inputText.trim() === '') return;
@@ -63,15 +105,29 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
+        className="fixed inset-0 bg-black/10 backdrop-blur-[2px] z-40 transition-opacity duration-300"
         onClick={onClose}
       />
 
       {/* Chat Window */}
-      <div className={`fixed right-0 top-0 h-full w-full md:w-[350px] bg-gray-900/95 backdrop-blur-md border-l border-gray-800 z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${isAnimating ? 'translate-x-0' : 'translate-x-full'
-        }`}>
+      <div
+        ref={sidebarRef}
+        style={{ width: window.innerWidth < 768 ? '100%' : `${width}px` }}
+        className={`fixed right-0 top-0 h-full bg-gray-900/95 backdrop-blur-md border-l border-gray-800 z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${isAnimating ? 'translate-x-0' : 'translate-x-full'
+          } ${isResizing ? 'transition-none' : ''}`}
+      >
+        {/* Resize Handle */}
+        <div
+          onMouseDown={startResizing}
+          className="absolute left-0 top-0 w-1 h-full cursor-ew-resize hover:bg-purple-500/50 transition-colors z-[60] group flex items-center justify-center"
+        >
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <GripVertical className="h-4 w-4 text-purple-400 -ml-1" />
+          </div>
+        </div>
+
         {/* Header */}
-        <CardHeader className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-b border-gray-800 px-4 py-3 flex flex-row items-center justify-between">
+        <CardHeader className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-b border-gray-800 px-4 py-3 flex flex-row items-center justify-between shrink-0">
           <div className="flex items-center space-x-2">
             <Bot className="h-5 w-5 text-purple-400" />
             <h2 className="text-white font-semibold">AI Assistant</h2>
@@ -93,7 +149,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
               key={index}
               className={`flex ${message.sender === 'USER' ? 'justify-end' : 'justify-start'} animate-fade-in`}
             >
-              <div className={`flex items-start space-x-2 max-w-[80%] ${message.sender === 'USER' ? 'flex-row-reverse space-x-reverse' : ''
+              <div className={`flex items-start space-x-2 max-w-[90%] ${message.sender === 'USER' ? 'flex-row-reverse space-x-reverse' : ''
                 }`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.sender === 'USER'
                   ? 'bg-gradient-to-r from-purple-600 to-blue-600'
@@ -120,7 +176,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         </CardContent>
 
         {/* Input Area */}
-        <div className="border-t border-gray-800 p-4 bg-gray-900/50">
+        <div className="border-t border-gray-800 p-4 bg-gray-900/50 shrink-0">
           <div className="flex space-x-2">
             <Input
               value={inputText}
