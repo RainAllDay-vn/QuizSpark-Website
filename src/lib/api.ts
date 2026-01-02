@@ -21,6 +21,10 @@ import type AiResponseDTO from "@/dtos/AiResponseDTO";
 import type Tag from "@/model/Tag.ts";
 import type { TagCreationDTO } from "@/dtos/TagCreationDTO.ts";
 import type { TagUpdateDTO } from "@/dtos/TagUpdateDTO.ts";
+import type ChatRequestDTO from "@/dtos/ChatRequestDTO.ts";
+import type ChatResponseDTO from "@/dtos/ChatResponseDTO.ts";
+import type ChatSessionDTO from "@/dtos/ChatSessionDTO.ts";
+import type ChatMessageDTO from "@/dtos/ChatMessageDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -488,6 +492,79 @@ export async function parseAiFile(fileId: string, onResponse: (data: AiResponseD
       }
     }
   });
+}
+
+// ===== CHAT ENDPOINTS (/chat/) =====
+
+export async function uploadChatAttachment(file: File) {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post(`/chat/attachments`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data as string; // UUID
+  } catch (error) {
+    console.error('Failed to upload chat attachment:', error);
+    throw error;
+  }
+}
+
+export async function streamChat(request: ChatRequestDTO, onChunk: (data: ChatResponseDTO) => void) {
+  let lastSeenLength = 0;
+  let buffer = "";
+
+  await api.post(`/chat/stream`, request, {
+    responseType: 'text',
+    onDownloadProgress: (progressEvent) => {
+      const fullResponse = progressEvent.event.target.responseText;
+      const newChunk = fullResponse.slice(lastSeenLength);
+      lastSeenLength = fullResponse.length;
+      buffer += newChunk;
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        let data = line.trim();
+        if (!data.startsWith('data:')) continue;
+        data = data.replace('data:', '').trim();
+        if (data.length === 0) continue;
+        try {
+          const parsedData: ChatResponseDTO = JSON.parse(data);
+          onChunk(parsedData);
+        } catch (error) {
+          console.error('Error parsing chat SSE data:', error);
+        }
+      }
+    }
+  });
+}
+
+export async function getChatSessions() {
+  try {
+    const response = await api.get('/chat/sessions');
+    return response.data as ChatSessionDTO[];
+  } catch (error) {
+    console.error('Failed to fetch chat sessions:', error);
+    throw error;
+  }
+}
+
+export async function getSessionMessages(sessionId: string) {
+  try {
+    const response = await api.get(`/chat/sessions/${sessionId}/messages`);
+    return response.data as ChatMessageDTO[];
+  } catch (error) {
+    console.error('Failed to fetch session messages:', error);
+    throw error;
+  }
+}
+
+export function getChatAttachmentUrl(fileId: string) {
+  return `${BASE_URL}/files/download/${fileId}`;
 }
 
 export async function generateAdaptiveQuestions(bankId: string, onResponse: (data: AiResponseDTO) => void) {
