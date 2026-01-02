@@ -20,7 +20,7 @@ import MyHeader from "@/components/custom/header.tsx";
 import MyFooter from "@/components/custom/footer.tsx";
 import BankEditPage from "./pages/bank_edit_page/bank_edit_page";
 import BankOverviewPage from "./pages/bank_overview_page/bank_overview_page";
-import GlobalChatBot from "@/components/custom/GlobalChatBot";
+import GlobalChatBot from "@/components/chatbot/GlobalChatBot";
 
 const ProtectedRoute = () => {
   const { user } = useAuthStatus();
