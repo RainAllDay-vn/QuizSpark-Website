@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardHeader, Card, CardFooter } from '@/components/ui/card';
-import { X, Send, Bot, User, GripVertical, Plus, History, Image as ImageIcon, ChevronLeft, ChevronRight, MoreVertical, Loader2 } from 'lucide-react';
+import { X, Send, Bot, User, GripVertical, Plus, History, Image as ImageIcon, ChevronLeft, ChevronRight, MoreVertical, Loader2, Brain, Copy, Check } from 'lucide-react';
 import MarkdownRenderer from '@/components/custom/markdown-renderer';
 import {
   getChatSessions,
   getSessionMessages,
   streamChat,
   uploadChatAttachment,
-  getChatAttachmentUrl
+  getChatAttachmentUrl,
+  getChatModels
 } from '@/lib/api';
 import type ChatMessageDTO from '@/dtos/ChatMessageDTO';
 import type ChatSessionDTO from '@/dtos/ChatSessionDTO';
 import type ChatResponseDTO from '@/dtos/ChatResponseDTO';
 import type ChatRequestDTO from '@/dtos/ChatRequestDTO';
+import type ChatModelDTO from '@/dtos/ChatModelDTO';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,14 +28,18 @@ interface ChatBotProps {
   onClose: () => void;
 }
 
-const MODELS = ["deepseek-v3", "deepseek-r1", "gpt-4o", "gemini-1.5-pro"];
+
 
 export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
   const [sessions, setSessions] = useState<ChatSessionDTO[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [inputText, setInputText] = useState('');
-  const [selectedModel, setSelectedModel] = useState(MODELS[0]);
+  const [availableModels, setAvailableModels] = useState<ChatModelDTO[]>([]);
+  const [selectedModelId, setSelectedModelId] = useState(() => {
+    return localStorage.getItem('chatbot-selected-model-id') || '';
+  });
+  const selectedModel = availableModels.find(m => m.id === selectedModelId) || availableModels[0];
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -44,6 +50,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
     return savedWidth ? parseInt(savedWidth, 10) : 450; // Increased default width for cards
   });
   const [isResizing, setIsResizing] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +66,28 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
   useEffect(() => {
     localStorage.setItem('chatbot-width', width.toString());
   }, [width]);
+
+  useEffect(() => {
+    loadModels();
+  }, []);
+
+  useEffect(() => {
+    if (selectedModelId) {
+      localStorage.setItem('chatbot-selected-model-id', selectedModelId);
+    }
+  }, [selectedModelId]);
+
+  const loadModels = async () => {
+    try {
+      const data = await getChatModels();
+      setAvailableModels(data);
+      if (!selectedModelId && data.length > 0) {
+        setSelectedModelId(data[0].id);
+      }
+    } catch (error) {
+      console.error("Failed to load models:", error);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -139,6 +168,12 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
     };
   }, [isResizing, resize, stopResizing]);
 
+  const handleCopy = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -182,7 +217,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
       role: 'ASSISTANT',
       content: '',
       messageIndex: index !== undefined ? index : messages.length + 1,
-      model: selectedModel,
+      model: selectedModel?.displayName || 'Unknown Model',
       createdAt: new Date().toISOString()
     };
 
@@ -197,7 +232,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
       const request: ChatRequestDTO = {
         message: messageContent,
         sessionId: currentSessionId || undefined,
-        model: selectedModel,
+        model: selectedModel?.name,
         fileId: newUserMessage?.fileId || undefined,
         index: index
       };
@@ -245,16 +280,6 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         <span className="text-xs font-medium text-gray-300">
           {msg.role === 'USER' ? 'User' : 'AI Assistant'}
         </span>
-        {msg.role === 'ASSISTANT' && (
-          <>
-            <div className="px-1.5 py-0.5 rounded bg-blue-500/20 border border-blue-500/30 text-[10px] text-blue-400">
-              Tools
-            </div>
-            <div className="px-1.5 py-0.5 rounded bg-purple-500/20 border border-purple-500/30 text-[10px] text-purple-400">
-              Context
-            </div>
-          </>
-        )}
       </div>
       {msg.role === 'USER' && (
         <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-gray-500 hover:text-white">
@@ -272,14 +297,14 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-7 text-[10px] text-gray-400 hover:text-white capitalize">
-              {msg.model || selectedModel}
+              {msg.model || selectedModel?.displayName || 'Unknown Model'}
               <ChevronLeft className="h-3 w-3 ml-1 rotate-270" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="bg-gray-800 border-gray-700 text-white">
-            {MODELS.map(m => (
-              <DropdownMenuItem key={m} onClick={() => setSelectedModel(m)} className="text-xs">
-                {m}
+            {availableModels.map(m => (
+              <DropdownMenuItem key={m.id} onClick={() => setSelectedModelId(m.id)} className="text-xs">
+                {m.displayName}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -295,21 +320,14 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
           >
             <History className="h-3.5 w-3.5" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400 hover:text-white">
-            <ImageIcon className="h-3.5 w-3.5" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleCopy(msg.id, msg.content)}
+            className="h-7 w-7 p-0 text-gray-400 hover:text-white"
+          >
+            {copiedId === msg.id ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400 hover:text-white">
-            <Bot className="h-3.5 w-3.5" />
-          </Button>
-          <div className="flex items-center ml-2 border-l border-gray-800 pl-2">
-            <Button variant="ghost" size="sm" className="h-7 w-5 p-0 text-gray-400 hover:text-white">
-              <ChevronLeft className="h-3 w-3" />
-            </Button>
-            <span className="text-[10px] text-gray-500 px-1">1/1</span>
-            <Button variant="ghost" size="sm" className="h-7 w-5 p-0 text-gray-400 hover:text-white">
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          </div>
         </div>
       </div>
     );
@@ -418,14 +436,14 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
               key={message.id}
               className={`flex animate-fade-in ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
             >
-              <Card className={`w-full max-w-[98%] border-gray-800/40 transition-all duration-300 hover:border-purple-500/20 ${message.role === 'USER'
+              <Card className={`w-full max-w-[98%] py-1 gap-1 border-gray-800/40 transition-all duration-300 hover:border-purple-500/20 ${message.role === 'USER'
                 ? 'bg-purple-900/5'
                 : 'bg-white/[0.01]'
                 }`}>
-                <CardHeader className="p-2.5 pb-0 space-y-0">
+                <CardHeader className="px-3 pt-1 pb-0 space-y-0">
                   {renderMessageHeader(message)}
                 </CardHeader>
-                <CardContent className="p-2.5 pt-1">
+                <CardContent className="px-3 pt-1 pb-0">
                   {message.fileId && (
                     <div className="mb-2 rounded-lg overflow-hidden border border-gray-800 max-w-sm">
                       <img
@@ -498,14 +516,22 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex items-center space-x-1 text-[11px] text-gray-400 hover:text-gray-200 transition-colors bg-gray-800/30 px-2 py-1 rounded-md border border-gray-800/40">
-                        <span className="font-medium">{selectedModel}</span>
+                        <span className="font-medium">{selectedModel?.displayName || 'Loading...'}</span>
+                        <div className="flex items-center space-x-1 ml-1 scale-75">
+                          {selectedModel?.characteristics.includes('VISION') && <ImageIcon className="h-3 w-3 text-cyan-400" />}
+                          {selectedModel?.characteristics.includes('REASONING') && <Brain className="h-3 w-3 text-purple-400" />}
+                        </div>
                         <ChevronLeft className="h-2.5 w-2.5 rotate-270 opacity-40" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="bg-gray-900 border-gray-800 text-gray-300">
-                      {MODELS.map(m => (
-                        <DropdownMenuItem key={m} onClick={() => setSelectedModel(m)} className="text-[11px] hover:bg-gray-800 focus:bg-gray-800 focus:text-white">
-                          {m}
+                    <DropdownMenuContent align="start" className="bg-gray-900 border-gray-800 text-gray-300 min-w-[200px]">
+                      {availableModels.map(m => (
+                        <DropdownMenuItem key={m.id} onClick={() => setSelectedModelId(m.id)} className="text-xs flex items-center justify-between hover:bg-gray-800 focus:bg-gray-800 focus:text-white py-2">
+                          <span>{m.displayName}</span>
+                          <div className="flex items-center space-x-1.5 opacity-60">
+                            {m.characteristics.includes('VISION') && <ImageIcon className="h-3 w-3" />}
+                            {m.characteristics.includes('REASONING') && <Brain className="h-3 w-3" />}
+                          </div>
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
@@ -555,11 +581,11 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
               </div>
             </div>
           </Card>
-          <div className="mt-2 flex items-center justify-center space-x-1.5 text-[9px] text-gray-500 select-none opacity-40">
-            <span className="bg-gray-800/50 px-1 py-0.5 rounded border border-gray-700/30 font-bold">Enter</span>
+          <div className="mt-2 flex items-center justify-center space-x-2 text-[9px] text-gray-400 select-none opacity-80">
+            <span className="bg-white/10 px-1.5 py-0.5 rounded border border-white/10 font-bold text-white/90 tracking-tight">Enter</span>
             <span>to send</span>
-            <span className="w-1 h-1 rounded-full bg-gray-800" />
-            <span className="bg-gray-800/50 px-1 py-0.5 rounded border border-gray-700/30 font-bold">Shift+Enter</span>
+            <span className="w-1 h-1 rounded-full bg-white/20" />
+            <span className="bg-white/10 px-1.5 py-0.5 rounded border border-white/10 font-bold text-white/90 tracking-tight">Shift+Enter</span>
             <span>for new line</span>
           </div>
         </div>

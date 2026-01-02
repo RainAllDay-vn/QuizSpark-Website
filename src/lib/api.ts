@@ -25,6 +25,7 @@ import type ChatRequestDTO from "@/dtos/ChatRequestDTO.ts";
 import type ChatResponseDTO from "@/dtos/ChatResponseDTO.ts";
 import type ChatSessionDTO from "@/dtos/ChatSessionDTO.ts";
 import type ChatMessageDTO from "@/dtos/ChatMessageDTO.ts";
+import type ChatModelDTO from "@/dtos/ChatModelDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -559,6 +560,16 @@ export async function getSessionMessages(sessionId: string) {
     return response.data as ChatMessageDTO[];
   } catch (error) {
     console.error('Failed to fetch session messages:', error);
+    throw error;
+  }
+}
+
+export async function getChatModels() {
+  try {
+    const response = await api.get('/chat/models');
+    return response.data as ChatModelDTO[];
+  } catch (error) {
+    console.error('Failed to fetch chat models:', error);
     throw error;
   }
 }
