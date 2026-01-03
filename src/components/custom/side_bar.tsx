@@ -11,7 +11,7 @@ interface SideBarProps {
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, to: "/home/dashboard" },
   { name: "My Banks", icon: Video, to: "/home/banks" },
-  { name: "My Library", icon: Library, to: "/home/library" },
+  { name: "Workspace", icon: Library, to: "/workspace" },
   { name: "Past Practices", icon: Calendar, to: "/home/past-practices" },
 ]
 
@@ -25,7 +25,7 @@ export function SideBar({ isSideBarCollapsed, toggleSideBar }: SideBarProps) {
   return (
     <aside
       className={clsx(
-        "md:flex fixed top-0 left-0 flex-col h-screen bg-[#151518] border-r border-zinc-800 text-white z-40 transition-all duration-300 overflow-hidden md:visible",
+        "md:flex flex-col h-full bg-[#151518] border-r border-zinc-800 text-white transition-all duration-300 overflow-hidden md:visible",
         isSideBarCollapsed ? "w-0 md:w-16" : "w-64",
       )}>
       {/* === Header with Logo and Collapse Button === */}

@@ -9,7 +9,6 @@ import QuestionBankPage from "@/pages/bank_page/bank_page.tsx"
 import DashboardSection from "@/pages/home_page/dashboard_section.tsx";
 import QuestionBankSection from "@/pages/home_page/bank_section.tsx";
 import PastPracticeSection from "@/pages/home_page/past_practice_section";
-import LibrarySection from "@/pages/home_page/library_section.tsx";
 import LogInSection from "@/pages/log_in_page/log_in_section.tsx";
 import SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
 import AdditionalInfoSection from "@/pages/log_in_page/additional_info_section.tsx";
@@ -21,6 +20,7 @@ import MyFooter from "@/components/custom/footer.tsx";
 import BankEditPage from "./pages/bank_edit_page/bank_edit_page";
 import BankOverviewPage from "./pages/bank_overview_page/bank_overview_page";
 import GlobalChatBot from "@/components/chatbot/GlobalChatBot";
+import WorkspacePage from "./pages/workspace_page/workspace_page";
 
 const ProtectedRoute = () => {
   const { user } = useAuthStatus();
@@ -68,9 +68,9 @@ function App() {
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardSection />} />
               <Route path="banks" element={<QuestionBankSection />} />
-              <Route path="library" element={<LibrarySection />} />
               <Route path="past-practices" element={<PastPracticeSection />} />
             </Route>
+            <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/edit/bank/:bankId" element={<BankEditPage />} />
             <Route path="/bank/:bankId" element={<BankOverviewPage />} />
           </Route>
