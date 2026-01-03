@@ -2,16 +2,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { updateQuestionBank, deleteQuestionBank, deleteFile, viewFile, downloadFile } from '@/lib/api';
+import { updateQuestionBank, deleteQuestionBank, deleteFile } from '@/lib/api';
 import type { QuestionBank } from '@/model/QuestionBank';
 import type QuestionBankUpdateDTO from '@/dtos/QuestionBankUpdateDTO';
-import { Save, Edit, Trash2, FileText, Download, Loader2, Sparkles } from 'lucide-react';
+import { Save, Edit, Trash2, FileText, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import type { DbFile } from '@/model/DbFile';
+import FilePreviewDialog from "@/components/custom/file_preview_dialog";
 
 export default function BankEditSection({ questionBank, setQuestionBank, onStartAiProcessing }: { questionBank: QuestionBank, setQuestionBank: Dispatch<SetStateAction<QuestionBank>>, onStartAiProcessing: (fileId: string, operation: string) => void }) {
   const navigate = useNavigate();
@@ -20,9 +21,8 @@ export default function BankEditSection({ questionBank, setQuestionBank, onStart
   const [isDeleting, setIsDeleting] = useState(false);
 
   // File Preview State
+  // File Preview State
   const [selectedFile, setSelectedFile] = useState<DbFile | null>(null);
-  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   // AI Options State
   const [showAiOptions, setShowAiOptions] = useState(false);
@@ -111,42 +111,8 @@ export default function BankEditSection({ questionBank, setQuestionBank, onStart
     setShowDeleteWarning(false);
   };
 
-  const handleFileClick = async (file: DbFile) => {
+  const handleFileClick = (file: DbFile) => {
     setSelectedFile(file);
-
-    // Only fetch content for PDFs
-    if (file.fileType.includes('pdf') || file.fileName.toLowerCase().endsWith('.pdf')) {
-      setIsLoadingPreview(true);
-      try {
-        const blob = await viewFile(file.id);
-        const url = URL.createObjectURL(blob);
-        setFilePreviewUrl(url);
-      } catch (error) {
-        console.error("Failed to load file preview", error);
-        // Optionally handle error state here
-      } finally {
-        setIsLoadingPreview(false);
-      }
-    } else {
-      setFilePreviewUrl(null);
-    }
-  };
-
-  const handleClosePreview = () => {
-    if (filePreviewUrl) {
-      URL.revokeObjectURL(filePreviewUrl);
-    }
-    setFilePreviewUrl(null);
-    setSelectedFile(null);
-  };
-
-  const handleDownloadFile = async () => {
-    if (!questionBank || !selectedFile) return;
-    try {
-      await downloadFile(selectedFile.id);
-    } catch (error) {
-      console.error("Failed to download file", error);
-    }
   };
 
   const handleAiButtonClick = () => {
@@ -156,7 +122,7 @@ export default function BankEditSection({ questionBank, setQuestionBank, onStart
   const handleAiConfirm = () => {
     if (!selectedFile) return;
     setShowAiOptions(false);
-    handleClosePreview(); // Close the file preview dialog
+    setSelectedFile(null); // Close the file preview dialog
     onStartAiProcessing(selectedFile.id, aiOperation);
   };
 
@@ -352,56 +318,23 @@ export default function BankEditSection({ questionBank, setQuestionBank, onStart
         </div>
       )}
 
-      <Dialog open={!!selectedFile} onOpenChange={(open) => !open && handleClosePreview()}>
-        <DialogContent className="bg-[#151518] border-zinc-800 text-white max-w-5xl h-[90vh] flex flex-col p-0">
-          <DialogHeader className="pl-6 pr-10 py-4 border-b border-zinc-800 flex flex-row items-center justify-between space-y-0">
-            <DialogTitle className="truncate pr-4">{selectedFile?.fileName}</DialogTitle>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleAiButtonClick}
-                className="border-violet-600 text-violet-400 bg-transparent hover:bg-violet-900/20 mr-2"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                AI Generation
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadFile}
-                className="border-zinc-700 text-zinc-300 bg-transparent hover:bg-zinc-800"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </Button>
-            </div>
-          </DialogHeader>
-          <div className="flex-1 bg-[#0f0f10] w-full h-full overflow-hidden flex items-center justify-center relative">
-            {isLoadingPreview ? (
-              <div className="flex flex-col items-center justify-center text-zinc-400">
-                <Loader2 className="w-8 h-8 animate-spin mb-2" />
-                <p>Loading preview...</p>
-              </div>
-            ) : filePreviewUrl ? (
-              <iframe
-                src={filePreviewUrl}
-                className="w-full h-full border-none"
-                title="File Preview"
-              />
-            ) : (
-              <div className="text-center p-8 text-zinc-400">
-                <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium text-white mb-2">Preview not available</h3>
-                <p className="max-w-md mx-auto mb-6">
-                  This file type cannot be previewed in the browser.
-                  Please download the file to view it.
-                </p>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+
+      <FilePreviewDialog
+        isOpen={!!selectedFile}
+        onClose={() => setSelectedFile(null)}
+        file={selectedFile}
+        headerActions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAiButtonClick}
+            className="border-violet-600 text-violet-400 bg-transparent hover:bg-violet-900/20 mr-2"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            AI Generation
+          </Button>
+        }
+      />
 
       <Dialog open={showAiOptions} onOpenChange={setShowAiOptions}>
         <DialogContent className="bg-[#151518] border-zinc-800 text-white sm:max-w-[425px]">
