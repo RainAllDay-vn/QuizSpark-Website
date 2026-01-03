@@ -14,7 +14,6 @@ import SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
 import AdditionalInfoSection from "@/pages/log_in_page/additional_info_section.tsx";
 import useAuthStatus from "@/lib/use_auth_hook.ts";
 import PracticePage from "@/pages/practice_page/practice_page.tsx";
-import Loader from "@/components/custom/loader.tsx";
 import MyHeader from "@/components/custom/header.tsx";
 import MyFooter from "@/components/custom/footer.tsx";
 import BankEditPage from "./pages/bank_edit_page/bank_edit_page";
@@ -33,10 +32,6 @@ const AnonymousRoute = () => {
 };
 
 function App() {
-  const { loading } = useAuthStatus();
-
-  if (loading) return <Loader />;
-
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <GlobalChatBot />

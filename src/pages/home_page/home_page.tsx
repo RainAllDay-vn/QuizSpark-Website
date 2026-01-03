@@ -1,11 +1,18 @@
 import { SideBar } from "@/components/custom/side_bar"
 import { TopBar } from "@/components/custom/top_bar"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Outlet } from "react-router-dom"
 import clsx from "clsx"
 
 export function HomePage() {
-  const [isSideBarCollapsed, setIsSideBarCollapsed] = useState(false)
+  const [isSideBarCollapsed, setIsSideBarCollapsed] = useState(() => {
+    const saved = sessionStorage.getItem("quizspark_sidebar_collapsed");
+    return saved ? JSON.parse(saved) : false;
+  })
+
+  useEffect(() => {
+    sessionStorage.setItem("quizspark_sidebar_collapsed", JSON.stringify(isSideBarCollapsed));
+  }, [isSideBarCollapsed]);
 
   function toggleSideBar() {
     setIsSideBarCollapsed(!isSideBarCollapsed);
