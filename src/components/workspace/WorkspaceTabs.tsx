@@ -1,4 +1,4 @@
-import { X, FileText, File } from 'lucide-react';
+import { X, FileText, File, Columns, Square } from 'lucide-react';
 import { useWorkspace, type PaneId } from './WorkspaceContext';
 import { cn } from '@/lib/utils';
 
@@ -56,7 +56,30 @@ export function WorkspaceTabs({ pane }: WorkspaceTabsProps) {
             })}
 
             {/* Empty space filler */}
-            <div className="flex-1 h-full bg-[#0f0f10]" />
+            <div className="flex-1 h-full bg-[#111112]" />
+
+            {/* Layout Controls */}
+            <div className="flex items-center px-1 border-l border-zinc-800/50 h-full bg-[#111112]">
+                {state.layout === 'single' ? (
+                    <button
+                        title="Split Screen"
+                        className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all flex items-center gap-1.5"
+                        onClick={() => dispatch({ type: 'SPLIT_SCREEN' })}
+                    >
+                        <Columns className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-medium uppercase tracking-wider">Split</span>
+                    </button>
+                ) : (
+                    <button
+                        title="Single Screen"
+                        className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all flex items-center gap-1.5"
+                        onClick={() => dispatch({ type: 'CLOSE_SPLIT' })}
+                    >
+                        <Square className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-medium uppercase tracking-wider">Single</span>
+                    </button>
+                )}
+            </div>
         </div>
     );
 }

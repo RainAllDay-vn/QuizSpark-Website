@@ -30,7 +30,8 @@ export type WorkspaceAction =
     | { type: 'SET_ACTIVE_PANE'; pane: PaneId }
     | { type: 'SPLIT_SCREEN'; file?: DbFile }
     | { type: 'CLOSE_SPLIT' }
-    | { type: 'MOVE_TAB'; tabId: string; sourcePane: PaneId; targetPane: PaneId; index?: number };
+    | { type: 'MOVE_TAB'; tabId: string; sourcePane: PaneId; targetPane: PaneId; index?: number }
+    | { type: 'REORDER_TABS'; pane: PaneId; startIndex: number; endIndex: number };
 
 // --- Initial State ---
 
@@ -106,6 +107,57 @@ function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): Works
                     right: []
                 },
                 activePane: 'left'
+            };
+        }
+        case 'MOVE_TAB': {
+            const { tabId, sourcePane, targetPane, index } = action;
+            const tabToMove = state.panes[sourcePane].find(t => t.id === tabId);
+            if (!tabToMove) return state;
+
+            // Remove from source
+            const sourceTabs = state.panes[sourcePane].filter(t => t.id !== tabId);
+
+            // Add to target
+            const targetTabs = [...state.panes[targetPane]];
+            if (typeof index === 'number') {
+                targetTabs.splice(index, 0, tabToMove);
+            } else {
+                targetTabs.push(tabToMove);
+            }
+
+            // Update active tabs
+            let newSourceActive = state.activeTab[sourcePane];
+            if (newSourceActive === tabId) {
+                newSourceActive = sourceTabs.length > 0 ? sourceTabs[sourceTabs.length - 1].id : null;
+            }
+
+            return {
+                ...state,
+                panes: {
+                    ...state.panes,
+                    [sourcePane]: sourceTabs,
+                    [targetPane]: targetTabs
+                },
+                activeTab: {
+                    ...state.activeTab,
+                    [sourcePane]: newSourceActive,
+                    [targetPane]: tabId
+                },
+                activePane: targetPane
+            };
+        }
+        case 'REORDER_TABS': {
+            const { pane, startIndex, endIndex } = action;
+            const result = [...state.panes[pane]];
+            const [removed] = result.splice(startIndex, 1);
+            result.splice(endIndex, 0, removed);
+
+            return {
+                ...state,
+                panes: {
+                    ...state.panes,
+                    [pane]: result
+                }
             };
         }
         default:

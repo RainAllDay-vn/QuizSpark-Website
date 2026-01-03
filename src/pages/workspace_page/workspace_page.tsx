@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Panel, Group } from 'react-resizable-panels';
+import { Panel, Group, Separator } from 'react-resizable-panels';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
 import { getUserFiles } from '@/lib/api';
 import type { DbFile } from '@/model/DbFile';
@@ -50,11 +50,44 @@ function WorkspaceLayout() {
     };
 
     const handleFileSelect = (file: DbFile) => {
-        dispatch({ type: 'OPEN_FILE', file: file });
+        dispatch({ type: 'OPEN_FILE', file: file, pane: state.activePane });
+    };
+
+    const renderPane = (pane: 'left' | 'right') => {
+        const activeTabId = state.activeTab[pane];
+        const activeTab = state.panes[pane].find(t => t.id === activeTabId);
+
+        return (
+            <div className={`h-full w-full flex flex-col bg-[#0f0f10] ${state.activePane === pane ? 'ring-1 ring-inset ring-violet-500/30' : ''}`}
+                onClick={() => dispatch({ type: 'SET_ACTIVE_PANE', pane })}>
+                <WorkspaceTabs pane={pane} />
+
+                <div className="flex-1 flex items-center justify-center text-zinc-500 relative overflow-hidden">
+                    {activeTab ? (
+                        <div className="text-center">
+                            <h3 className="text-lg text-white mb-2">
+                                Viewing: {activeTab.file.fileName}
+                            </h3>
+                            <p className="font-mono text-xs text-zinc-600">ID: {activeTabId}</p>
+                        </div>
+                    ) : (
+                        <div className="text-center p-8 max-w-sm">
+                            <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
+                                <span className="text-3xl">✨</span>
+                            </div>
+                            <h2 className="text-xl font-semibold text-zinc-200 mb-2">Workspace Ready</h2>
+                            <p className="text-zinc-500 text-sm leading-relaxed">
+                                Select a file from the sidebar to start working.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
     };
 
     return (
-        <div className="h-screen w-full flex bg-black text-white overflow-hidden">
+        <div className="h-screen w-full flex bg-black text-white overflow-hidden font-sans">
             <SideBar
                 isSideBarCollapsed={isSideBarCollapsed}
                 toggleSideBar={toggleSideBar}
@@ -70,27 +103,20 @@ function WorkspaceLayout() {
             <main className="flex-1 flex flex-col bg-[#0b0b0b] transition-all duration-300 ml-0 h-full overflow-hidden">
                 <div className="flex-1 overflow-hidden relative">
                     <Group orientation="horizontal" className="h-full">
-                        <Panel defaultSize={20}>
-                            <div className="h-full w-full flex flex-col bg-[#0f0f10]">
-                                <WorkspaceTabs pane="left" />
-
-                                <div className="flex-1 flex items-center justify-center text-zinc-500 relative overflow-hidden">
-                                    {state.activeTab.left ? (
-                                        <div className="text-center">
-                                            <h3 className="text-lg text-white mb-2">
-                                                Viewing: {state.panes.left.find(t => t.id === state.activeTab.left)?.file.fileName}
-                                            </h3>
-                                            <p className="font-mono text-xs text-zinc-600">ID: {state.activeTab.left}</p>
-                                        </div>
-                                    ) : (
-                                        <div className="text-center">
-                                            <h2 className="text-xl font-medium text-zinc-300 mb-2">Workspace Ready</h2>
-                                            <p className="mb-4 text-zinc-500">Select a file from the sidebar to view.</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                        <Panel defaultSize={state.layout === 'split' ? 50 : 100} minSize={20}>
+                            {renderPane('left')}
                         </Panel>
+
+                        {state.layout === 'split' && (
+                            <>
+                                <Separator className="w-1.5 bg-black hover:bg-violet-600/50 transition-colors flex items-center justify-center group">
+                                    <div className="w-[1px] h-8 bg-zinc-800 group-hover:bg-violet-400/50 rounded-full transition-colors" />
+                                </Separator>
+                                <Panel defaultSize={50} minSize={20}>
+                                    {renderPane('right')}
+                                </Panel>
+                            </>
+                        )}
                     </Group>
                 </div>
             </main>
