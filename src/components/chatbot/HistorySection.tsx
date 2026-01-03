@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Plus, History, X } from 'lucide-react';
+import { ChevronLeft, Plus, History, X, Trash2 } from 'lucide-react';
 import type ChatSessionDTO from '@/dtos/ChatSessionDTO';
 
 interface HistorySectionProps {
     sessions: ChatSessionDTO[];
     currentSessionId: string | null;
     onSelectSession: (sessionId: string) => void;
+    onDeleteSession: (sessionId: string) => void;
     onNewChat: () => void;
     onBack: () => void;
     onClose: () => void;
@@ -15,6 +16,7 @@ export default function HistorySection({
     sessions,
     currentSessionId,
     onSelectSession,
+    onDeleteSession,
     onNewChat,
     onBack,
     onClose
@@ -63,20 +65,35 @@ export default function HistorySection({
                     </div>
                 ) : (
                     sessions.map(session => (
-                        <button
+                        <div
                             key={session.id}
-                            onClick={() => onSelectSession(session.id)}
-                            className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${currentSessionId === session.id
-                                ? 'bg-purple-600/20 text-purple-400 border border-purple-600/30'
-                                : 'text-gray-400 hover:bg-white/5 hover:text-gray-200 border border-transparent'
+                            className={`group flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer ${currentSessionId === session.id
+                                ? 'bg-purple-600/20 border border-purple-600/30'
+                                : 'hover:bg-white/5 border border-transparent'
                                 }`}
+                            onClick={() => onSelectSession(session.id)}
                         >
-                            <div className="truncate font-medium">{session.title || 'Untitled Chat'}</div>
-                            <div className="text-[10px] opacity-50 mt-1 flex items-center justify-between">
-                                <span>{new Date(session.createdAt).toLocaleDateString()}</span>
-                                <span>{new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <div className="flex-1 min-w-0">
+                                <div className={`truncate font-medium ${currentSessionId === session.id ? 'text-purple-400' : 'text-gray-400 group-hover:text-gray-200'}`}>
+                                    {session.title || 'Untitled Chat'}
+                                </div>
+                                <div className="text-[10px] opacity-50 mt-1 flex items-center space-x-2 text-gray-500">
+                                    <span>{new Date(session.createdAt).toLocaleDateString()}</span>
+                                    <span>{new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
                             </div>
-                        </button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteSession(session.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 h-7 w-7 p-0 text-gray-500 hover:text-red-400 hover:bg-red-400/10"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
                     ))
                 )}
             </div>

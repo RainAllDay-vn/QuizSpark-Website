@@ -9,23 +9,89 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getChatAttachmentUrl } from '@/lib/api';
+import { viewFile } from '@/lib/api';
 import { User, MoreVertical as LucideMoreVertical, Check, Copy as LucideCopy } from 'lucide-react';
+import type ChatFileDTO from '@/dtos/ChatFileDTO';
 import type ChatMessageDTO from '@/dtos/ChatMessageDTO';
 import type ChatModelDTO from '@/dtos/ChatModelDTO';
 
+export interface UiChatMessage extends ChatMessageDTO {
+    files?: ChatFileDTO[];
+}
+
+const ChatAttachment = ({ fileId }: { fileId: string }) => {
+    const [src, setSrc] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        let active = true;
+        const fetchImage = async () => {
+            try {
+                const blob = await viewFile(fileId);
+                if (active) {
+                    const url = URL.createObjectURL(blob);
+                    setSrc(url);
+                }
+            } catch (error) {
+                console.error("Failed to load attachment image", error);
+            }
+        };
+        fetchImage();
+        return () => {
+            active = false;
+            if (src) URL.revokeObjectURL(src);
+        };
+    }, [fileId]);
+
+    if (!src) return <div className="w-full h-32 bg-gray-800/50 animate-pulse rounded-lg" />;
+
+    return (
+        <img
+            src={src}
+            alt="Attachment"
+            className="w-full h-auto object-cover max-h-64"
+        />
+    );
+};
+
+const LocalFilePreview = ({ file, onRemove }: { file: File, onRemove: () => void }) => {
+    const [preview, setPreview] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        const objectUrl = URL.createObjectURL(file);
+        setPreview(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [file]);
+
+    if (!preview) return <div className="w-16 h-16 bg-gray-800/50 rounded-xl animate-pulse" />;
+
+    return (
+        <div className="relative group">
+            <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-700/50 bg-black/20">
+                <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+            </div>
+            <button
+                onClick={onRemove}
+                className="absolute -top-1.5 -right-1.5 bg-[#111827] text-gray-400 border border-gray-700 rounded-full p-0.5 opacity-100 shadow-sm hover:text-white hover:border-gray-500 transition-all"
+            >
+                <X className="w-3 h-3" />
+            </button>
+        </div>
+    );
+};
+
 interface ChatSectionProps {
-    messages: ChatMessageDTO[];
+    messages: UiChatMessage[];
     inputText: string;
     setInputText: (text: string) => void;
     onSendMessage: (index?: number) => void;
     onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    selectedFiles: File[];
+    onRemoveFile: (index: number) => void;
     isUploading: boolean;
     isStreaming: boolean;
     selectedModel: ChatModelDTO | undefined;
     setSelectedModelId: (id: string) => void;
     availableModels: ChatModelDTO[];
-    uploadedFileId: string | null;
     onOpenHistory: () => void;
     onNewChat: () => void;
     onClose: () => void;
@@ -38,12 +104,13 @@ export default function ChatSection({
     setInputText,
     onSendMessage,
     onFileUpload,
+    selectedFiles,
+    onRemoveFile,
     isUploading,
     isStreaming,
     selectedModel,
     setSelectedModelId,
     availableModels,
-    uploadedFileId,
     onOpenHistory,
     onNewChat,
     onClose,
@@ -77,7 +144,7 @@ export default function ChatSection({
         setTimeout(() => setCopiedId(null), 2000);
     };
 
-    const renderMessageHeader = (msg: ChatMessageDTO) => (
+    const renderMessageHeader = (msg: UiChatMessage) => (
         <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center ${msg.role === 'USER'
@@ -98,7 +165,7 @@ export default function ChatSection({
         </div>
     );
 
-    const renderMessageFooter = (msg: ChatMessageDTO) => {
+    const renderMessageFooter = (msg: UiChatMessage) => {
         if (msg.role === 'USER') return null;
 
         return (
@@ -141,6 +208,14 @@ export default function ChatSection({
             </div>
         );
     };
+
+    const getFileSrc = (file: { id?: string, data?: string, fileType?: string }) => {
+        // If it has data, use it (Base64)
+        if (file.data && file.fileType) return `data:${file.fileType};base64,${file.data}`;
+        if (file.data) return `data:image/jpeg;base64,${file.data}`; // Fallback assume image
+        return '';
+    };
+
     return (
         <div className="flex-1 flex flex-col h-full animate-fade-in overflow-hidden">
             {/* Header */}
@@ -195,15 +270,31 @@ export default function ChatSection({
                                 {renderMessageHeader(message)}
                             </CardHeader>
                             <CardContent className="px-3 pt-1 pb-0">
-                                {message.fileId && (
-                                    <div className="mb-2 rounded-lg overflow-hidden border border-gray-800 max-w-sm">
-                                        <img
-                                            src={getChatAttachmentUrl(message.fileId)}
-                                            alt="Attachment"
-                                            className="w-full h-auto object-cover max-h-64"
-                                        />
+                                {(message.files && message.files.length > 0) || (message.fileIds && message.fileIds.length > 0) ? (
+                                    <div className="mb-2 flex flex-wrap gap-2">
+                                        {message.files && message.files.map((file, idx) => (
+                                            <div key={`file-${idx}`} className="rounded-lg overflow-hidden border border-gray-800 max-w-sm">
+                                                {file.id && !file.data ? (
+                                                    <ChatAttachment fileId={file.id} />
+                                                ) : (
+                                                    <img
+                                                        src={getFileSrc(file)}
+                                                        alt={file.fileName || "Attachment"}
+                                                        className="w-full h-auto object-cover max-h-64"
+                                                        onError={(e) => {
+                                                            e.currentTarget.style.display = 'none';
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
+                                        ))}
+                                        {message.fileIds && message.fileIds.map((fileId, idx) => (
+                                            <div key={`id-${idx}`} className="rounded-lg overflow-hidden border border-gray-800 max-w-sm">
+                                                <ChatAttachment fileId={fileId} />
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
+                                ) : null}
                                 <MarkdownRenderer
                                     content={message.content}
                                     className="text-[13px] text-gray-200 leading-relaxed prose prose-invert max-w-none"
@@ -231,15 +322,17 @@ export default function ChatSection({
             {/* Input Area */}
             <div className="pb-2 shrink-0 px-3">
                 <Card className="gap-0 py-0 bg-[#111827]/90 border-gray-800/60 backdrop-blur-2xl shadow-2xl overflow-hidden rounded-xl">
-                    {/* Context bar */}
-                    <div className="px-2 py-1 flex flex-wrap gap-1.5">
-                        <div className="flex items-center space-x-1 px-1.5 py-0.5 bg-gray-800/40 border border-gray-700/40 rounded text-[9px] text-gray-400 group/tag cursor-default hover:bg-gray-800/60 transition-colors">
-                            <ImageIcon className="h-2.5 w-2.5 opacity-40" />
-                            <span>Practice Context</span>
-                            <X className="h-2.5 w-2.5 ml-0.5 cursor-pointer hover:text-white transition-colors" />
+                    {selectedFiles.length > 0 && (
+                        <div className="px-3 pt-3 pb-1 flex flex-wrap gap-2 animate-fade-in">
+                            {selectedFiles.map((file, idx) => (
+                                <LocalFilePreview
+                                    key={`${file.name}-${file.lastModified}-${idx}`}
+                                    file={file}
+                                    onRemove={() => onRemoveFile(idx)}
+                                />
+                            ))}
                         </div>
-                    </div>
-
+                    )}
                     <div className="px-2 py-1">
                         {/* Textarea Box */}
                         <div className="border border-gray-700/60 rounded-lg bg-gray-900/40 focus-within:border-purple-500/40 focus-within:ring-1 focus-within:ring-purple-500/10 transition-all duration-200">
@@ -291,13 +384,14 @@ export default function ChatSection({
                                         onChange={onFileUpload}
                                         className="hidden"
                                         accept="image/*"
+                                        multiple // Enable multiple file selection
                                     />
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={isUploading || isStreaming}
-                                        className={`h-8 w-8 p-0 transition-all duration-200 rounded-md ${uploadedFileId ? 'text-purple-400 bg-purple-400/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                        className={`h-8 w-8 p-0 transition-all duration-200 rounded-md ${selectedFiles.length > 0 ? 'text-purple-400 bg-purple-400/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                                     >
                                         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
                                     </Button>
@@ -314,7 +408,7 @@ export default function ChatSection({
                             <div className="flex items-center space-x-2">
                                 <Button
                                     onClick={() => onSendMessage()}
-                                    disabled={(inputText.trim() === '' && !uploadedFileId) || isStreaming}
+                                    disabled={(inputText.trim() === '' && selectedFiles.length === 0) || isStreaming}
                                     className="h-9 w-9 p-0 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 hover:from-indigo-400 hover:via-purple-500 hover:to-pink-500 transition-all duration-300 shadow-lg active:scale-95 disabled:grayscale disabled:opacity-30"
                                 >
                                     <Send className="h-4 w-4 text-white" />

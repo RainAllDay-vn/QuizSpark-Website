@@ -497,22 +497,6 @@ export async function parseAiFile(fileId: string, onResponse: (data: AiResponseD
 
 // ===== CHAT ENDPOINTS (/chat/) =====
 
-export async function uploadChatAttachment(file: File) {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    const response = await api.post(`/chat/attachments`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-    return response.data as string; // UUID
-  } catch (error) {
-    console.error('Failed to upload chat attachment:', error);
-    throw error;
-  }
-}
-
 export async function streamChat(request: ChatRequestDTO, onChunk: (data: ChatResponseDTO) => void) {
   let lastSeenLength = 0;
   let buffer = "";
@@ -542,6 +526,16 @@ export async function streamChat(request: ChatRequestDTO, onChunk: (data: ChatRe
       }
     }
   });
+}
+
+export async function deleteChatSession(sessionId: string) {
+  try {
+    await api.delete(`/chat/sessions/${sessionId}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to delete chat session:', error);
+    throw error;
+  }
 }
 
 export async function getChatSessions() {
@@ -574,9 +568,6 @@ export async function getChatModels() {
   }
 }
 
-export function getChatAttachmentUrl(fileId: string) {
-  return `${BASE_URL}/files/download/${fileId}`;
-}
 
 export async function generateAdaptiveQuestions(bankId: string, onResponse: (data: AiResponseDTO) => void) {
   let lastSeenLength = 0;

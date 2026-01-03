@@ -4,16 +4,16 @@ import {
     getChatSessions,
     getSessionMessages,
     streamChat,
-    uploadChatAttachment,
+    deleteChatSession,
     getChatModels
 } from '@/lib/api';
-import type ChatMessageDTO from '@/dtos/ChatMessageDTO';
 import type ChatSessionDTO from '@/dtos/ChatSessionDTO';
 import type ChatResponseDTO from '@/dtos/ChatResponseDTO';
 import type ChatRequestDTO from '@/dtos/ChatRequestDTO';
 import type ChatModelDTO from '@/dtos/ChatModelDTO';
 
 import ChatSection from './ChatSection';
+import type { UiChatMessage } from './ChatSection';
 import HistorySection from './HistorySection';
 
 interface ChatBotProps {
@@ -26,7 +26,7 @@ type ChatView = 'chat' | 'history';
 export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
     const [sessions, setSessions] = useState<ChatSessionDTO[]>([]);
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-    const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
+    const [messages, setMessages] = useState<UiChatMessage[]>([]);
     const [inputText, setInputText] = useState('');
     const [availableModels, setAvailableModels] = useState<ChatModelDTO[]>([]);
     const [selectedModelId, setSelectedModelId] = useState(() => {
@@ -34,8 +34,8 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
     });
     const selectedModel = availableModels.find(m => m.id === selectedModelId) || availableModels[0];
 
-    const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    // const [isUploading, setIsUploading] = useState(false); // Removed as we no longer upload immediately
     const [isStreaming, setIsStreaming] = useState(false);
     const [currentView, setCurrentView] = useState<ChatView>('chat');
     const [isAnimating, setIsAnimating] = useState(false);
@@ -135,6 +135,20 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         }
     }, [isResizing]);
 
+    const handleDeleteSession = async (sessionId: string) => {
+        try {
+            await deleteChatSession(sessionId);
+            setSessions(prev => prev.filter(s => s.id !== sessionId));
+            if (currentSessionId === sessionId) {
+                setCurrentSessionId(null);
+                setMessages([]);
+                setCurrentView('chat');
+            }
+        } catch (error) {
+            console.error("Failed to delete session:", error);
+        }
+    };
+
     useEffect(() => {
         if (isResizing) {
             window.addEventListener('mousemove', resize);
@@ -149,45 +163,68 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         };
     }, [isResizing, resize, stopResizing]);
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setIsUploading(true);
-        try {
-            const fileId = await uploadChatAttachment(file);
-            setUploadedFileId(fileId);
-        } catch (error) {
-            console.error("Upload failed", error);
-        } finally {
-            setIsUploading(false);
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        const filesArray = Array.from(files);
+        setSelectedFiles(prev => [...prev, ...filesArray]);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
         }
     };
 
+    const handleRemoveFile = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                const result = reader.result as string;
+                // Remove the "data:*/*;base64," prefix
+                const base64 = result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+        });
+    };
+
     const handleSendMessage = async (index?: number) => {
-        if (inputText.trim() === '' && !uploadedFileId && index === undefined) return;
+        if (inputText.trim() === '' && selectedFiles.length === 0 && index === undefined) return;
 
         const messageContent = inputText;
-        setInputText('');
+        const filesToSend = [...selectedFiles];
 
-        let newUserMessage: ChatMessageDTO | null = null;
+        setInputText('');
+        setSelectedFiles([]); // Clear immediately for optimistic UI
+
+        let newUserMessage: UiChatMessage | null = null;
+
+
         if (index === undefined) {
+            const fileDTOs = await Promise.all(filesToSend.map(async (file) => ({
+                fileName: file.name,
+                fileType: file.type,
+                data: await fileToBase64(file)
+            })));
+
             newUserMessage = {
                 id: crypto.randomUUID(),
                 role: 'USER',
                 content: messageContent,
                 messageIndex: messages.length,
-                fileId: uploadedFileId,
+                files: fileDTOs,
                 createdAt: new Date().toISOString()
             };
             setMessages(prev => [...prev, newUserMessage!]);
         }
 
-        setUploadedFileId(null);
         setIsStreaming(true);
 
         const botMessageId = crypto.randomUUID();
-        const initialBotMessage: ChatMessageDTO = {
+        const initialBotMessage: UiChatMessage = {
             id: botMessageId,
             role: 'ASSISTANT',
             content: '',
@@ -203,18 +240,27 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         }
 
         try {
+            const chatFiles = await Promise.all(filesToSend.map(async (file) => ({
+                fileName: file.name,
+                fileType: file.type,
+                data: await fileToBase64(file)
+            })));
+
             const request: ChatRequestDTO = {
                 message: messageContent,
                 sessionId: currentSessionId || undefined,
                 model: selectedModel?.name,
-                fileId: newUserMessage?.fileId || undefined,
+                files: chatFiles,
                 index: index
             };
 
+            let sessionRefreshed = false;
+
             await streamChat(request, (chunk: ChatResponseDTO) => {
-                if (chunk.sessionId && !currentSessionId) {
+                if (chunk.sessionId && !currentSessionId && !sessionRefreshed) {
                     setCurrentSessionId(chunk.sessionId);
                     loadSessions();
+                    sessionRefreshed = true;
                 }
 
                 if (chunk.status === 'data' && chunk.chunk) {
@@ -268,12 +314,13 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                         setInputText={setInputText}
                         onSendMessage={handleSendMessage}
                         onFileUpload={handleFileUpload}
-                        isUploading={isUploading}
+                        selectedFiles={selectedFiles}
+                        onRemoveFile={handleRemoveFile}
+                        isUploading={false}
                         isStreaming={isStreaming}
                         selectedModel={selectedModel}
                         setSelectedModelId={setSelectedModelId}
                         availableModels={availableModels}
-                        uploadedFileId={uploadedFileId}
                         onOpenHistory={() => setCurrentView('history')}
                         onNewChat={handleNewChat}
                         onClose={onClose}
@@ -284,6 +331,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                         sessions={sessions}
                         currentSessionId={currentSessionId}
                         onSelectSession={handleSelectSession}
+                        onDeleteSession={handleDeleteSession}
                         onNewChat={handleNewChat}
                         onBack={() => setCurrentView('chat')}
                         onClose={onClose}

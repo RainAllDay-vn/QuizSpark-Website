@@ -4,6 +4,6 @@ export default interface ChatMessageDTO {
     content: string;
     model?: string | null;
     messageIndex: number;
-    fileId?: string | null;
+    fileIds?: string[];  // For ID references (from backend)
     createdAt: string;
 }

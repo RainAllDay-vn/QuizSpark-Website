@@ -1,8 +1,10 @@
+import type ChatFileDTO from './ChatFileDTO';
+
 export default interface ChatRequestDTO {
     message: string;
     sessionId?: string;
     model?: string;
-    fileId?: string;
+    files?: ChatFileDTO[];
     index?: number;
     tts?: boolean;
 }
