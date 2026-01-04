@@ -28,18 +28,25 @@ export function PdfViewer({ fileId, fileName, isActive }: PdfViewerProps) {
     const [fitToWidth, setFitToWidth] = useState(true);
 
     const containerRef = useRef<HTMLDivElement>(null);
+    const resizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         if (!containerRef.current) return;
 
         const observer = new ResizeObserver((entries) => {
             if (entries[0]) {
-                setContainerWidth(entries[0].contentRect.width - 64); // 64px for p-8 (32px each side)
+                if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+                resizeTimeoutRef.current = setTimeout(() => {
+                    setContainerWidth(entries[0].contentRect.width - 64); // 64px for p-8 (32px each side)
+                }, 100);
             }
         });
 
         observer.observe(containerRef.current);
-        return () => observer.disconnect();
+        return () => {
+            observer.disconnect();
+            if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+        };
     }, []);
 
     useEffect(() => {

@@ -142,14 +142,22 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, sel
             )}
 
             {/* File List */}
-            <ScrollArea className="flex-1 px-2 py-4">
-                <div className="space-y-1">
+            <ScrollArea className="flex-1 w-full overflow-x-hidden">
+                <div className={clsx("px-2 py-4 space-y-1", isCollapsed ? "w-16" : "w-64")}>
                     {isLoading ? (
                         <div className="flex justify-center py-8">
                             <Loader2 className="w-5 h-5 animate-spin text-zinc-600" />
                         </div>
                     ) : (
-                        filteredFiles.map((file) => <DraggableFileItem key={file.id} file={file} isCollapsed={isCollapsed} selectedFileId={selectedFileId} onFileSelect={onFileSelect} />)
+                        filteredFiles.map((file) => (
+                            <DraggableFileItem
+                                key={file.id}
+                                file={file}
+                                isCollapsed={isCollapsed}
+                                selectedFileId={selectedFileId}
+                                onFileSelect={onFileSelect}
+                            />
+                        ))
                     )}
                 </div>
             </ScrollArea>
@@ -173,8 +181,8 @@ function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect }: 
                         ref={drag as any}
                         onClick={() => onFileSelect(file)}
                         className={clsx(
-                            "flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white cursor-pointer group",
-                            isCollapsed ? "justify-center px-2" : "",
+                            "flex items-center w-full min-w-0 overflow-hidden px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white cursor-pointer group",
+                            isCollapsed ? "justify-center px-1.5" : "",
                             selectedFileId === file.id ? "bg-violet-600/20 border border-violet-600/40 text-violet-400 shadow-sm" : "text-zinc-400 border border-transparent",
                             isDragging && "opacity-50 grayscale"
                         )}
