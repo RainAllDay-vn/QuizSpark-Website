@@ -15,15 +15,30 @@ import type ChatModelDTO from '@/dtos/ChatModelDTO';
 import ChatSection from './ChatSection';
 import type { UiChatMessage } from './ChatSection';
 import HistorySection from './HistorySection';
+import WorkflowSection from './WorkflowSection';
+import { useChatBot } from './ChatBotContext';
 
 interface ChatBotProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-type ChatView = 'chat' | 'history';
+type ChatView = 'chat' | 'history' | 'workflows';
 
 export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
+    const { contexts, registerTool, isContextEnabled, setIsContextEnabled } = useChatBot();
+
+    useEffect(() => {
+        return registerTool({
+            name: 'get_current_time',
+            description: 'Returns the current local time of the user.',
+            parameters: {},
+            call: async () => {
+                return new Date().toLocaleTimeString();
+            }
+        });
+    }, [registerTool]);
+
     const [sessions, setSessions] = useState<ChatSessionDTO[]>([]);
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
     const [messages, setMessages] = useState<UiChatMessage[]>([]);
@@ -246,8 +261,12 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                 data: await fileToBase64(file)
             })));
 
+            const contextBlock = (isContextEnabled && contexts.length > 0)
+                ? `\n\n---\nRELEVANT CONTEXT:\n${contexts.map(c => `[${c.title}]\n${c.content}`).join('\n\n')}\n---`
+                : '';
+
             const request: ChatRequestDTO = {
-                message: messageContent,
+                message: messageContent + contextBlock,
                 sessionId: currentSessionId || undefined,
                 model: selectedModel?.name,
                 files: chatFiles,
@@ -312,6 +331,9 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                         messages={messages}
                         inputText={inputText}
                         setInputText={setInputText}
+                        isContextEnabled={isContextEnabled}
+                        setIsContextEnabled={setIsContextEnabled}
+                        hasContext={contexts.length > 0}
                         onSendMessage={handleSendMessage}
                         onFileUpload={handleFileUpload}
                         selectedFiles={selectedFiles}
@@ -322,11 +344,12 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                         setSelectedModelId={setSelectedModelId}
                         availableModels={availableModels}
                         onOpenHistory={() => setCurrentView('history')}
+                        onOpenWorkflows={() => setCurrentView('workflows')}
                         onNewChat={handleNewChat}
                         onClose={onClose}
                         fileInputRef={fileInputRef}
                     />
-                ) : (
+                ) : currentView === 'history' ? (
                     <HistorySection
                         sessions={sessions}
                         currentSessionId={currentSessionId}
@@ -335,6 +358,11 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                         onNewChat={handleNewChat}
                         onBack={() => setCurrentView('chat')}
                         onClose={onClose}
+                    />
+                ) : (
+                    <WorkflowSection
+                        onClose={onClose}
+                        onBack={() => setCurrentView('chat')}
                     />
                 )}
             </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
-import { Bot, Plus, History, X, ImageIcon, Loader2, ChevronLeft, Send, Brain } from 'lucide-react';
+import { Bot, Plus, History, X, ImageIcon, Loader2, ChevronLeft, Send, Brain, Zap } from 'lucide-react';
 import MarkdownRenderer from '@/components/custom/markdown-renderer';
 import {
     DropdownMenu,
@@ -9,6 +9,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from '@/lib/utils';
 import { viewFile } from '@/lib/api';
 import { User, MoreVertical as LucideMoreVertical, Check, Copy as LucideCopy } from 'lucide-react';
 import type ChatFileDTO from '@/dtos/ChatFileDTO';
@@ -79,10 +80,34 @@ const LocalFilePreview = ({ file, onRemove }: { file: File, onRemove: () => void
     );
 };
 
+const ContextChip = ({ onRemove }: { onRemove: () => void }) => {
+    return (
+        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-gray-900/50 border border-gray-800/80 rounded-lg animate-fade-in group transition-all hover:border-gray-700/50">
+            <Brain className="w-3.5 h-3.5 text-purple-400" />
+            <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-gray-300 font-medium">Current Screen</span>
+                <span className="text-[10px] text-gray-500">(Context)</span>
+            </div>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove();
+                }}
+                className="ml-1 p-0.5 text-gray-500 hover:text-rose-400 transition-colors"
+            >
+                <X className="w-3 h-3" />
+            </button>
+        </div>
+    );
+};
+
 interface ChatSectionProps {
     messages: UiChatMessage[];
     inputText: string;
     setInputText: (text: string) => void;
+    isContextEnabled: boolean;
+    setIsContextEnabled: (enabled: boolean) => void;
+    hasContext: boolean;
     onSendMessage: (index?: number) => void;
     onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     selectedFiles: File[];
@@ -93,6 +118,7 @@ interface ChatSectionProps {
     setSelectedModelId: (id: string) => void;
     availableModels: ChatModelDTO[];
     onOpenHistory: () => void;
+    onOpenWorkflows: () => void;
     onNewChat: () => void;
     onClose: () => void;
     fileInputRef: React.RefObject<HTMLInputElement | null>;
@@ -102,6 +128,9 @@ export default function ChatSection({
     messages,
     inputText,
     setInputText,
+    isContextEnabled,
+    setIsContextEnabled,
+    hasContext,
     onSendMessage,
     onFileUpload,
     selectedFiles,
@@ -112,6 +141,7 @@ export default function ChatSection({
     setSelectedModelId,
     availableModels,
     onOpenHistory,
+    onOpenWorkflows,
     onNewChat,
     onClose,
     fileInputRef
@@ -232,6 +262,14 @@ export default function ChatSection({
                     <Button
                         variant="ghost"
                         size="sm"
+                        onClick={onOpenWorkflows}
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-white"
+                    >
+                        <Zap className="h-5 w-5" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={onOpenHistory}
                         className="h-8 w-8 p-0 text-gray-400 hover:text-white"
                     >
@@ -322,8 +360,11 @@ export default function ChatSection({
             {/* Input Area */}
             <div className="pb-2 shrink-0 px-3">
                 <Card className="gap-0 py-0 bg-[#111827]/90 border-gray-800/60 backdrop-blur-2xl shadow-2xl overflow-hidden rounded-xl">
-                    {selectedFiles.length > 0 && (
-                        <div className="px-3 pt-3 pb-1 flex flex-wrap gap-2 animate-fade-in">
+                    {(selectedFiles.length > 0 || (isContextEnabled && hasContext)) && (
+                        <div className="px-3 pt-3 pb-1 flex flex-wrap gap-2 animate-fade-in border-b border-gray-800/30 mb-1">
+                            {isContextEnabled && hasContext && (
+                                <ContextChip onRemove={() => setIsContextEnabled(false)} />
+                            )}
                             {selectedFiles.map((file, idx) => (
                                 <LocalFilePreview
                                     key={`${file.name}-${file.lastModified}-${idx}`}
@@ -395,13 +436,36 @@ export default function ChatSection({
                                     >
                                         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
                                     </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
-                                    >
-                                        <Plus className="h-3.5 w-3.5" />
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                                            >
+                                                <Plus className="h-3.5 w-3.5" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start" className="bg-gray-900 border-gray-800 text-gray-300 min-w-[200px]">
+                                            {hasContext ? (
+                                                <DropdownMenuItem
+                                                    onClick={() => setIsContextEnabled(!isContextEnabled)}
+                                                    className="text-xs flex items-center justify-between hover:bg-gray-800 focus:bg-gray-800 focus:text-white py-2 cursor-pointer"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <Brain className={cn("h-3.5 w-3.5", isContextEnabled ? "text-purple-400" : "text-gray-500")} />
+                                                        <span>Include Current Screen</span>
+                                                    </div>
+                                                    {isContextEnabled && <Check className="h-3 w-3 text-purple-400" />}
+                                                </DropdownMenuItem>
+                                            ) : (
+                                                <div className="px-3 py-2 text-[10px] text-gray-500 italic flex items-center gap-2">
+                                                    <Brain className="h-3 w-3 opacity-30" />
+                                                    <span>No context available on this page</span>
+                                                </div>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </div>
 

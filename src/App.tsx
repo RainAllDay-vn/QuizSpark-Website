@@ -31,46 +31,50 @@ const AnonymousRoute = () => {
   return user ? <Navigate to="/home" replace /> : <Outlet />;
 };
 
+import { ChatBotProvider } from "@/components/chatbot/ChatBotContext";
+
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <GlobalChatBot />
-      <div className="min-h-full min-w-full flex overflow-hidden flex-col items-center justify-center bg-black">
-        <Routes>
-          {/* 1. Public Routes: Accessible to everyone */}
-          <Route element={
-            <div className="w-full h-full">
-              <MyHeader />
-              <Outlet />
-              <MyFooter />
-            </div>
-          }>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/banks" element={<QuestionBankPage />} />
-          </Route>
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/practice/:id" element={<PracticePage />} />
-          {/* 2. Anonymous routes — only for non-logged-in users */}
-          <Route element={<AnonymousRoute />}>
-            <Route path="/signup" element={<AccessPage Section={SignUpSection} />} />
-            <Route path="/login" element={<AccessPage Section={LogInSection} />} />
-          </Route>
-          {/* 3. Protected routes — only for logged-in users */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/additional-info" element={<AccessPage Section={AdditionalInfoSection} />} />
-            <Route path="/home" element={<HomePage />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardSection />} />
-              <Route path="banks" element={<QuestionBankSection />} />
-              <Route path="past-practices" element={<PastPracticeSection />} />
+      <ChatBotProvider>
+        <GlobalChatBot />
+        <div className="min-h-full min-w-full flex overflow-hidden flex-col items-center justify-center bg-black">
+          <Routes>
+            {/* 1. Public Routes: Accessible to everyone */}
+            <Route element={
+              <div className="w-full h-full">
+                <MyHeader />
+                <Outlet />
+                <MyFooter />
+              </div>
+            }>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/banks" element={<QuestionBankPage />} />
             </Route>
-            <Route path="/workspace" element={<WorkspacePage />} />
-            <Route path="/edit/bank/:bankId" element={<BankEditPage />} />
-            <Route path="/bank/:bankId" element={<BankOverviewPage />} />
-          </Route>
-        </Routes>
-      </div>
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/practice/:id" element={<PracticePage />} />
+            {/* 2. Anonymous routes — only for non-logged-in users */}
+            <Route element={<AnonymousRoute />}>
+              <Route path="/signup" element={<AccessPage Section={SignUpSection} />} />
+              <Route path="/login" element={<AccessPage Section={LogInSection} />} />
+            </Route>
+            {/* 3. Protected routes — only for logged-in users */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/additional-info" element={<AccessPage Section={AdditionalInfoSection} />} />
+              <Route path="/home" element={<HomePage />}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<DashboardSection />} />
+                <Route path="banks" element={<QuestionBankSection />} />
+                <Route path="past-practices" element={<PastPracticeSection />} />
+              </Route>
+              <Route path="/workspace" element={<WorkspacePage />} />
+              <Route path="/edit/bank/:bankId" element={<BankEditPage />} />
+              <Route path="/bank/:bankId" element={<BankOverviewPage />} />
+            </Route>
+          </Routes>
+        </div>
+      </ChatBotProvider>
     </ThemeProvider>
   )
 }
