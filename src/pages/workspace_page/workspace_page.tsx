@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
+import { useDrop } from 'react-dnd';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Panel, Group, Separator } from 'react-resizable-panels';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
 import { getUserFiles } from '@/lib/api';
 import type { DbFile } from '@/model/DbFile';
 import { SideBar } from "@/components/custom/side_bar";
-import { WorkspaceProvider, useWorkspace } from '@/components/workspace/WorkspaceContext';
+import { WorkspaceProvider, useWorkspace, type PaneId } from '@/components/workspace/WorkspaceContext';
 import { WorkspaceTabs } from '@/components/workspace/WorkspaceTabs';
+import { cn } from '@/lib/utils';
 
 export default function WorkspacePage() {
     return (
         <WorkspaceProvider>
-            <WorkspaceLayout />
+            <DndProvider backend={HTML5Backend}>
+                <WorkspaceLayout />
+            </DndProvider>
         </WorkspaceProvider>
     );
 }
@@ -53,38 +59,6 @@ function WorkspaceLayout() {
         dispatch({ type: 'OPEN_FILE', file: file, pane: state.activePane });
     };
 
-    const renderPane = (pane: 'left' | 'right') => {
-        const activeTabId = state.activeTab[pane];
-        const activeTab = state.panes[pane].find(t => t.id === activeTabId);
-
-        return (
-            <div className={`h-full w-full flex flex-col bg-[#0f0f10] ${state.activePane === pane ? 'ring-1 ring-inset ring-violet-500/30' : ''}`}
-                onClick={() => dispatch({ type: 'SET_ACTIVE_PANE', pane })}>
-                <WorkspaceTabs pane={pane} />
-
-                <div className="flex-1 flex items-center justify-center text-zinc-500 relative overflow-hidden">
-                    {activeTab ? (
-                        <div className="text-center">
-                            <h3 className="text-lg text-white mb-2">
-                                Viewing: {activeTab.file.fileName}
-                            </h3>
-                            <p className="font-mono text-xs text-zinc-600">ID: {activeTabId}</p>
-                        </div>
-                    ) : (
-                        <div className="text-center p-8 max-w-sm">
-                            <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
-                                <span className="text-3xl">✨</span>
-                            </div>
-                            <h2 className="text-xl font-semibold text-zinc-200 mb-2">Workspace Ready</h2>
-                            <p className="text-zinc-500 text-sm leading-relaxed">
-                                Select a file from the sidebar to start working.
-                            </p>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    };
 
     return (
         <div className="h-screen w-full flex bg-black text-white overflow-hidden font-sans">
@@ -104,7 +78,7 @@ function WorkspaceLayout() {
                 <div className="flex-1 overflow-hidden relative">
                     <Group orientation="horizontal" className="h-full">
                         <Panel defaultSize={state.layout === 'split' ? 50 : 100} minSize={20}>
-                            {renderPane('left')}
+                            <WorkspacePane pane="left" />
                         </Panel>
 
                         {state.layout === 'split' && (
@@ -113,13 +87,79 @@ function WorkspaceLayout() {
                                     <div className="w-[1px] h-8 bg-zinc-800 group-hover:bg-violet-400/50 rounded-full transition-colors" />
                                 </Separator>
                                 <Panel defaultSize={50} minSize={20}>
-                                    {renderPane('right')}
+                                    <WorkspacePane pane="right" />
                                 </Panel>
                             </>
                         )}
                     </Group>
                 </div>
             </main>
+        </div>
+    );
+}
+
+interface WorkspacePaneProps {
+    pane: PaneId;
+}
+
+function WorkspacePane({ pane }: WorkspacePaneProps) {
+    const { state, dispatch } = useWorkspace();
+    const activeTabId = state.activeTab[pane];
+    const activeTab = state.panes[pane].find(t => t.id === activeTabId);
+
+    const [{ isOver }, drop] = useDrop(() => ({
+        accept: ['FILE', 'TAB'],
+        drop: (item: any, monitor) => {
+            if (monitor.didDrop()) return;
+            const itemType = monitor.getItemType();
+
+            if (itemType === 'FILE') {
+                dispatch({ type: 'OPEN_FILE', file: item.file, pane });
+            } else if (itemType === 'TAB' && item.pane !== pane) {
+                dispatch({ type: 'MOVE_TAB', tabId: item.id, sourcePane: item.pane, targetPane: pane });
+            }
+        },
+        collect: (monitor) => ({
+            isOver: !!monitor.isOver({ shallow: true }),
+        }),
+    }), [pane]);
+
+    return (
+        <div
+            ref={drop as any}
+            className={cn(
+                "h-full w-full flex flex-col bg-[#0f0f10] transition-colors duration-200 relative",
+                state.activePane === pane ? 'ring-1 ring-inset ring-violet-500/30' : '',
+                isOver && "bg-violet-600/5"
+            )}
+            onClick={() => dispatch({ type: 'SET_ACTIVE_PANE', pane })}
+        >
+            {isOver && (
+                <div className="absolute inset-0 pointer-events-none border-2 border-violet-500/50 z-50 rounded-sm" />
+            )}
+
+            <WorkspaceTabs pane={pane} />
+
+            <div className="flex-1 flex items-center justify-center text-zinc-500 relative overflow-hidden">
+                {activeTab ? (
+                    <div className="text-center">
+                        <h3 className="text-lg text-white mb-2">
+                            Viewing: {activeTab.file.fileName}
+                        </h3>
+                        <p className="font-mono text-xs text-zinc-600">ID: {activeTabId}</p>
+                    </div>
+                ) : (
+                    <div className="text-center p-8 max-w-sm">
+                        <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
+                            <span className="text-3xl">✨</span>
+                        </div>
+                        <h2 className="text-xl font-semibold text-zinc-200 mb-2">Workspace Ready</h2>
+                        <p className="text-zinc-500 text-sm leading-relaxed">
+                            Select a file from the sidebar to start working.
+                        </p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

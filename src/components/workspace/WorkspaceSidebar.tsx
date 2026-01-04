@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, Loader2, FileText, Upload, ChevronLeft, ChevronRight, File } from 'lucide-react';
+import { useDrag } from 'react-dnd';
+import { Search, Loader2, FileText, Upload, ChevronLeft, ChevronRight, File as FileIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { DbFile } from '@/model/DbFile';
@@ -28,10 +29,6 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, sel
     const [searchQuery, setSearchQuery] = useState("");
     const [filterType, setFilterType] = useState<'all' | 'pdf' | 'md'>('all');
     const [isUploading, setIsUploading] = useState(false);
-
-    const baseItemStyle = "flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white cursor-pointer group";
-    const activeItemStyle = "bg-violet-600/20 border border-violet-600/40 text-violet-400 shadow-sm";
-    const inactiveItemStyle = "text-zinc-400 border border-transparent";
 
     const filteredFiles = files.filter(file => {
         const matchesSearch = file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -152,51 +149,65 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, sel
                             <Loader2 className="w-5 h-5 animate-spin text-zinc-600" />
                         </div>
                     ) : (
-                        filteredFiles.map((file) => (
-                            <TooltipProvider key={file.id} delayDuration={0}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div
-                                            onClick={() => onFileSelect(file)}
-                                            className={clsx(
-                                                baseItemStyle,
-                                                isCollapsed ? "justify-center px-2" : "",
-                                                selectedFileId === file.id ? activeItemStyle : inactiveItemStyle
-                                            )}
-                                        >
-                                            <div className={clsx(
-                                                "relative shrink-0 transition-colors",
-                                                isCollapsed ? "" : "mr-3",
-                                                selectedFileId === file.id ? "text-violet-400" : "text-zinc-400 group-hover:text-white"
-                                            )}>
-                                                {file.fileName.endsWith('.md') ? <FileText className="h-5 w-5" /> : <File className="h-5 w-5" />}
-                                                {file.fileName.endsWith('.pdf') && (
-                                                    <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-red-900/80 text-red-200 px-0.5 rounded">PDF</span>
-                                                )}
-                                                {file.fileName.endsWith('.md') && (
-                                                    <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-blue-900/80 text-blue-200 px-0.5 rounded">MD</span>
-                                                )}
-                                            </div>
-
-                                            {!isCollapsed && (
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-sm font-medium truncate">{file.fileName}</p>
-                                                    <p className="text-[10px] text-zinc-500 truncate">{new Date(file.uploadDate).toLocaleDateString()}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </TooltipTrigger>
-                                    {isCollapsed && (
-                                        <TooltipContent side="right" className="bg-zinc-900 border-zinc-800 text-white">
-                                            <p>{file.fileName}</p>
-                                        </TooltipContent>
-                                    )}
-                                </Tooltip>
-                            </TooltipProvider>
-                        ))
+                        filteredFiles.map((file) => <DraggableFileItem key={file.id} file={file} isCollapsed={isCollapsed} selectedFileId={selectedFileId} onFileSelect={onFileSelect} />)
                     )}
                 </div>
             </ScrollArea>
         </aside>
     );
 }
+function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect }: { file: DbFile, isCollapsed: boolean, selectedFileId?: string, onFileSelect: (file: DbFile) => void }) {
+    const [{ isDragging }, drag] = useDrag(() => ({
+        type: 'FILE',
+        item: { type: 'FILE', file },
+        collect: (monitor) => ({
+            isDragging: !!monitor.isDragging(),
+        }),
+    }), [file]);
+
+    return (
+        <TooltipProvider delayDuration={0}>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div
+                        ref={drag as any}
+                        onClick={() => onFileSelect(file)}
+                        className={clsx(
+                            "flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white cursor-pointer group",
+                            isCollapsed ? "justify-center px-2" : "",
+                            selectedFileId === file.id ? "bg-violet-600/20 border border-violet-600/40 text-violet-400 shadow-sm" : "text-zinc-400 border border-transparent",
+                            isDragging && "opacity-50 grayscale"
+                        )}
+                    >
+                        <div className={clsx(
+                            "relative shrink-0 transition-colors",
+                            isCollapsed ? "" : "mr-3",
+                            selectedFileId === file.id ? "text-violet-400" : "text-zinc-400 group-hover:text-white"
+                        )}>
+                            {file.fileName.endsWith('.md') ? <FileText className="h-5 w-5" /> : <FileIcon className="h-5 w-5" />}
+                            {file.fileName.endsWith('.pdf') && (
+                                <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-red-900/80 text-red-200 px-0.5 rounded">PDF</span>
+                            )}
+                            {file.fileName.endsWith('.md') && (
+                                <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-blue-900/80 text-blue-200 px-0.5 rounded">MD</span>
+                            )}
+                        </div>
+
+                        {!isCollapsed && (
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">{file.fileName}</p>
+                                <p className="text-[10px] text-zinc-500 truncate">{new Date(file.uploadDate).toLocaleDateString()}</p>
+                            </div>
+                        )}
+                    </div>
+                </TooltipTrigger>
+                {isCollapsed && (
+                    <TooltipContent side="right" className="bg-zinc-900 border-zinc-800 text-white">
+                        <p>{file.fileName}</p>
+                    </TooltipContent>
+                )}
+            </Tooltip>
+        </TooltipProvider>
+    );
+}
+
