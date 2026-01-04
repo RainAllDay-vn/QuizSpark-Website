@@ -103,8 +103,8 @@ interface WorkspacePaneProps {
 }
 
 import { PdfViewer } from '@/components/workspace/PdfViewer';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { LiveMarkdownEditor } from '@/components/workspace/LiveMarkdownEditor';
+import { viewFile } from '@/lib/api';
 
 function WorkspacePane({ pane }: WorkspacePaneProps) {
     const { state, dispatch } = useWorkspace();
@@ -154,12 +154,7 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
                                 isActive={state.activePane === pane}
                             />
                         ) : activeTab.file.fileName.endsWith('.md') ? (
-                            <div className="h-full w-full overflow-auto p-8 prose prose-invert prose-violet max-w-none bg-[#0b0b0b]">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                    {/* For now, just show the filename since we don't have the MD content yet */}
-                                    {`# ${activeTab.file.fileName}\n\nMarkdown content loading implementation coming soon...`}
-                                </ReactMarkdown>
-                            </div>
+                            <MarkdownFileEditor file={activeTab.file} />
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-zinc-500">
                                 <h3 className="text-lg text-white mb-2">
@@ -183,6 +178,49 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
                     </div>
                 )}
             </div>
+        </div>
+    );
+}
+
+function MarkdownFileEditor({ file }: { file: DbFile }) {
+    const [content, setContent] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadContent() {
+            setIsLoading(true);
+            try {
+                const blob = await viewFile(file.id);
+                const text = await blob.text();
+                setContent(text);
+            } catch (error) {
+                console.error("Failed to load markdown content:", error);
+                setContent("# Error\nFailed to load content.");
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        loadContent();
+    }, [file.id]);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full space-y-4">
+                <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-zinc-500">Loading {file.fileName}...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="h-full w-full overflow-hidden">
+            <LiveMarkdownEditor
+                initialContent={content || ''}
+                onSave={(newContent) => {
+                    console.log("Saving content (not implemented in backend yet):", newContent);
+                    // TODO: Implement save API
+                }}
+            />
         </div>
     );
 }
