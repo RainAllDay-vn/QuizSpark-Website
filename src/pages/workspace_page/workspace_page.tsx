@@ -102,6 +102,10 @@ interface WorkspacePaneProps {
     pane: PaneId;
 }
 
+import { PdfViewer } from '@/components/workspace/PdfViewer';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 function WorkspacePane({ pane }: WorkspacePaneProps) {
     const { state, dispatch } = useWorkspace();
     const activeTabId = state.activeTab[pane];
@@ -140,23 +144,42 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
 
             <WorkspaceTabs pane={pane} />
 
-            <div className="flex-1 flex items-center justify-center text-zinc-500 relative overflow-hidden">
+            <div className="flex-1 flex flex-col relative overflow-hidden">
                 {activeTab ? (
-                    <div className="text-center">
-                        <h3 className="text-lg text-white mb-2">
-                            Viewing: {activeTab.file.fileName}
-                        </h3>
-                        <p className="font-mono text-xs text-zinc-600">ID: {activeTabId}</p>
+                    <div className="flex-1 h-full overflow-hidden">
+                        {activeTab.file.fileName.endsWith('.pdf') ? (
+                            <PdfViewer
+                                fileId={activeTab.file.id}
+                                fileName={activeTab.file.fileName}
+                                isActive={state.activePane === pane}
+                            />
+                        ) : activeTab.file.fileName.endsWith('.md') ? (
+                            <div className="h-full w-full overflow-auto p-8 prose prose-invert prose-violet max-w-none bg-[#0b0b0b]">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {/* For now, just show the filename since we don't have the MD content yet */}
+                                    {`# ${activeTab.file.fileName}\n\nMarkdown content loading implementation coming soon...`}
+                                </ReactMarkdown>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+                                <h3 className="text-lg text-white mb-2">
+                                    Viewing: {activeTab.file.fileName}
+                                </h3>
+                                <p className="font-mono text-xs text-zinc-600">ID: {activeTabId}</p>
+                            </div>
+                        )}
                     </div>
                 ) : (
-                    <div className="text-center p-8 max-w-sm">
-                        <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
-                            <span className="text-3xl">✨</span>
+                    <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center p-8 max-w-sm">
+                            <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
+                                <span className="text-3xl">✨</span>
+                            </div>
+                            <h2 className="text-xl font-semibold text-zinc-200 mb-2">Workspace Ready</h2>
+                            <p className="text-zinc-500 text-sm leading-relaxed">
+                                Select a file from the sidebar to start working.
+                            </p>
                         </div>
-                        <h2 className="text-xl font-semibold text-zinc-200 mb-2">Workspace Ready</h2>
-                        <p className="text-zinc-500 text-sm leading-relaxed">
-                            Select a file from the sidebar to start working.
-                        </p>
                     </div>
                 )}
             </div>
