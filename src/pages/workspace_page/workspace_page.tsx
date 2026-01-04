@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -104,7 +104,9 @@ interface WorkspacePaneProps {
 
 import { PdfViewer } from '@/components/workspace/PdfViewer';
 import { LiveMarkdownEditor } from '@/components/workspace/LiveMarkdownEditor';
-import { viewFile } from '@/lib/api';
+import { viewFile, updateFileContent } from '@/lib/api';
+import { Loader2, CheckCircle2, AlertCircle, Info, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 function WorkspacePane({ pane }: WorkspacePaneProps) {
     const { state, dispatch } = useWorkspace();
@@ -185,6 +187,8 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
 function MarkdownFileEditor({ file }: { file: DbFile }) {
     const [content, setContent] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+    const [wordCount, setWordCount] = useState(0);
 
     useEffect(() => {
         async function loadContent() {
@@ -193,6 +197,7 @@ function MarkdownFileEditor({ file }: { file: DbFile }) {
                 const blob = await viewFile(file.id);
                 const text = await blob.text();
                 setContent(text);
+                updateStats(text);
             } catch (error) {
                 console.error("Failed to load markdown content:", error);
                 setContent("# Error\nFailed to load content.");
@@ -203,24 +208,105 @@ function MarkdownFileEditor({ file }: { file: DbFile }) {
         loadContent();
     }, [file.id]);
 
+    const updateStats = (text: string) => {
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        setWordCount(words);
+    };
+
+    const handleSave = async (newContent: string) => {
+        setSaveStatus('saving');
+        try {
+            await updateFileContent(file.id, newContent);
+            setSaveStatus('saved');
+            updateStats(newContent);
+            setTimeout(() => setSaveStatus('idle'), 3000);
+        } catch (error) {
+            console.error("Failed to save file:", error);
+            setSaveStatus('error');
+        }
+    };
+
+    // Simple debounce implementation to avoid adding dependencies if possible, 
+    // or we can use a ref and timeout.
+    const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const onContentChange = (newContent: string) => {
+        setContent(newContent);
+        setSaveStatus('idle');
+        updateStats(newContent); // Update word count instantly
+
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = setTimeout(() => {
+            handleSave(newContent);
+        }, 1000); // 1s debounce
+    };
+
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
-                <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
                 <p className="text-sm text-zinc-500">Loading {file.fileName}...</p>
             </div>
         );
     }
 
     return (
-        <div className="h-full w-full overflow-hidden">
-            <LiveMarkdownEditor
-                initialContent={content || ''}
-                onSave={(newContent) => {
-                    console.log("Saving content (not implemented in backend yet):", newContent);
-                    // TODO: Implement save API
-                }}
-            />
+        <div className="flex flex-col h-full w-full bg-[#0b0b0b] relative">
+            {/* Toolbar - Matching PdfViewer Style */}
+            <div className="flex items-center justify-between p-2 border-b border-zinc-800 bg-[#111112] z-10 space-x-4">
+                <div className="flex items-center space-x-4">
+                    <div className="flex items-center text-zinc-400 space-x-2 px-2">
+                        <FileText className="h-4 w-4 text-violet-400" />
+                        <span className="text-[10px] font-semibold uppercase tracking-widest truncate max-w-[200px]">
+                            {file.fileName}
+                        </span>
+                    </div>
+                    <div className="h-4 w-[1px] bg-zinc-800" />
+                    <div className="flex items-center space-x-2 text-[10px] font-medium text-zinc-500">
+                        <span>{wordCount} WORDS</span>
+                        <div className="h-3 w-[1px] bg-zinc-800/50" />
+                        <span>MD</span>
+                    </div>
+                </div>
+
+                <div className="flex items-center space-x-3 px-2">
+                    {saveStatus === 'saving' && (
+                        <div className="flex items-center space-x-1.5 text-violet-400">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Saving...</span>
+                        </div>
+                    )}
+                    {saveStatus === 'saved' && (
+                        <div className="flex items-center space-x-1.5 text-emerald-500">
+                            <CheckCircle2 className="h-3 w-3" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Saved</span>
+                        </div>
+                    )}
+                    {saveStatus === 'error' && (
+                        <div className="flex items-center space-x-1.5 text-rose-500">
+                            <AlertCircle className="h-3 w-3" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Save Error</span>
+                        </div>
+                    )}
+
+                    <div className="h-4 w-[1px] bg-zinc-800" />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-zinc-500 hover:text-white"
+                        title="Document Info"
+                    >
+                        <Info className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+
+            {/* Content Area */}
+            <div className="flex-1 overflow-hidden relative">
+                <LiveMarkdownEditor
+                    initialContent={content || ''}
+                    onSave={onContentChange}
+                />
+            </div>
         </div>
     );
 }

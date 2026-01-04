@@ -232,6 +232,20 @@ export async function viewFile(fileId: string) {
   }
 }
 
+export async function updateFileContent(fileId: string, content: string) {
+  try {
+    const response = await api.put(`/files/${fileId}`, content, {
+      headers: {
+        'Content-Type': 'text/plain'
+      }
+    });
+    return response.data as DbFile;
+  } catch (error) {
+    console.error('Failed to update file content:', error);
+    throw error;
+  }
+}
+
 export async function downloadFile(fileId: string, knownFileName?: string) {
   try {
     const response = await api.get(`/files/${fileId}/download`, {

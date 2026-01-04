@@ -118,6 +118,11 @@ export function LiveMarkdownEditor({ initialContent, onSave, className }: LiveMa
         const newBlocks = [...blocks];
         newBlocks[index].content = newContent;
         setBlocks(newBlocks);
+
+        // Trigger onSave while typing
+        if (onSave) {
+            onSave(newBlocks.map(b => b.content).join('\n'));
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
