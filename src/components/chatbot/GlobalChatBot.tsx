@@ -12,7 +12,8 @@ export default function GlobalChatBot() {
         '/home',
         '/bank/',
         '/edit/bank/',
-        '/practice/'
+        '/practice/',
+        '/workspace'
     ];
 
     const isVisible = allowedPaths.some(path => location.pathname.startsWith(path)) && user?.role === 'ROLE_ADMIN';
