@@ -29,38 +29,45 @@ export default function PracticeOptionsDialog({
   questionBank
 }: PracticeOptionsDialogProps) {
   const navigate = useNavigate();
-  const { user } = useAuthStatus();
+  const { user, loading } = useAuthStatus();
   const [practiceSize, setPracticeSize] = useState<number>(10);
   const [shuffleChoices, setShuffleChoices] = useState<boolean>(true);
   const [revealAnswer, setRevealAnswer] = useState<boolean>(true);
   const availableTags = questionBank.tags;
-  const [selectedTags, setSelectedTags] = useState<string[]>([...availableTags]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(availableTags.map(t => t.name));
+  const [isStarting, setIsStarting] = useState(false);
 
-  const handleTagToggle = (tag: string) => {
+  const handleTagToggle = (tagName: string) => {
     setSelectedTags(prev => {
-      if (prev.includes(tag)) {
-        return prev.filter(t => t !== tag);
+      if (prev.includes(tagName)) {
+        return prev.filter(t => t !== tagName);
       } else {
-        return [...prev, tag];
+        return [...prev, tagName];
       }
     });
   };
 
   const handleStartPractice = async () => {
+    if (loading || isStarting) return;
     if (questionBank) {
-      if (user) {
-        const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer, selectedTags);
-        const practiceId = response.id;
-        navigate('/practice/' + practiceId);
-      } else {
-        const searchParams = new URLSearchParams();
-        searchParams.append("size", practiceSize.toString());
-        searchParams.append("shuffle", shuffleChoices.toString());
-        // Add selected tags as query parameters (will be used by API later)
-        if (selectedTags.length > 0 && selectedTags.length < questionBank.tags.length) {
-          searchParams.append("tags", selectedTags.join(","));
+      setIsStarting(true);
+      try {
+        if (user) {
+          const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer, selectedTags);
+          const practiceId = response.id;
+          navigate('/practice/' + practiceId);
+        } else {
+          const searchParams = new URLSearchParams();
+          searchParams.append("size", practiceSize.toString());
+          searchParams.append("shuffle", shuffleChoices.toString());
+          // Add selected tags as query parameters (will be used by API later)
+          if (selectedTags.length > 0 && selectedTags.length < questionBank.tags.length) {
+            searchParams.append("tags", selectedTags.join(","));
+          }
+          navigate(`/practice/${questionBank.id}?${searchParams.toString()}`);
         }
-        navigate(`/practice/${questionBank.id}?${searchParams.toString()}`);
+      } finally {
+        setIsStarting(false);
       }
     }
   };
@@ -72,7 +79,7 @@ export default function PracticeOptionsDialog({
           <DialogTitle>Practice Options</DialogTitle>
           <DialogDescription className="text-zinc-400">
             Configure your practice session for "{questionBank.name}"
-            {!user && (
+            {!loading && !user && (
               <div className="mt-2 p-2 bg-amber-900/30 border border-amber-700 rounded text-amber-300 text-sm">
                 ⚠️ You are not logged in. Your progress will not be saved.
               </div>
@@ -112,7 +119,7 @@ export default function PracticeOptionsDialog({
             </div>
           </div>
 
-          {user && (
+          {!loading && user && (
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="reveal" className="text-right">
                 Reveal Answers
@@ -142,7 +149,7 @@ export default function PracticeOptionsDialog({
                   checked={selectedTags.length === availableTags.length}
                   onCheckedChange={(checked) => {
                     if (checked) {
-                      setSelectedTags([...availableTags]);
+                      setSelectedTags(availableTags.map(t => t.name));
                     } else {
                       setSelectedTags([]);
                     }
@@ -157,19 +164,19 @@ export default function PracticeOptionsDialog({
               {availableTags.length > 0 && (
                 <ScrollArea className="h-32 w-full rounded-md border border-zinc-700 p-2">
                   <div className="flex flex-wrap gap-2">
-                    {availableTags.sort().map((tag) => (
-                      <div key={tag} className="flex items-center space-x-1">
+                    {[...availableTags].sort((a, b) => a.name.localeCompare(b.name)).map((tag) => (
+                      <div key={tag.id} className="flex items-center space-x-1">
                         <Checkbox
-                          id={`tag-${tag}`}
-                          checked={selectedTags.includes(tag)}
-                          onCheckedChange={() => handleTagToggle(tag)}
+                          id={`tag-${tag.id}`}
+                          checked={selectedTags.includes(tag.name)}
+                          onCheckedChange={() => handleTagToggle(tag.name)}
                           className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
                         />
                         <Label
-                          htmlFor={`tag-${tag}`}
+                          htmlFor={`tag-${tag.id}`}
                           className="text-sm text-zinc-300 cursor-pointer"
                         >
-                          {tag}
+                          {tag.name}
                         </Label>
                       </div>
                     ))}
@@ -177,7 +184,7 @@ export default function PracticeOptionsDialog({
                 </ScrollArea>
               )}
 
-              {selectedTags.length === 0 && (
+              {selectedTags.length === 0 && availableTags.length > 0 && (
                 <p className="text-xs text-amber-400">
                   Warning: No tags selected. Questions from all tags will be included.
                 </p>
@@ -196,9 +203,10 @@ export default function PracticeOptionsDialog({
           </Button>
           <Button
             onClick={handleStartPractice}
+            disabled={isStarting || loading}
             className="bg-zinc-800 hover:bg-zinc-700 text-white"
           >
-            Start Practice
+            {isStarting ? "Starting..." : "Start Practice"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,22 +1,22 @@
-import {useEffect, useState} from "react";
-import {getAuth, onAuthStateChanged, signOut, type User} from "firebase/auth";
-import {app} from "../firebase";
-import {getUserInfo} from "@/lib/api.ts";
-import {useNavigate} from "react-router-dom";
-import {AxiosError} from "axios";
+import { useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged, signOut, type User } from "firebase/auth";
+import { app } from "../firebase";
+import { getUserInfo } from "@/lib/api.ts";
+import { useNavigate } from "react-router-dom";
+import { AxiosError } from "axios";
 
 // Extended user type that includes userId
 interface ExtendedUser extends User {
   username: string;
   userId: string;
-  role: 'ROLE_ADMIN'|'ROLE_STUDENT'|'ROLE_TEACHER',
+  role: 'ROLE_ADMIN' | 'ROLE_STUDENT' | 'ROLE_TEACHER',
 }
 
 export default function useAuthStatus() {
   const auth = getAuth(app);
   const navigate = useNavigate();
-  const [user, setUser] = useState<ExtendedUser | null>(auth.currentUser as ExtendedUser | null);
-  const [loading, setLoading] = useState(!auth.currentUser);
+  const [user, setUser] = useState<ExtendedUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (currentUser) => {
@@ -31,7 +31,7 @@ export default function useAuthStatus() {
           };
           setUser(extendedUser);
         } catch (err: unknown) {
-          if (err instanceof AxiosError && err.status === 404){
+          if (err instanceof AxiosError && err.status === 404) {
             navigate('/additional-info');
           } else {
             await signOut(auth);

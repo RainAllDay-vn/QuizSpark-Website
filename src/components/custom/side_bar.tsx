@@ -1,7 +1,8 @@
 import { ScrollArea } from "@/components/ui/scroll-area.tsx"
-import { LayoutDashboard, Video, Calendar, Library, ChevronLeft, ChevronRight } from "lucide-react"
+import { LayoutDashboard, Video, Calendar, Library, ChevronLeft, ChevronRight, Users } from "lucide-react"
 import { Link, NavLink } from "react-router-dom"
 import clsx from "clsx"
+import useAuthStatus from "@/lib/use_auth_hook"
 
 interface SideBarProps {
   isSideBarCollapsed: boolean,
@@ -12,15 +13,23 @@ const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, to: "/home/dashboard" },
   { name: "My Banks", icon: Video, to: "/home/banks" },
   { name: "Workspace", icon: Library, to: "/workspace" },
+  { name: "Classrooms", icon: Users, to: "/home/classrooms", roleRequired: ["ROLE_TEACHER", "ROLE_ADMIN"] },
   { name: "Past Practices", icon: Calendar, to: "/home/past-practices" },
 ]
 
 export function SideBar({ isSideBarCollapsed, toggleSideBar }: SideBarProps) {
+  const { user, loading } = useAuthStatus()
   const baseLink =
     "flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white"
   const activeLink =
     "bg-violet-600/20 border border-violet-600/40 text-violet-400 shadow-sm"
   const inactiveLink = "text-zinc-400 border border-transparent"
+
+  const filteredItems = navItems.filter(item => {
+    if (!item.roleRequired) return true;
+    if (loading) return false; // Hide protected items while loading
+    return user && item.roleRequired.includes(user.role);
+  })
 
   return (
     <aside
@@ -50,7 +59,7 @@ export function SideBar({ isSideBarCollapsed, toggleSideBar }: SideBarProps) {
       {/* === Navigation === */}
       <ScrollArea className="flex-1 px-2 py-4">
         <nav className="space-y-1">
-          {navItems.map(({ name, icon: Icon, to }) => (
+          {filteredItems.map(({ name, icon: Icon, to }) => (
             <NavLink
               key={name}
               to={to}

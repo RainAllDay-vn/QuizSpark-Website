@@ -5,7 +5,7 @@ import ChatBot from './ChatBot';
 
 export default function GlobalChatBot() {
     const [isChatOpen, setIsChatOpen] = useState(false);
-    const { user } = useAuthStatus();
+    const { user, loading } = useAuthStatus();
     const location = useLocation();
 
     const allowedPaths = [
@@ -15,6 +15,8 @@ export default function GlobalChatBot() {
         '/practice/',
         '/workspace'
     ];
+
+    if (loading) return null;
 
     const isVisible = allowedPaths.some(path => location.pathname.startsWith(path)) && user?.role === 'ROLE_ADMIN';
 

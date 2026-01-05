@@ -9,6 +9,7 @@ import QuestionBankPage from "@/pages/bank_page/bank_page.tsx"
 import DashboardSection from "@/pages/home_page/dashboard_section.tsx";
 import QuestionBankSection from "@/pages/home_page/bank_section.tsx";
 import PastPracticeSection from "@/pages/home_page/past_practice_section";
+import ClassroomSection from "@/pages/home_page/classroom_section.tsx";
 import LogInSection from "@/pages/log_in_page/log_in_section.tsx";
 import SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
 import AdditionalInfoSection from "@/pages/log_in_page/additional_info_section.tsx";
@@ -22,12 +23,20 @@ import GlobalChatBot from "@/components/chatbot/GlobalChatBot";
 import WorkspacePage from "./pages/workspace_page/workspace_page";
 
 const ProtectedRoute = () => {
-  const { user } = useAuthStatus();
+  const { user, loading } = useAuthStatus();
+  if (loading) return null;
   return user ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
+const RoleProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
+  const { user, loading } = useAuthStatus();
+  if (loading) return null; // Or a loader
+  return user && allowedRoles.includes(user.role) ? <Outlet /> : <Navigate to="/home" replace />;
+};
+
 const AnonymousRoute = () => {
-  const { user } = useAuthStatus();
+  const { user, loading } = useAuthStatus();
+  if (loading) return null;
   return user ? <Navigate to="/home" replace /> : <Outlet />;
 };
 
@@ -66,6 +75,9 @@ function App() {
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardSection />} />
                 <Route path="banks" element={<QuestionBankSection />} />
+                <Route element={<RoleProtectedRoute allowedRoles={["ROLE_TEACHER", "ROLE_ADMIN"]} />}>
+                  <Route path="classrooms" element={<ClassroomSection />} />
+                </Route>
                 <Route path="past-practices" element={<PastPracticeSection />} />
               </Route>
               <Route path="/workspace" element={<WorkspacePage />} />

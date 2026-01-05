@@ -26,6 +26,8 @@ import type ChatResponseDTO from "@/dtos/ChatResponseDTO.ts";
 import type ChatSessionDTO from "@/dtos/ChatSessionDTO.ts";
 import type ChatMessageDTO from "@/dtos/ChatMessageDTO.ts";
 import type ChatModelDTO from "@/dtos/ChatModelDTO.ts";
+import type ClassroomCreateDTO from "@/dtos/ClassroomCreateDTO.ts";
+import type ClassroomResponseDTO from "@/dtos/ClassroomResponseDTO.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
 const auth = getAuth(app);
@@ -613,4 +615,38 @@ export async function generateAdaptiveQuestions(bankId: string, onResponse: (dat
       }
     }
   });
+}
+
+// ===== CLASSROOM ENDPOINTS (/classrooms/) =====
+
+export async function createClassroom(payload: ClassroomCreateDTO) {
+  try {
+    const response = await api.post('/classrooms', payload);
+    return response.data as ClassroomResponseDTO;
+  } catch (error) {
+    console.error('Failed to create classroom:', error);
+    throw error;
+  }
+}
+
+export async function getUserClassrooms() {
+  try {
+    const response = await api.get('/classrooms');
+    return response.data as ClassroomResponseDTO[];
+  } catch (error) {
+    console.error('Failed to fetch user classrooms:', error);
+    throw error;
+  }
+}
+
+export async function inviteToClassroom(classroomId: string, username: string) {
+  try {
+    const response = await api.post(`/classrooms/${classroomId}/invite`, null, {
+      params: { username }
+    });
+    return response.data as ClassroomResponseDTO;
+  } catch (error) {
+    console.error('Failed to invite user to classroom:', error);
+    throw error;
+  }
 }

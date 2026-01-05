@@ -12,13 +12,14 @@ export default function PracticePage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [params] = useSearchParams();
-  const { user } = useAuthStatus();
-  const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuthStatus();
+  const [dataLoading, setDataLoading] = useState(true);
   const [practice, setPractice] = useState({} as Practice);
   const [error, setError] = useState("")
 
   useEffect(() => {
     const fetchPractice = async () => {
+      if (authLoading) return;
       if (user) {
         if (id == null) {
           setError("INVALID PRACTICE PARAMETERS");
@@ -36,9 +37,10 @@ export default function PracticePage() {
           setPractice(newPractice);
         }
       }
+      setDataLoading(false)
     };
-    fetchPractice().then(() => setLoading(false));
-  }, [id, params, user]);
+    fetchPractice();
+  }, [id, params, user, authLoading]);
 
   const completePractice = async () => {
     if (id === undefined) return;
@@ -48,7 +50,7 @@ export default function PracticePage() {
 
   if (error) return <div>Error: {error}</div>;
 
-  if (loading) return <Loader />
+  if (dataLoading || authLoading) return <Loader />
 
   return (
     <div className="min-h-screen w-screen bg-black text-white flex flex-col items-center p-6 relative overflow-hidden">
