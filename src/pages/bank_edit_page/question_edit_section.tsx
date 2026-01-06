@@ -27,7 +27,7 @@ interface Props {
 }
 
 export default function QuestionEditSection({ questions: initialQuestions, bankId, onUpload, onAttachExistingFile, linkedFiles, isImporting, aiRequest = null, importError, availableTags }: Props) {
-  const [questions, setQuestions] = useState(initialQuestions);
+  const [questions, setQuestions] = useState(initialQuestions || []);
   const [aiQuestions, setAiQuestions] = useState<Question[]>([]);
   const [newQuestion, setNewQuestion] = useState<Question | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,7 +70,7 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
   }, [aiQuestions, processingStage]);
 
   useEffect(() => {
-    setQuestions(initialQuestions);
+    setQuestions(initialQuestions || []);
   }, [initialQuestions]);
 
   const createAiResponseHandler = () => {
@@ -83,7 +83,7 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
         if (!aiResponse.data) return;
         const newAiQuestion: AiQuestionDTO = JSON.parse(aiResponse.data);
         const newQuestionTags = [];
-        for (const tagName in newAiQuestion.tags) {
+        for (const tagName of newAiQuestion.tags) {
           const tag = availableTags.find(tag => tag.name === tagName)
           if (tag) {
             newQuestionTags.push(tag);
@@ -104,7 +104,6 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
           tags: newQuestionTags,
         };
 
-        console.log(newQuestion);
         index++;
         setAiQuestions(prev => [...prev, newQuestion]);
       }
@@ -255,7 +254,11 @@ export default function QuestionEditSection({ questions: initialQuestions, bankI
       <div className="space-y-4">
         {questions.map((q, index) =>
           <QuestionCard key={q.id} questionProp={q} bankId={bankId} index={index} isEditingProp={false}
-            appendQuestion={handleAppendQuestion} removeQuestion={handleRemoveQuestion} availableTags={availableTags} />
+            appendQuestion={handleAppendQuestion} removeQuestion={handleRemoveQuestion} availableTags={availableTags}
+            updateQuestionHandler={(updatedQuestion) => {
+              setQuestions(prev => prev.map(item => item.id === updatedQuestion.id ? updatedQuestion : item));
+            }}
+          />
         )}
         {newQuestion && <QuestionCard questionProp={newQuestion} bankId={bankId} index={0} isEditingProp={true}
           appendQuestion={handleAppendQuestion} removeQuestion={handleRemoveQuestion} availableTags={availableTags} />}

@@ -1,13 +1,13 @@
-import {User, Calendar, BookOpen, LogOut} from 'lucide-react';
-import {type ChangeEvent, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import { User, Calendar, BookOpen, LogOut } from 'lucide-react';
+import { type ChangeEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import InputWithIcon from "@/components/custom/input_with_icon.tsx";
-import {getAuth, signOut} from "firebase/auth";
-import {app} from "../../firebase.tsx";
+import { getAuth, signOut } from "firebase/auth";
+import { app } from "../../firebase.tsx";
 import AccountTypeButton from "@/components/custom/account_type_button.tsx";
 import type UserRegistrationDTO from "@/dtos/UserRegistrationDTO.ts";
-import {registerNewUser} from "@/lib/api.ts";
-import {AxiosError} from 'axios';
+import { registerNewUser } from "@/lib/api.ts";
+import { AxiosError } from 'axios';
 
 export default function AdditionalInfoSection() {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ export default function AdditionalInfoSection() {
       setError("Please filled the required fields.");
       return;
     }
-    
+
     const payload: UserRegistrationDTO = {
       accountType,
       username,
@@ -36,14 +36,14 @@ export default function AdditionalInfoSection() {
       dob: dob || undefined,
       educationLevel: educationLevel || undefined
     };
-    
+
     try {
       await registerNewUser(payload);
       navigate("/home");
     } catch (err: unknown) {
       if (err instanceof AxiosError && err.response?.data) {
         let errorMessage = ''
-        Object.values(err.response.data).forEach(value => errorMessage += value+'. ');
+        Object.values(err.response.data).forEach(value => errorMessage += value + '. ');
         setError(errorMessage);
       } else if (err instanceof Error) {
         setError(err.message || "Registration failed. Please try again.");
@@ -87,7 +87,7 @@ export default function AdditionalInfoSection() {
               icon="🧑‍🏫"
               title="Teacher"
               description="Create questions and manage students"
-              onClick={() => alert("Teacher account type not implemented yet")}
+              onClick={() => setAccountType("TEACHER")}
             />
           </div>
 
@@ -131,7 +131,7 @@ export default function AdditionalInfoSection() {
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">Education Level (Optional)</label>
             <div className="relative">
-              <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
+              <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <select
                 className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:border-purple-500 transition-colors shadow-sm appearance-none"
                 value={educationLevel}
@@ -154,7 +154,7 @@ export default function AdditionalInfoSection() {
               className="flex-1 h-10 px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg shadow hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-gray-300 flex items-center justify-center"
               onClick={handleSignOut}
             >
-              <LogOut className="w-4 h-4 mr-2"/>
+              <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </button>
             <button

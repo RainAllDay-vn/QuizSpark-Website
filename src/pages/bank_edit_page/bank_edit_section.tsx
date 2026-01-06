@@ -58,7 +58,12 @@ export default function BankEditSection({ questionBank, setQuestionBank, onStart
         status: editingBank.status
       };
       const savedBank = await updateQuestionBank(questionBank.id, updateData);
-      setQuestionBank(savedBank);
+      setQuestionBank(prev => ({
+        ...prev,
+        ...savedBank,
+        questions: prev.questions, // Preserve questions from previous state
+        files: prev.files // Preserve files from previous state
+      }));
       setEditingBank(null);
     } catch (error) {
       console.error('Failed to update question bank:', error);

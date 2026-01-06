@@ -1,12 +1,11 @@
-import {useEffect, useMemo, useState} from "react"
-import {Button} from "@/components/ui/button"
-import {Input} from "@/components/ui/input"
-import {Separator} from "@/components/ui/separator"
-import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem} from "@/components/ui/dropdown-menu"
-import {Filter, Search} from "lucide-react"
-import {QuestionBankCreationDialog} from "@/components/custom/question_bank_creation_dialog.tsx";
-import type {QuestionBank} from "@/model/QuestionBank.ts";
-import {getUserQuestionBanks} from "@/lib/api.ts";
+import { useEffect, useMemo, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
+import { Search } from "lucide-react"
+import { QuestionBankCreationDialog } from "@/components/custom/question_bank_creation_dialog.tsx";
+import type { QuestionBank } from "@/model/QuestionBank.ts";
+import { getUserQuestionBanks } from "@/lib/api.ts";
 import QuestionBankCard from "@/components/custom/question_bank_card.tsx";
 
 
@@ -21,11 +20,15 @@ export default function QuestionBankSection() {
   }, [])
 
   const filtered = useMemo(() => {
-    return questionBanks.filter(
-      (bank) =>
-        bank.name.toLowerCase().includes(search.toLowerCase()) &&
-        (filter === "All Banks" || bank.status === filter.toUpperCase())
-    );
+    const term = search.toLowerCase();
+    return questionBanks.filter((bank) => {
+      const matchesSearch =
+        (bank.name?.toLowerCase() || "").includes(term) ||
+        (bank.description?.toLowerCase() || "").includes(term);
+      const matchesFilter = filter === "All Banks" || bank.status === filter.toUpperCase();
+
+      return matchesSearch && matchesFilter;
+    });
   }, [questionBanks, search, filter]);
 
   return (
@@ -36,10 +39,10 @@ export default function QuestionBankSection() {
           <h1 className="text-3xl font-semibold tracking-tight text-white">Banks</h1>
           <p className="text-zinc-400 mt-1">Create, manage and analyze your question banks</p>
         </div>
-        <QuestionBankCreationDialog addBank={(bank: QuestionBank) => setQuestionBanks(prev => [...prev, bank])}/>
+        <QuestionBankCreationDialog addBank={(bank: QuestionBank) => setQuestionBanks(prev => [...prev, bank])} />
       </div>
 
-      <Separator className="bg-zinc-800"/>
+      <Separator className="bg-zinc-800" />
 
       {/* === Filters === */}
       <div className="flex flex-wrap gap-3 items-center justify-between">
@@ -58,7 +61,7 @@ export default function QuestionBankSection() {
 
         <div className="flex gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4"/>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               placeholder="Search banks..."
               value={search}
@@ -67,25 +70,14 @@ export default function QuestionBankSection() {
             />
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="border-gray-700 text-gray-300">
-                <Filter className="mr-2 h-4 w-4"/> All Categories
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>Science</DropdownMenuItem>
-              <DropdownMenuItem>Math</DropdownMenuItem>
-              <DropdownMenuItem>History</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+
         </div>
       </div>
 
       {/* === Bank List === */}
       <div className="space-y-3">
         {filtered.map((item, index) => (
-          <QuestionBankCard key={index} questionBank={item} editable={true}/>
+          <QuestionBankCard key={index} questionBank={item} editable={true} />
         ))}
       </div>
     </div>

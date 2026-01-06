@@ -21,6 +21,7 @@ interface QuestionCardProps {
   appendQuestion: (question: Question) => void;
   removeQuestion: (question: Question) => void;
   availableTags: Tag[];
+  updateQuestionHandler?: (question: Question) => void;
 }
 
 function QuestionCard({
@@ -31,6 +32,7 @@ function QuestionCard({
   appendQuestion,
   removeQuestion,
   availableTags,
+  updateQuestionHandler,
 }: QuestionCardProps) {
   const [question, setQuestion] = useState(questionProp);
   const [isEditing, setIsEditing] = useState(isEditingProp);
@@ -95,6 +97,7 @@ function QuestionCard({
         };
         const updatedQuestion = await updateQuestion(tempQuestion.id, questionData);
         setQuestion(updatedQuestion);
+        if (updateQuestionHandler) updateQuestionHandler(updatedQuestion);
       }
       setIsEditing(false);
       setValidationErrors({});
