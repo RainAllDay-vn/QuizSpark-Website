@@ -28,8 +28,9 @@ import type ChatMessageDTO from "@/dtos/ChatMessageDTO.ts";
 import type ChatModelDTO from "@/dtos/ChatModelDTO.ts";
 import type ClassroomCreateDTO from "@/dtos/ClassroomCreateDTO.ts";
 import type ClassroomResponseDTO from "@/dtos/ClassroomResponseDTO.ts";
+import type UserDTO from "@/dtos/UserDTO.ts";
 
-const BASE_URL = import.meta.env.VITE_BACKEND_API || "http://localhost:8080/api/v1";
+const BASE_URL = import.meta.env.VITE_BACKEND_API || "/api/v1";
 const auth = getAuth(app);
 
 export const api = axios.create({
@@ -58,6 +59,19 @@ export async function getUserInfo() {
   } catch (error) {
     console.error('Failed to fetch user info:', error);
     throw error; // rethrow so the caller can handle it
+  }
+}
+
+export async function searchUsers(query: string) {
+  try {
+    const response = await api.get('/users', {
+      params: { query }
+    });
+    return response.data as UserDTO[];
+  } catch (error) {
+    // console.error('Failed to search users:', error);
+    // Silent fail or rethrow? Let's just return empty array on error or rethrow
+    throw error;
   }
 }
 
@@ -639,6 +653,16 @@ export async function getUserClassrooms() {
   }
 }
 
+export async function getClassroom(classroomId: string) {
+  try {
+    const response = await api.get(`/classrooms/${classroomId}`);
+    return response.data as ClassroomResponseDTO;
+  } catch (error) {
+    console.error('Failed to fetch classroom:', error);
+    throw error;
+  }
+}
+
 export async function inviteToClassroom(classroomId: string, username: string) {
   try {
     const response = await api.post(`/classrooms/${classroomId}/invite`, null, {
@@ -647,6 +671,28 @@ export async function inviteToClassroom(classroomId: string, username: string) {
     return response.data as ClassroomResponseDTO;
   } catch (error) {
     console.error('Failed to invite user to classroom:', error);
+    throw error;
+  }
+}
+
+export async function removeMemberFromClassroom(classroomId: string, userId: string) {
+  try {
+    const response = await api.delete(`/classrooms/${classroomId}/members/${userId}`);
+    return response.data as ClassroomResponseDTO;
+  } catch (error) {
+    console.error('Failed to remove member from classroom:', error);
+    throw error;
+  }
+}
+
+export async function joinClassroomByCode(joinCode: string) {
+  try {
+    const response = await api.post(`/classrooms/join`, null, {
+      params: { joinCode }
+    });
+    return response.data as ClassroomResponseDTO;
+  } catch (error) {
+    console.error('Failed to join classroom by code:', error);
     throw error;
   }
 }

@@ -10,6 +10,7 @@ import DashboardSection from "@/pages/home_page/dashboard_section.tsx";
 import QuestionBankSection from "@/pages/home_page/bank_section.tsx";
 import PastPracticeSection from "@/pages/home_page/past_practice_section";
 import ClassroomSection from "@/pages/home_page/classroom_section.tsx";
+import ClassroomOverviewPage from "@/pages/classroom_overview_page/classroom_overview_page";
 import LogInSection from "@/pages/log_in_page/log_in_section.tsx";
 import SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
 import AdditionalInfoSection from "@/pages/log_in_page/additional_info_section.tsx";
@@ -67,10 +68,10 @@ function App() {
             <Route element={<AnonymousRoute />}>
               <Route path="/signup" element={<AccessPage Section={SignUpSection} />} />
               <Route path="/login" element={<AccessPage Section={LogInSection} />} />
+              <Route path="/additional-info" element={<AccessPage Section={AdditionalInfoSection} />} />
             </Route>
             {/* 3. Protected routes — only for logged-in users */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/additional-info" element={<AccessPage Section={AdditionalInfoSection} />} />
               <Route path="/home" element={<HomePage />}>
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardSection />} />
@@ -83,6 +84,7 @@ function App() {
               <Route path="/workspace" element={<WorkspacePage />} />
               <Route path="/edit/bank/:bankId" element={<BankEditPage />} />
               <Route path="/bank/:bankId" element={<BankOverviewPage />} />
+              <Route path="classrooms/:id" element={<ClassroomOverviewPage />} />
             </Route>
           </Routes>
         </div>

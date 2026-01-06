@@ -6,10 +6,12 @@ import { Search, Users } from "lucide-react"
 import type ClassroomResponseDTO from "@/dtos/ClassroomResponseDTO.ts";
 import { getUserClassrooms } from "@/lib/api.ts";
 import { ClassroomCreationDialog } from "@/components/custom/classroom_creation_dialog.tsx";
+import { JoinClassroomDialog } from "@/components/custom/join_classroom_dialog.tsx";
 import useAuthStatus from "@/lib/use_auth_hook";
-import { Navigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 
 export default function ClassroomSection() {
+    const navigate = useNavigate()
     const { user, loading } = useAuthStatus()
     const [search, setSearch] = useState("")
     const [classrooms, setClassrooms] = useState<ClassroomResponseDTO[]>([])
@@ -51,9 +53,7 @@ export default function ClassroomSection() {
                     <p className="text-zinc-400 mt-1">Join or create a classroom to collaborate with others</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:text-white">
-                        Join Class
-                    </Button>
+                    <JoinClassroomDialog onJoined={(newClass) => setClassrooms(prev => [newClass, ...prev])} />
                     <ClassroomCreationDialog onClassroomCreated={(newClass) => setClassrooms(prev => [newClass, ...prev])} />
                 </div>
             </div>
@@ -109,7 +109,12 @@ export default function ClassroomSection() {
                                         </div>
                                     )}
                                 </div>
-                                <Button variant="ghost" size="sm" className="text-violet-400 hover:text-violet-300 hover:bg-violet-400/10">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-violet-400 hover:text-violet-300 hover:bg-violet-400/10"
+                                    onClick={() => navigate(`/classrooms/${item.id}`)}
+                                >
                                     View Class
                                 </Button>
                             </div>
