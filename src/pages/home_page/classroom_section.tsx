@@ -18,7 +18,7 @@ export default function ClassroomSection() {
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        if (loading || !user || (user.role !== "ROLE_TEACHER" && user.role !== "ROLE_ADMIN")) return;
+        if (loading || !user) return;
 
         getUserClassrooms()
             .then(data => {
@@ -40,7 +40,7 @@ export default function ClassroomSection() {
     }, [classrooms, search]);
 
     if (loading) return null;
-    if (!user || (user.role !== "ROLE_TEACHER" && user.role !== "ROLE_ADMIN")) {
+    if (!user) {
         return <Navigate to="/home" replace />
     }
 
@@ -54,7 +54,9 @@ export default function ClassroomSection() {
                 </div>
                 <div className="flex gap-2">
                     <JoinClassroomDialog onJoined={(newClass) => setClassrooms(prev => [newClass, ...prev])} />
-                    <ClassroomCreationDialog onClassroomCreated={(newClass) => setClassrooms(prev => [newClass, ...prev])} />
+                    {(user.role === "ROLE_TEACHER" || user.role === "ROLE_ADMIN") && (
+                        <ClassroomCreationDialog onClassroomCreated={(newClass) => setClassrooms(prev => [newClass, ...prev])} />
+                    )}
                 </div>
             </div>
 

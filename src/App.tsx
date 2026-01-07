@@ -76,7 +76,7 @@ function App() {
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardSection />} />
                 <Route path="banks" element={<QuestionBankSection />} />
-                <Route element={<RoleProtectedRoute allowedRoles={["ROLE_TEACHER", "ROLE_ADMIN"]} />}>
+                <Route element={<RoleProtectedRoute allowedRoles={["ROLE_TEACHER", "ROLE_ADMIN", "ROLE_STUDENT"]} />}>
                   <Route path="classrooms" element={<ClassroomSection />} />
                 </Route>
                 <Route path="past-practices" element={<PastPracticeSection />} />

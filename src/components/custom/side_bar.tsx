@@ -13,7 +13,7 @@ const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, to: "/home/dashboard" },
   { name: "My Banks", icon: Video, to: "/home/banks" },
   { name: "Workspace", icon: Library, to: "/workspace" },
-  { name: "Classrooms", icon: Users, to: "/home/classrooms", roleRequired: ["ROLE_TEACHER", "ROLE_ADMIN"] },
+  { name: "Classrooms", icon: Users, to: "/home/classrooms", roleRequired: ["ROLE_TEACHER", "ROLE_ADMIN", "ROLE_STUDENT"] },
   { name: "Past Practices", icon: Calendar, to: "/home/past-practices" },
 ]
 
