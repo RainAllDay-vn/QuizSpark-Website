@@ -1,16 +1,20 @@
-import type {Practice} from "@/model/Practice.ts";
-import {Card, CardContent} from "@/components/ui/card.tsx";
-import {Button} from "@/components/ui/button.tsx";
+import type { Practice } from "@/model/Practice.ts";
+import { Card, CardContent } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import useAuthStatus from "@/lib/use_auth_hook.ts";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-interface SummarySectionProps{
+import { duplicatePractice } from "@/lib/api.ts";
+import { useState } from "react";
+
+interface SummarySectionProps {
   practice: Practice;
 }
 
-export default function SummarySection({practice}: SummarySectionProps){
+export default function SummarySection({ practice }: SummarySectionProps) {
   const navigate = useNavigate();
-  const {user} = useAuthStatus();
+  const { user } = useAuthStatus();
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
   let correctAnswers = 0;
   practice.questions.forEach((question) => {
@@ -26,6 +30,19 @@ export default function SummarySection({practice}: SummarySectionProps){
     const minutes = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handlePracticeMore = async () => {
+    try {
+      setIsDuplicating(true);
+      const newPractice = await duplicatePractice(practice.id);
+      navigate(`/practice/${newPractice.id}`);
+      window.location.reload(); // Force reload to fetch new practice data
+    } catch (error) {
+      console.error("Failed to duplicate practice:", error);
+    } finally {
+      setIsDuplicating(false);
+    }
   };
 
   return (
@@ -67,10 +84,11 @@ export default function SummarySection({practice}: SummarySectionProps){
 
             <div className="flex gap-4 justify-center">
               <Button
-                onClick={() => window.location.reload()}
+                onClick={handlePracticeMore}
+                disabled={isDuplicating}
                 className="bg-purple-600 hover:bg-purple-700 text-white px-6"
               >
-                Practice More
+                {isDuplicating ? "Preparing..." : "Practice Again"}
               </Button>
               <Button
                 onClick={() => user ? navigate("/home") : navigate('/')}

@@ -491,6 +491,16 @@ export async function finishPractice(practiceId: string) {
   }
 }
 
+export async function duplicatePractice(practiceId: string) {
+  try {
+    const response = await api.post(`/practice/id/${practiceId}/duplicate`);
+    return response.data as { id: string };
+  } catch (error) {
+    console.error('Failed to duplicate practice session:', error);
+    throw error;
+  }
+}
+
 // ===== AI ENDPOINTS (/ai/) =====
 
 export async function parseAiFile(fileId: string, onResponse: (data: AiResponseDTO) => void) {
