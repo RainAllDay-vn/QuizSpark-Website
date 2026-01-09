@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
-import { Bot, Plus, History, X, ImageIcon, Loader2, ChevronLeft, Send, Brain, Zap } from 'lucide-react';
+import { Bot, Plus, History, X, ImageIcon, Loader2, ChevronLeft, Send, Brain, Zap, Volume2, VolumeX } from 'lucide-react';
 import MarkdownRenderer from '@/components/custom/markdown-renderer';
 import {
     DropdownMenu,
@@ -9,15 +9,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from '@/lib/utils';
 import { viewFile } from '@/lib/api';
 import { User, MoreVertical as LucideMoreVertical, Check, Copy as LucideCopy } from 'lucide-react';
-import type ChatFileDTO from '@/dtos/ChatFileDTO';
+import type ChatItemDTO from '@/dtos/ChatItemDTO';
 import type ChatMessageDTO from '@/dtos/ChatMessageDTO';
 import type ChatModelDTO from '@/dtos/ChatModelDTO';
 
 export interface UiChatMessage extends ChatMessageDTO {
-    files?: ChatFileDTO[];
+    items?: ChatItemDTO[];
 }
 
 const ChatAttachment = ({ fileId }: { fileId: string }) => {
@@ -80,7 +79,7 @@ const LocalFilePreview = ({ file, onRemove }: { file: File, onRemove: () => void
     );
 };
 
-const ContextChip = ({ onRemove }: { onRemove: () => void }) => {
+const ContextChip = () => {
     return (
         <div className="flex items-center gap-2 px-2.5 py-1.5 bg-gray-900/50 border border-gray-800/80 rounded-lg animate-fade-in group transition-all hover:border-gray-700/50">
             <Brain className="w-3.5 h-3.5 text-purple-400" />
@@ -88,15 +87,6 @@ const ContextChip = ({ onRemove }: { onRemove: () => void }) => {
                 <span className="text-[11px] text-gray-300 font-medium">Current Screen</span>
                 <span className="text-[10px] text-gray-500">(Context)</span>
             </div>
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove();
-                }}
-                className="ml-1 p-0.5 text-gray-500 hover:text-rose-400 transition-colors"
-            >
-                <X className="w-3 h-3" />
-            </button>
         </div>
     );
 };
@@ -105,8 +95,6 @@ interface ChatSectionProps {
     messages: UiChatMessage[];
     inputText: string;
     setInputText: (text: string) => void;
-    isContextEnabled: boolean;
-    setIsContextEnabled: (enabled: boolean) => void;
     hasContext: boolean;
     onSendMessage: (index?: number) => void;
     onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -122,14 +110,14 @@ interface ChatSectionProps {
     onNewChat: () => void;
     onClose: () => void;
     fileInputRef: React.RefObject<HTMLInputElement | null>;
+    isTtsEnabled?: boolean;
+    setIsTtsEnabled?: (enabled: boolean) => void;
 }
 
 export default function ChatSection({
     messages,
     inputText,
     setInputText,
-    isContextEnabled,
-    setIsContextEnabled,
     hasContext,
     onSendMessage,
     onFileUpload,
@@ -144,7 +132,9 @@ export default function ChatSection({
     onOpenWorkflows,
     onNewChat,
     onClose,
-    fileInputRef
+    fileInputRef,
+    isTtsEnabled,
+    setIsTtsEnabled
 }: ChatSectionProps) {
     const [copiedId, setCopiedId] = React.useState<string | null>(null);
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -239,10 +229,13 @@ export default function ChatSection({
         );
     };
 
-    const getFileSrc = (file: { id?: string, data?: string, fileType?: string }) => {
-        // If it has data, use it (Base64)
-        if (file.data && file.fileType) return `data:${file.fileType};base64,${file.data}`;
-        if (file.data) return `data:image/jpeg;base64,${file.data}`; // Fallback assume image
+    const getFileSrc = (item: ChatItemDTO) => {
+        // Use content as base64 data for ATTACHMENT type if it starts with data or is just base64
+        if (item.type === 'ATTACHMENT' && item.content) {
+            if (item.content.startsWith('data:')) return item.content;
+            if (item.fileType) return `data:${item.fileType};base64,${item.content}`;
+            return `data:image/jpeg;base64,${item.content}`; // Fallback
+        }
         return '';
     };
 
@@ -308,16 +301,16 @@ export default function ChatSection({
                                 {renderMessageHeader(message)}
                             </CardHeader>
                             <CardContent className="px-3 pt-1 pb-0">
-                                {(message.files && message.files.length > 0) || (message.fileIds && message.fileIds.length > 0) ? (
+                                {(message.items && message.items.filter(i => i.type === 'ATTACHMENT').length > 0) || (message.fileIds && message.fileIds.length > 0) ? (
                                     <div className="mb-2 flex flex-wrap gap-2">
-                                        {message.files && message.files.map((file, idx) => (
+                                        {message.items && message.items.filter(i => i.type === 'ATTACHMENT').map((item, idx) => (
                                             <div key={`file-${idx}`} className="rounded-lg overflow-hidden border border-gray-800 max-w-sm">
-                                                {file.id && !file.data ? (
-                                                    <ChatAttachment fileId={file.id} />
+                                                {item.fileId && !item.content ? (
+                                                    <ChatAttachment fileId={item.fileId} />
                                                 ) : (
                                                     <img
-                                                        src={getFileSrc(file)}
-                                                        alt={file.fileName || "Attachment"}
+                                                        src={getFileSrc(item)}
+                                                        alt={item.fileName || "Attachment"}
                                                         className="w-full h-auto object-cover max-h-64"
                                                         onError={(e) => {
                                                             e.currentTarget.style.display = 'none';
@@ -360,10 +353,10 @@ export default function ChatSection({
             {/* Input Area */}
             <div className="pb-2 shrink-0 px-3">
                 <Card className="gap-0 py-0 bg-[#111827]/90 border-gray-800/60 backdrop-blur-2xl shadow-2xl overflow-hidden rounded-xl">
-                    {(selectedFiles.length > 0 || (isContextEnabled && hasContext)) && (
+                    {(selectedFiles.length > 0 || hasContext) && (
                         <div className="px-3 pt-3 pb-1 flex flex-wrap gap-2 animate-fade-in border-b border-gray-800/30 mb-1">
-                            {isContextEnabled && hasContext && (
-                                <ContextChip onRemove={() => setIsContextEnabled(false)} />
+                            {hasContext && (
+                                <ContextChip />
                             )}
                             {selectedFiles.map((file, idx) => (
                                 <LocalFilePreview
@@ -448,16 +441,13 @@ export default function ChatSection({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="bg-gray-900 border-gray-800 text-gray-300 min-w-[200px]">
                                             {hasContext ? (
-                                                <DropdownMenuItem
-                                                    onClick={() => setIsContextEnabled(!isContextEnabled)}
-                                                    className="text-xs flex items-center justify-between hover:bg-gray-800 focus:bg-gray-800 focus:text-white py-2 cursor-pointer"
-                                                >
+                                                <div className="text-xs flex items-center justify-between py-2 px-3 text-purple-400 font-medium">
                                                     <div className="flex items-center gap-2">
-                                                        <Brain className={cn("h-3.5 w-3.5", isContextEnabled ? "text-purple-400" : "text-gray-500")} />
-                                                        <span>Include Current Screen</span>
+                                                        <Brain className="h-3.5 w-3.5" />
+                                                        <span>Including Current Screen</span>
                                                     </div>
-                                                    {isContextEnabled && <Check className="h-3 w-3 text-purple-400" />}
-                                                </DropdownMenuItem>
+                                                    <Check className="h-3 w-3" />
+                                                </div>
                                             ) : (
                                                 <div className="px-3 py-2 text-[10px] text-gray-500 italic flex items-center gap-2">
                                                     <Brain className="h-3 w-3 opacity-30" />
@@ -466,6 +456,17 @@ export default function ChatSection({
                                             )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
+                                    {setIsTtsEnabled && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setIsTtsEnabled(!isTtsEnabled)}
+                                            className={`h-8 w-8 p-0 rounded-md transition-all duration-200 ${isTtsEnabled ? 'text-purple-400 bg-purple-400/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                            title={isTtsEnabled ? "Disable TTS" : "Enable TTS"}
+                                        >
+                                            {isTtsEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
 

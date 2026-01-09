@@ -25,8 +25,8 @@ interface ChatBotContextType {
     contexts: ChatContextItem[];
     tools: ChatTool[];
     workflows: ChatWorkflow[];
-    isContextEnabled: boolean;
-    setIsContextEnabled: (enabled: boolean) => void;
+    isTtsEnabled: boolean;
+    setIsTtsEnabled: (enabled: boolean) => void;
     registerContext: (item: ChatContextItem) => () => void;
     unregisterContext: (id: string) => void;
     registerTool: (tool: ChatTool) => () => void;
@@ -41,7 +41,13 @@ export function ChatBotProvider({ children }: { children: React.ReactNode }) {
     const [contexts, setContexts] = useState<ChatContextItem[]>([]);
     const [tools, setTools] = useState<ChatTool[]>([]);
     const [workflows, setWorkflows] = useState<ChatWorkflow[]>([]);
-    const [isContextEnabled, setIsContextEnabled] = useState(true);
+    const [isTtsEnabled, setIsTtsEnabled] = useState(() => {
+        return localStorage.getItem('chatbot-tts-enabled') === 'true';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('chatbot-tts-enabled', isTtsEnabled.toString());
+    }, [isTtsEnabled]);
 
     const registerContext = useCallback((item: ChatContextItem) => {
         setContexts(prev => {
@@ -85,8 +91,8 @@ export function ChatBotProvider({ children }: { children: React.ReactNode }) {
             contexts,
             tools,
             workflows,
-            isContextEnabled,
-            setIsContextEnabled,
+            isTtsEnabled,
+            setIsTtsEnabled,
             registerContext,
             unregisterContext,
             registerTool,

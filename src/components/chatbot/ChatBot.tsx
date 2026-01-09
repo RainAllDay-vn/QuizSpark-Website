@@ -11,6 +11,7 @@ import type ChatSessionDTO from '@/dtos/ChatSessionDTO';
 import type ChatResponseDTO from '@/dtos/ChatResponseDTO';
 import type ChatRequestDTO from '@/dtos/ChatRequestDTO';
 import type ChatModelDTO from '@/dtos/ChatModelDTO';
+import type ChatItemDTO from '@/dtos/ChatItemDTO';
 
 import ChatSection from './ChatSection';
 import type { UiChatMessage } from './ChatSection';
@@ -26,7 +27,7 @@ interface ChatBotProps {
 type ChatView = 'chat' | 'history' | 'workflows';
 
 export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
-    const { contexts, registerTool, isContextEnabled, setIsContextEnabled } = useChatBot();
+    const { contexts, registerTool, isTtsEnabled, setIsTtsEnabled } = useChatBot();
 
     useEffect(() => {
         return registerTool({
@@ -215,29 +216,44 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         setInputText('');
         setSelectedFiles([]); // Clear immediately for optimistic UI
 
-        let newUserMessage: UiChatMessage | null = null;
+        // 1. Prepare items
+        const requestItems: ChatItemDTO[] = [];
 
+        if (messageContent) {
+            requestItems.push({ type: 'MESSAGE', content: messageContent });
+        }
 
+        const attachments = await Promise.all(filesToSend.map(async (file) => ({
+            type: 'ATTACHMENT' as const,
+            fileName: file.name,
+            fileType: file.type,
+            content: await fileToBase64(file)
+        })));
+        requestItems.push(...attachments);
+
+        // 2. Add optimistic UI message for User (if not a regeneration)
         if (index === undefined) {
-            const fileDTOs = await Promise.all(filesToSend.map(async (file) => ({
-                fileName: file.name,
-                fileType: file.type,
-                data: await fileToBase64(file)
-            })));
-
-            newUserMessage = {
+            const newUserMessage: UiChatMessage = {
                 id: crypto.randomUUID(),
                 role: 'USER',
                 content: messageContent,
                 messageIndex: messages.length,
-                files: fileDTOs,
+                items: requestItems,
                 createdAt: new Date().toISOString()
             };
-            setMessages(prev => [...prev, newUserMessage!]);
+            setMessages(prev => [...prev, newUserMessage]);
+        }
+
+        // 3. Add Context (only for the API request, not for the optimistic UI history)
+        const apiItems = [...requestItems];
+        if (contexts.length > 0) {
+            const contextContent = contexts.map(c => `[${c.title}]\n${c.content}`).join('\n\n');
+            apiItems.push({ type: 'CONTEXT', content: contextContent });
         }
 
         setIsStreaming(true);
 
+        // 4. Prepare Bot placeholder
         const botMessageId = crypto.randomUUID();
         const initialBotMessage: UiChatMessage = {
             id: botMessageId,
@@ -255,22 +271,12 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         }
 
         try {
-            const chatFiles = await Promise.all(filesToSend.map(async (file) => ({
-                fileName: file.name,
-                fileType: file.type,
-                data: await fileToBase64(file)
-            })));
-
-            const contextBlock = (isContextEnabled && contexts.length > 0)
-                ? `\n\n---\nRELEVANT CONTEXT:\n${contexts.map(c => `[${c.title}]\n${c.content}`).join('\n\n')}\n---`
-                : '';
-
             const request: ChatRequestDTO = {
-                message: messageContent + contextBlock,
+                items: apiItems,
                 sessionId: currentSessionId || undefined,
                 model: selectedModel?.name,
-                files: chatFiles,
-                index: index
+                index: index,
+                tts: isTtsEnabled
             };
 
             let sessionRefreshed = false;
@@ -331,8 +337,6 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                         messages={messages}
                         inputText={inputText}
                         setInputText={setInputText}
-                        isContextEnabled={isContextEnabled}
-                        setIsContextEnabled={setIsContextEnabled}
                         hasContext={contexts.length > 0}
                         onSendMessage={handleSendMessage}
                         onFileUpload={handleFileUpload}
@@ -348,6 +352,8 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                         onNewChat={handleNewChat}
                         onClose={onClose}
                         fileInputRef={fileInputRef}
+                        isTtsEnabled={isTtsEnabled}
+                        setIsTtsEnabled={setIsTtsEnabled}
                     />
                 ) : currentView === 'history' ? (
                     <HistorySection

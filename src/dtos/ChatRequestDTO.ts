@@ -1,10 +1,9 @@
-import type ChatFileDTO from './ChatFileDTO';
+import type ChatItemDTO from './ChatItemDTO';
 
 export default interface ChatRequestDTO {
-    message: string;
     sessionId?: string;
     model?: string;
-    files?: ChatFileDTO[];
     index?: number;
     tts?: boolean;
+    items: ChatItemDTO[];
 }
