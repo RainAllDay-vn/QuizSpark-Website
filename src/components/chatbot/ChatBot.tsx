@@ -291,7 +291,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                 if (chunk.status === 'data' && chunk.chunk) {
                     setMessages(prev => prev.map(msg =>
                         msg.id === botMessageId
-                            ? { ...msg, content: msg.content + chunk.chunk }
+                            ? { ...msg, content: (typeof msg.content === 'string' ? msg.content : '') + chunk.chunk }
                             : msg
                     ));
                 }

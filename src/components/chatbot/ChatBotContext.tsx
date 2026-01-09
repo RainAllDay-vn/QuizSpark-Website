@@ -1,9 +1,14 @@
+import type ChatItemDTO from '@/dtos/ChatItemDTO';
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 export interface ChatContextItem {
+    /** Unique identifier for the context item */
     id: string;
-    content: string;
+    /** Function that returns a promise of chat items representing the context */
+    content: () => Promise<ChatItemDTO[]>;
+    /** Display name for the context item */
     title: string;
+    /** Additional structured data associated with the context */
     metadata?: Record<string, any>;
 }
 

@@ -15,9 +15,33 @@ import type ChatItemDTO from '@/dtos/ChatItemDTO';
 import type ChatMessageDTO from '@/dtos/ChatMessageDTO';
 import type ChatModelDTO from '@/dtos/ChatModelDTO';
 
-export interface UiChatMessage extends ChatMessageDTO {
+export interface UiChatMessage extends Omit<ChatMessageDTO, 'content'> {
+    content: string | ChatItemDTO[];
     items?: ChatItemDTO[];
+    fileIds?: string[];
 }
+
+const getMessageContent = (msg: UiChatMessage): string => {
+    if (typeof msg.content === 'string') return msg.content;
+    if (Array.isArray(msg.content)) {
+        return msg.content
+            .filter(item => item.type === 'MESSAGE' && item.content)
+            .map(item => item.content)
+            .join('\n');
+    }
+    return '';
+};
+
+const getMessageAttachments = (msg: UiChatMessage): ChatItemDTO[] => {
+    const attachments: ChatItemDTO[] = [];
+    if (msg.items) {
+        attachments.push(...msg.items.filter(i => i.type === 'ATTACHMENT'));
+    }
+    if (Array.isArray(msg.content)) {
+        attachments.push(...msg.content.filter(i => i.type === 'ATTACHMENT'));
+    }
+    return attachments;
+};
 
 const ChatAttachment = ({ fileId }: { fileId: string }) => {
     const [src, setSrc] = React.useState<string | null>(null);
@@ -219,7 +243,7 @@ export default function ChatSection({
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleCopy(msg.id, msg.content)}
+                        onClick={() => handleCopy(msg.id, getMessageContent(msg))}
                         className="h-7 w-7 p-0 text-gray-400 hover:text-white"
                     >
                         {copiedId === msg.id ? <Check className="h-3.5 w-3.5 text-green-500" /> : <LucideCopy className="h-3.5 w-3.5" />}
@@ -301,9 +325,9 @@ export default function ChatSection({
                                 {renderMessageHeader(message)}
                             </CardHeader>
                             <CardContent className="px-3 pt-1 pb-0">
-                                {(message.items && message.items.filter(i => i.type === 'ATTACHMENT').length > 0) || (message.fileIds && message.fileIds.length > 0) ? (
+                                {getMessageAttachments(message).length > 0 || (message.fileIds && message.fileIds.length > 0) ? (
                                     <div className="mb-2 flex flex-wrap gap-2">
-                                        {message.items && message.items.filter(i => i.type === 'ATTACHMENT').map((item, idx) => (
+                                        {getMessageAttachments(message).map((item, idx) => (
                                             <div key={`file-${idx}`} className="rounded-lg overflow-hidden border border-gray-800 max-w-sm">
                                                 {item.fileId && !item.content ? (
                                                     <ChatAttachment fileId={item.fileId} />
@@ -327,7 +351,7 @@ export default function ChatSection({
                                     </div>
                                 ) : null}
                                 <MarkdownRenderer
-                                    content={message.content}
+                                    content={getMessageContent(message)}
                                     className="text-[13px] text-gray-200 leading-relaxed prose prose-invert max-w-none"
                                 />
                             </CardContent>
