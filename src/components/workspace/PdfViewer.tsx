@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Search, Loader2, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Search, Loader2, RotateCcw, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { viewFile } from '@/lib/api';
@@ -15,9 +15,88 @@ interface PdfViewerProps {
     fileId: string;
     fileName: string;
     isActive: boolean;
+    onPageChange?: (page: number) => void;
 }
 
-export function PdfViewer({ fileId, fileName, isActive }: PdfViewerProps) {
+interface PageWithObserverProps {
+    pageNumber: number;
+    scale: number;
+    width?: number;
+    onVisible: () => void;
+    makeTextRenderer: (searchText: string) => (textItem: { str: string }) => string | React.ReactNode;
+    searchText: string;
+}
+
+function PageWithObserver({
+    pageNumber,
+    scale,
+    width,
+    onVisible,
+    makeTextRenderer,
+    searchText
+}: PageWithObserverProps) {
+    const ref = useRef<HTMLDivElement>(null);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const visibilityObserver = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    onVisible();
+                }
+            },
+            {
+                threshold: 0.1,
+                rootMargin: '-40% 0px -40% 0px'
+            }
+        );
+
+        const loadObserver = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                }
+            },
+            {
+                rootMargin: '200% 0px' // Load pages when they are within 2 viewports distance
+            }
+        );
+
+        if (ref.current) {
+            visibilityObserver.observe(ref.current);
+            loadObserver.observe(ref.current);
+        }
+
+        return () => {
+            visibilityObserver.disconnect();
+            loadObserver.disconnect();
+        };
+    }, [onVisible]);
+
+    return (
+        <div ref={ref} className="min-h-[500px] flex items-center justify-center bg-white">
+            {isVisible ? (
+                <Page
+                    pageNumber={pageNumber}
+                    scale={scale}
+                    width={width}
+                    loading={<div className="h-[842px] w-full flex items-center justify-center bg-zinc-50 border border-zinc-100" />}
+                    className="pdf-page bg-white"
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                    customTextRenderer={makeTextRenderer(searchText) as any}
+                />
+            ) : (
+                <div
+                    className="bg-zinc-50 border border-zinc-100 animate-pulse"
+                    style={{ width: width || '595px', height: (width ? width * 1.414 : 842) + 'px' }}
+                />
+            )}
+        </div>
+    );
+}
+
+export function PdfViewer({ fileId, fileName, isActive, onPageChange }: PdfViewerProps) {
     const [numPages, setNumPages] = useState<number | null>(null);
     const [pageNumber, setPageNumber] = useState(1);
     const [scale, setScale] = useState(1.0);
@@ -26,6 +105,7 @@ export function PdfViewer({ fileId, fileName, isActive }: PdfViewerProps) {
     const [searchText, setSearchText] = useState("");
     const [containerWidth, setContainerWidth] = useState<number>(0);
     const [fitToWidth, setFitToWidth] = useState(true);
+    const [viewMode, setViewMode] = useState<'single' | 'scroll'>('single');
 
     const containerRef = useRef<HTMLDivElement>(null);
     const resizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -74,12 +154,23 @@ export function PdfViewer({ fileId, fileName, isActive }: PdfViewerProps) {
         setPageNumber(1);
     };
 
-    const changePage = (offset: number) => {
-        setPageNumber(prevPageNumber => {
-            const newPage = prevPageNumber + offset;
-            return Math.min(Math.max(1, newPage), numPages || 1);
-        });
-    };
+    const changePage = useCallback((offset: number) => {
+        const newPage = Math.min(Math.max(1, pageNumber + offset), numPages || 1);
+        setPageNumber(newPage);
+        if (viewMode === 'scroll') {
+            const element = document.getElementById(`pdf-page-${newPage}`);
+            element?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [pageNumber, numPages, viewMode]);
+
+    const goToPage = useCallback((page: number) => {
+        const newPage = Math.min(Math.max(1, page), numPages || 1);
+        setPageNumber(newPage);
+        if (viewMode === 'scroll') {
+            const element = document.getElementById(`pdf-page-${newPage}`);
+            element?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [numPages, viewMode]);
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (!isActive) return;
@@ -90,13 +181,29 @@ export function PdfViewer({ fileId, fileName, isActive }: PdfViewerProps) {
         } else if (e.key === 'ArrowRight') {
             changePage(1);
         }
-    }, [numPages, isActive]);
+    }, [isActive, changePage]);
 
     useEffect(() => {
         if (!isActive) return;
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleKeyDown, isActive]);
+
+    useEffect(() => {
+        onPageChange?.(pageNumber);
+    }, [pageNumber, onPageChange]);
+
+    // Ensure current page is visible when switching to scroll mode
+    useEffect(() => {
+        if (viewMode === 'scroll') {
+            // Use a small timeout to ensure the DOM has rendered the page containers
+            const timer = setTimeout(() => {
+                const element = document.getElementById(`pdf-page-${pageNumber}`);
+                element?.scrollIntoView({ behavior: 'auto', block: 'start' });
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [viewMode]);
 
     const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 3.0));
     const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
@@ -139,7 +246,16 @@ export function PdfViewer({ fileId, fileName, isActive }: PdfViewerProps) {
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <span className="text-xs text-zinc-400 font-medium whitespace-nowrap">
-                            {pageNumber} / {numPages || '--'}
+                            <input
+                                type="text"
+                                value={pageNumber}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    if (!isNaN(val)) goToPage(val);
+                                }}
+                                className="w-8 bg-transparent text-center focus:outline-none focus:ring-1 focus:ring-violet-500 rounded"
+                            />
+                             / {numPages || '--'}
                         </span>
                         <Button
                             variant="ghost"
@@ -164,6 +280,15 @@ export function PdfViewer({ fileId, fileName, isActive }: PdfViewerProps) {
                 </div>
 
                 <div className="flex items-center space-x-1">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn("h-8 w-8 text-zinc-400 hover:text-white", viewMode === 'scroll' && "text-violet-400 bg-violet-400/10")}
+                        onClick={() => setViewMode(viewMode === 'single' ? 'scroll' : 'single')}
+                        title={viewMode === 'single' ? "Switch to Scroll Mode" : "Switch to Single Page"}
+                    >
+                        <List className="h-4 w-4" />
+                    </Button>
                     <Button
                         variant="ghost"
                         size="icon"
@@ -216,27 +341,48 @@ export function PdfViewer({ fileId, fileName, isActive }: PdfViewerProps) {
                             <p className="text-sm text-zinc-500">Loading PDF...</p>
                         </div>
                     ) : fileBlob ? (
-                        <div className="shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-white rounded-sm overflow-hidden transition-all duration-200">
+                        <div className={cn("bg-transparent rounded-sm transition-all duration-200", viewMode === 'single' ? "shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-white" : "w-full")}>
                             <Document
                                 file={fileBlob}
                                 onLoadSuccess={onDocumentLoadSuccess}
                                 loading={
-                                    <div className="p-8 text-zinc-500">Preparing document...</div>
+                                    <div className="p-8 text-zinc-500 text-center w-full">Preparing document...</div>
                                 }
                                 error={
-                                    <div className="p-8 text-red-400">Failed to load document</div>
+                                    <div className="p-8 text-red-400 text-center w-full">Failed to load document</div>
                                 }
+                                className={viewMode === 'scroll' ? 'flex flex-col items-center gap-8' : ''}
                             >
-                                <Page
-                                    pageNumber={pageNumber}
-                                    scale={fitToWidth ? 1.0 : scale}
-                                    width={fitToWidth ? containerWidth : undefined}
-                                    loading={null}
-                                    className="pdf-page"
-                                    renderTextLayer={true}
-                                    renderAnnotationLayer={true}
-                                    customTextRenderer={makeTextRenderer(searchText) as any}
-                                />
+                                {viewMode === 'single' ? (
+                                    <Page
+                                        pageNumber={pageNumber}
+                                        scale={fitToWidth ? 1.0 : scale}
+                                        width={fitToWidth ? containerWidth : undefined}
+                                        loading={null}
+                                        className="pdf-page bg-white shadow-lg"
+                                        renderTextLayer={true}
+                                        renderAnnotationLayer={true}
+                                        customTextRenderer={makeTextRenderer(searchText) as any}
+                                    />
+                                ) : (
+                                    Array.from(new Array(numPages), (_el, index) => (
+                                        <div
+                                            key={`page_${index + 1}`}
+                                            id={`pdf-page-${index + 1}`}
+                                            data-page={index + 1}
+                                            className="pdf-page-container bg-white shadow-lg"
+                                        >
+                                            <PageWithObserver
+                                                pageNumber={index + 1}
+                                                scale={fitToWidth ? 1.0 : scale}
+                                                width={fitToWidth ? containerWidth : undefined}
+                                                onVisible={() => setPageNumber(index + 1)}
+                                                makeTextRenderer={makeTextRenderer}
+                                                searchText={searchText}
+                                            />
+                                        </div>
+                                    ))
+                                )}
                             </Document>
                         </div>
                     ) : (
