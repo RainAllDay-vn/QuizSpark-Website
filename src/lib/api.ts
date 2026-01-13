@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getAuth } from "firebase/auth";
 import { app } from "../firebase.tsx";
+import { userCache } from "@/lib/userCache.ts";
 import type { QuestionBank } from "@/model/QuestionBank.ts";
 import type { Question } from "@/model/Question.ts";
 import type { Practice } from "@/model/Practice.ts";
@@ -49,6 +50,15 @@ api.interceptors.request.use(async (config) => {
 }, (error) => {
   return Promise.reject(error);
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Mark cache as dirty on any error (none-okay status code)
+    userCache.markDirty();
+    return Promise.reject(error);
+  }
+);
 
 // ===== USER ENDPOINTS (/users/) =====
 
