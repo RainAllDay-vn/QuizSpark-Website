@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDrop } from 'react-dnd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -104,6 +104,7 @@ interface WorkspacePaneProps {
 
 import { PdfViewer } from '@/components/workspace/PdfViewer';
 import { LiveMarkdownEditor } from '@/components/workspace/LiveMarkdownEditor';
+import { useChatBot } from '@/components/chatbot/ChatBotContext';
 import { viewFile, updateFileContent } from '@/lib/api';
 import { Loader2, CheckCircle2, AlertCircle, Info, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -112,6 +113,40 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
     const { state, dispatch } = useWorkspace();
     const activeTabId = state.activeTab[pane];
     const activeTab = state.panes[pane].find(t => t.id === activeTabId);
+    const { registerContext, unregisterContext } = useChatBot();
+
+    const handlePdfPageChange = useCallback((page: number) => {
+        if (activeTabId) {
+            dispatch({ type: 'SET_PDF_PAGE', tabId: activeTabId, page });
+        }
+    }, [activeTabId, dispatch]);
+
+    useEffect(() => {
+        const contextId = `workspace-file-${pane}`;
+        if (activeTab) {
+            const isPdf = activeTab.file.fileName.toLowerCase().endsWith('.pdf');
+            const unregister = registerContext({
+                id: contextId,
+                title: activeTab.file.fileName,
+                content: async () => [{
+                    type: "CONTEXT",
+                    description: `WORKSPACE FILE`,
+                    fileId: activeTab.file.id,
+                    fileName: activeTab.file.fileName,
+                    fileType: activeTab.file.fileType,
+                    metadata: isPdf ? { page: activeTab.pdfPage || 0 } : undefined
+                }],
+                metadata: {
+                    fileId: activeTab.file.id,
+                    pane,
+                    ...(isPdf && { currentPage: activeTab.pdfPage || 1 })
+                }
+            });
+            return unregister;
+        } else {
+            unregisterContext(contextId);
+        }
+    }, [activeTab?.id, activeTab?.file.id, activeTab?.pdfPage, pane, registerContext, unregisterContext]);
 
     const [{ isOver }, drop] = useDrop(() => ({
         accept: ['FILE', 'TAB'],
@@ -154,6 +189,7 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
                                 fileId={activeTab.file.id}
                                 fileName={activeTab.file.fileName}
                                 isActive={state.activePane === pane}
+                                onPageChange={handlePdfPageChange}
                             />
                         ) : activeTab.file.fileName.endsWith('.md') ? (
                             <MarkdownFileEditor file={activeTab.file} />

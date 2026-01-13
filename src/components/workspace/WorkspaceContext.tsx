@@ -6,6 +6,7 @@ import type { DbFile } from '@/model/DbFile';
 export interface Tab {
     id: string; // Unique tab ID
     file: DbFile;
+    pdfPage?: number; // Track current PDF page
 }
 
 export type PaneId = 'left' | 'right';
@@ -31,7 +32,8 @@ export type WorkspaceAction =
     | { type: 'SPLIT_SCREEN'; file?: DbFile }
     | { type: 'CLOSE_SPLIT' }
     | { type: 'MOVE_TAB'; tabId: string; sourcePane: PaneId; targetPane: PaneId; index?: number }
-    | { type: 'REORDER_TABS'; pane: PaneId; startIndex: number; endIndex: number };
+    | { type: 'REORDER_TABS'; pane: PaneId; startIndex: number; endIndex: number }
+    | { type: 'SET_PDF_PAGE'; tabId: string; page: number };
 
 // --- Initial State ---
 
@@ -158,6 +160,19 @@ function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): Works
                     ...state.panes,
                     [pane]: result
                 }
+            };
+        }
+        case 'SET_PDF_PAGE': {
+            const { tabId, page } = action;
+            const updatePane = (pane: Tab[]) =>
+                pane.map(t => (t.id === tabId ? { ...t, pdfPage: page } : t));
+
+            return {
+                ...state,
+                panes: {
+                    left: updatePane(state.panes.left),
+                    right: updatePane(state.panes.right),
+                },
             };
         }
         default:

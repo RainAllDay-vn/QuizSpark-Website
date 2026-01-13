@@ -17,4 +17,9 @@ export default interface ChatItemDTO {
   fileName?: string,
   /** The MIME type or category of the attached file */
   fileType?: string,
+  /**
+   * Additional structured data associated with the chat item.
+   * This is used for context-specific information like PDF page numbers.
+   */
+  metadata?: Record<string, any>,
 }

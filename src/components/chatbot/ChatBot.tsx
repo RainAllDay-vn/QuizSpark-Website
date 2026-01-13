@@ -27,7 +27,7 @@ interface ChatBotProps {
 type ChatView = 'chat' | 'history' | 'workflows';
 
 export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
-    const { contexts, registerTool, isTtsEnabled, setIsTtsEnabled } = useChatBot();
+    const { contexts, unregisterContext, registerTool, isTtsEnabled, setIsTtsEnabled } = useChatBot();
 
     useEffect(() => {
         return registerTool({
@@ -53,6 +53,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     // const [isUploading, setIsUploading] = useState(false); // Removed as we no longer upload immediately
     const [isStreaming, setIsStreaming] = useState(false);
+    const [selectedContextIds, setSelectedContextIds] = useState<string[]>([]);
     const [currentView, setCurrentView] = useState<ChatView>('chat');
     const [isAnimating, setIsAnimating] = useState(false);
     const [width, setWidth] = useState(() => {
@@ -69,6 +70,14 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
     useEffect(() => {
         localStorage.setItem('chatbot-width', width.toString());
     }, [width]);
+
+    useEffect(() => {
+        // Clean up selected IDs if contexts are removed
+        setSelectedContextIds(prev => {
+            const currentContextIds = contexts.map(c => c.id);
+            return prev.filter(id => currentContextIds.includes(id));
+        });
+    }, [contexts]);
 
     useEffect(() => {
         loadModels();
@@ -246,9 +255,10 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
 
         // 3. Add Context (only for the API request, not for the optimistic UI history)
         const apiItems = [...requestItems];
-        if (contexts.length > 0) {
-            const contextContent = contexts.map(c => `[${c.title}]\n${c.content}`).join('\n\n');
-            apiItems.push({ type: 'CONTEXT', content: contextContent });
+        const selectedContexts = contexts.filter(c => selectedContextIds.includes(c.id));
+        if (selectedContexts.length > 0) {
+            const contextItems = await Promise.all(selectedContexts.map(c => c.content()));
+            apiItems.push(...contextItems.flat());
         }
 
         setIsStreaming(true);
@@ -337,7 +347,13 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                         messages={messages}
                         inputText={inputText}
                         setInputText={setInputText}
-                        hasContext={contexts.length > 0}
+                        contexts={contexts}
+                        selectedContextIds={selectedContextIds}
+                        onToggleContext={(id) => {
+                            setSelectedContextIds(prev =>
+                                prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+                            );
+                        }}
                         onSendMessage={handleSendMessage}
                         onFileUpload={handleFileUpload}
                         selectedFiles={selectedFiles}

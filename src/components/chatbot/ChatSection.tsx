@@ -103,23 +103,33 @@ const LocalFilePreview = ({ file, onRemove }: { file: File, onRemove: () => void
     );
 };
 
-const ContextChip = () => {
+const ContextChip = ({ title, onRemove }: { title: string, onRemove: () => void }) => {
     return (
         <div className="flex items-center gap-2 px-2.5 py-1.5 bg-gray-900/50 border border-gray-800/80 rounded-lg animate-fade-in group transition-all hover:border-gray-700/50">
             <Brain className="w-3.5 h-3.5 text-purple-400" />
             <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-gray-300 font-medium">Current Screen</span>
+                <span className="text-[11px] text-gray-300 font-medium truncate max-w-[150px]">{title}</span>
                 <span className="text-[10px] text-gray-500">(Context)</span>
             </div>
+            <button
+                onClick={onRemove}
+                className="ml-1 p-0.5 hover:bg-gray-800 rounded-full text-gray-500 hover:text-gray-300 transition-colors"
+            >
+                <X className="w-3 h-3" />
+            </button>
         </div>
     );
 };
+
+import type { ChatContextItem } from './ChatBotContext';
 
 interface ChatSectionProps {
     messages: UiChatMessage[];
     inputText: string;
     setInputText: (text: string) => void;
-    hasContext: boolean;
+    contexts: ChatContextItem[];
+    selectedContextIds: string[];
+    onToggleContext: (id: string) => void;
     onSendMessage: (index?: number) => void;
     onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     selectedFiles: File[];
@@ -142,7 +152,9 @@ export default function ChatSection({
     messages,
     inputText,
     setInputText,
-    hasContext,
+    contexts,
+    selectedContextIds,
+    onToggleContext,
     onSendMessage,
     onFileUpload,
     selectedFiles,
@@ -377,11 +389,15 @@ export default function ChatSection({
             {/* Input Area */}
             <div className="pb-2 shrink-0 px-3">
                 <Card className="gap-0 py-0 bg-[#111827]/90 border-gray-800/60 backdrop-blur-2xl shadow-2xl overflow-hidden rounded-xl">
-                    {(selectedFiles.length > 0 || hasContext) && (
+                    {(selectedFiles.length > 0 || selectedContextIds.length > 0) && (
                         <div className="px-3 pt-3 pb-1 flex flex-wrap gap-2 animate-fade-in border-b border-gray-800/30 mb-1">
-                            {hasContext && (
-                                <ContextChip />
-                            )}
+                            {contexts.filter(c => selectedContextIds.includes(c.id)).map(context => (
+                                <ContextChip
+                                    key={context.id}
+                                    title={context.title || 'Current Screen'}
+                                    onRemove={() => onToggleContext(context.id)}
+                                />
+                            ))}
                             {selectedFiles.map((file, idx) => (
                                 <LocalFilePreview
                                     key={`${file.name}-${file.lastModified}-${idx}`}
@@ -464,13 +480,25 @@ export default function ChatSection({
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="bg-gray-900 border-gray-800 text-gray-300 min-w-[200px]">
-                                            {hasContext ? (
-                                                <div className="text-xs flex items-center justify-between py-2 px-3 text-purple-400 font-medium">
-                                                    <div className="flex items-center gap-2">
-                                                        <Brain className="h-3.5 w-3.5" />
-                                                        <span>Including Current Screen</span>
-                                                    </div>
-                                                    <Check className="h-3 w-3" />
+                                            {contexts.length > 0 ? (
+                                                <div className="flex flex-col">
+                                                    {contexts.map(context => (
+                                                        <div
+                                                            key={context.id}
+                                                            className={`text-xs flex items-center justify-between py-2 px-3 font-medium border-b border-gray-800 last:border-0 cursor-pointer hover:bg-gray-800/50 transition-colors ${selectedContextIds.includes(context.id) ? 'text-purple-400' : 'text-gray-500'}`}
+                                                            onClick={() => onToggleContext(context.id)}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <Brain className={`h-3.5 w-3.5 ${selectedContextIds.includes(context.id) ? 'opacity-100' : 'opacity-40'}`} />
+                                                                <span>{context.title}</span>
+                                                            </div>
+                                                            {selectedContextIds.includes(context.id) ? (
+                                                                <Check className="h-3 w-3" />
+                                                            ) : (
+                                                                <Plus className="h-3 w-3 opacity-40" />
+                                                            )}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             ) : (
                                                 <div className="px-3 py-2 text-[10px] text-gray-500 italic flex items-center gap-2">

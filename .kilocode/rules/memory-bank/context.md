@@ -6,7 +6,7 @@ The project is in an active development phase, with a functional core for questi
 ## Recent Changes
 -   **AI Integration**: Implementation of `GlobalChatBot` and `ChatBotContext` to manage chat sessions and stream responses from the backend.
 -   **Workspace**: Creation of `WorkspacePage`, `WorkspaceContext`, and drag-and-drop pane management for multitasking (PDF viewing + Markdown editing).
--   **DTOs**: Standardization of Data Transfer Objects (DTOs) for AI and Chat features (e.g., `ChatRequestDTO`, `ChatResponseDTO`).
+-   **DTOs**: Refactored `ChatItemDTO` to include a dedicated `metadata` field for structured data, moving PDF page information from `content` to `metadata` in `WorkspacePage`.
 -   **PdfViewer Improvement**: Enhanced mode switching between single-page and scroll view to maintain page context by automatically scrolling to the current page.
 
 ## Next Steps
