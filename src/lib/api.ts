@@ -298,6 +298,16 @@ export async function downloadFile(fileId: string, knownFileName?: string) {
   }
 }
 
+export async function createNoteForPdf(fileId: string) {
+  try {
+    const response = await api.post(`/files/${fileId}/note`);
+    return response.data as DbFile;
+  } catch (error) {
+    console.error('Failed to create note for PDF:', error);
+    throw error;
+  }
+}
+
 // ===== TAG ENDPOINTS (/tags/) =====
 
 export async function addTag(bankId: string, payload: TagCreationDTO) {

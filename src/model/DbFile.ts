@@ -3,4 +3,5 @@ export interface DbFile {
     fileName: string;
     fileType: string;
     uploadDate: string;
+    derivedFiles: DbFile[];
 }

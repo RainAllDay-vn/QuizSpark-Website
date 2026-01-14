@@ -3,7 +3,7 @@ import {DndProvider, useDrop} from 'react-dnd';
 import {HTML5Backend} from 'react-dnd-html5-backend';
 import {Group, Panel, Separator} from 'react-resizable-panels';
 import {WorkspaceSidebar} from '@/components/workspace/WorkspaceSidebar';
-import {extractFile, getUserFiles, updateFileContent, viewFile} from '@/lib/api';
+import {getUserFiles, updateFileContent, viewFile} from '@/lib/api';
 import type {DbFile} from '@/model/DbFile';
 import {SideBar} from "@/components/custom/side_bar";
 import {type PaneId, useWorkspace, WorkspaceProvider} from '@/components/workspace/WorkspaceContext';
@@ -63,19 +63,6 @@ function WorkspaceLayout() {
         dispatch({type: 'OPEN_FILE', file: file, pane: state.activePane});
     };
 
-    const handleTestExtract = async () => {
-        const fileId = 'eaae7816-7ce4-4bd8-baf4-a22b9d0e6e01';
-        console.log("Starting extraction for file", fileId);
-        try {
-            await extractFile(fileId, (data) => {
-                console.log("Received chunk:", data);
-            });
-            console.log("Extraction started/completed");
-        } catch (e) {
-            console.error("Extraction error", e);
-        }
-    }
-
 
     return (
         <div className="h-screen w-full flex bg-black text-white overflow-hidden font-sans">
@@ -91,10 +78,6 @@ function WorkspaceLayout() {
                 onDelete={loadFiles}
                 selectedFileId={state.activeTab.left || undefined}
             />
-            
-            <div className="absolute top-2 right-2 z-50">
-                <Button onClick={handleTestExtract}>Test Extract</Button>
-            </div>
 
             <main className="flex-1 flex flex-col bg-[#0b0b0b] transition-all duration-300 ml-0 h-full overflow-hidden">
                 <div className="flex-1 overflow-hidden relative">

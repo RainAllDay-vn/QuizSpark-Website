@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import { Search, Loader2, FileText, Upload, ChevronLeft, ChevronRight, File as FileIcon, Trash2 } from 'lucide-react';
+import { Search, Loader2, FileText, Upload, ChevronLeft, ChevronRight, File as FileIcon, Trash2, StickyNote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { DbFile } from '@/model/DbFile';
-import { uploadFileIndependent, deleteFilePermanent } from '@/lib/api';
+import { uploadFileIndependent, deleteFilePermanent, createNoteForPdf } from '@/lib/api';
 import { ScrollArea } from '../ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import clsx from 'clsx';
@@ -74,6 +74,18 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, onD
         } catch (error) {
             console.error("Failed to delete file", error);
             alert("Failed to delete file");
+        }
+    };
+
+    const handleCreateNote = async (e: React.MouseEvent, file: DbFile) => {
+        e.stopPropagation();
+        try {
+            const newNote = await createNoteForPdf(file.id);
+            if (onUpload) onUpload(); // Refresh list
+            if (onFileSelect) onFileSelect(newNote); // Open the new note
+        } catch (error) {
+            console.error("Failed to create note", error);
+            alert("Failed to create note for PDF");
         }
     };
 
@@ -171,6 +183,7 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, onD
                                 selectedFileId={selectedFileId}
                                 onFileSelect={onFileSelect}
                                 onDelete={handleDeleteFile}
+                                onCreateNote={handleCreateNote}
                             />
                         ))
                     )}
@@ -179,13 +192,15 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, onD
         </aside>
     );
 }
-function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect, onDelete }: {
+function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect, onDelete, onCreateNote }: {
     file: DbFile,
     isCollapsed: boolean,
     selectedFileId?: string,
     onFileSelect: (file: DbFile) => void,
-    onDelete: (e: React.MouseEvent, fileId: string) => void
+    onDelete: (e: React.MouseEvent, fileId: string) => void,
+    onCreateNote: (e: React.MouseEvent, file: DbFile) => void
 }) {
+    const [isCreatingNote, setIsCreatingNote] = useState(false);
     const [{ isDragging }, drag] = useDrag(() => ({
         type: 'FILE',
         item: { type: 'FILE', file },
@@ -195,57 +210,93 @@ function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect, on
     }), [file]);
 
     return (
-        <TooltipProvider delayDuration={0}>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div
-                        ref={drag as never}
-                        onClick={() => onFileSelect(file)}
-                        className={clsx(
-                            "flex items-center w-full min-w-0 overflow-hidden px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white cursor-pointer group",
-                            isCollapsed ? "justify-center px-1.5" : "",
-                            selectedFileId === file.id ? "bg-violet-600/20 border border-violet-600/40 text-violet-400 shadow-sm" : "text-zinc-400 border border-transparent",
-                            isDragging && "opacity-50 grayscale"
-                        )}
-                    >
-                        <div className={clsx(
-                            "relative shrink-0 transition-colors",
-                            isCollapsed ? "" : "mr-3",
-                            selectedFileId === file.id ? "text-violet-400" : "text-zinc-400 group-hover:text-white"
-                        )}>
-                            {file.fileName.endsWith('.md') ? <FileText className="h-5 w-5" /> : <FileIcon className="h-5 w-5" />}
-                            {file.fileName.endsWith('.pdf') && (
-                                <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-red-900/80 text-red-200 px-0.5 rounded">PDF</span>
+        <>
+            <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div
+                            ref={drag as never}
+                            onClick={() => onFileSelect(file)}
+                            className={clsx(
+                                "flex items-center w-full min-w-0 overflow-hidden px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white cursor-pointer group",
+                                isCollapsed ? "justify-center px-1.5" : "",
+                                selectedFileId === file.id ? "bg-violet-600/20 border border-violet-600/40 text-violet-400 shadow-sm" : "text-zinc-400 border border-transparent",
+                                isDragging && "opacity-50 grayscale"
                             )}
-                            {file.fileName.endsWith('.md') && (
-                                <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-blue-900/80 text-blue-200 px-0.5 rounded">MD</span>
+                        >
+                            <div className={clsx(
+                                "relative shrink-0 transition-colors",
+                                isCollapsed ? "" : "mr-3",
+                                selectedFileId === file.id ? "text-violet-400" : "text-zinc-400 group-hover:text-white"
+                            )}>
+                                {file.fileName.endsWith('.md') ? <FileText className="h-5 w-5" /> : <FileIcon className="h-5 w-5" />}
+                                {file.fileName.endsWith('.pdf') && (
+                                    <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-red-900/80 text-red-200 px-0.5 rounded">PDF</span>
+                                )}
+                                {file.fileName.endsWith('.md') && (
+                                    <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-blue-900/80 text-blue-200 px-0.5 rounded">MD</span>
+                                )}
+                            </div>
+
+                            {!isCollapsed && (
+                                <>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium truncate">{file.fileName}</p>
+                                        <p className="text-[10px] text-zinc-500 truncate">{new Date(file.uploadDate).toLocaleDateString()}</p>
+                                    </div>
+                                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {file.fileName.toLowerCase().endsWith('.pdf') && (
+                                            <div
+                                                className="p-1 hover:bg-violet-500/20 rounded-md text-zinc-500 hover:text-violet-400 mr-1"
+                                                onClick={async (e) => {
+                                                    setIsCreatingNote(true);
+                                                    await onCreateNote(e, file);
+                                                    setIsCreatingNote(false);
+                                                }}
+                                                title="Create Note"
+                                            >
+                                                {isCreatingNote ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin"/>
+                                                ) : (
+                                                    <StickyNote className="h-4 w-4" />
+                                                )}
+                                            </div>
+                                        )}
+                                        <div
+                                            className="p-1 hover:bg-red-500/20 rounded-md text-zinc-500 hover:text-red-400"
+                                            onClick={(e) => onDelete(e, file.id)}
+                                            title="Delete file"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </div>
+                                    </div>
+                                </>
                             )}
                         </div>
-
-                        {!isCollapsed && (
-                            <>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-medium truncate">{file.fileName}</p>
-                                    <p className="text-[10px] text-zinc-500 truncate">{new Date(file.uploadDate).toLocaleDateString()}</p>
-                                </div>
-                                <div
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/20 rounded-md text-zinc-500 hover:text-red-400"
-                                    onClick={(e) => onDelete(e, file.id)}
-                                    title="Delete file"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </TooltipTrigger>
-                {isCollapsed && (
-                    <TooltipContent side="right" className="bg-zinc-900 border-zinc-800 text-white">
-                        <p>{file.fileName}</p>
-                    </TooltipContent>
-                )}
-            </Tooltip>
-        </TooltipProvider>
+                    </TooltipTrigger>
+                    {isCollapsed && (
+                        <TooltipContent side="right" className="bg-zinc-900 border-zinc-800 text-white">
+                            <p>{file.fileName}</p>
+                        </TooltipContent>
+                    )}
+                </Tooltip>
+            </TooltipProvider>
+            {!isCollapsed && file.derivedFiles && file.derivedFiles.length > 0 && (
+                <div className="flex flex-col pl-4 border-l border-zinc-800 ml-3 my-1 space-y-1">
+                    {file.derivedFiles.map(derivedFile => (
+                        <DraggableFileItem
+                            key={derivedFile.id}
+                            file={derivedFile}
+                            isCollapsed={isCollapsed}
+                            selectedFileId={selectedFileId}
+                            onFileSelect={onFileSelect}
+                            onDelete={onDelete}
+                            onCreateNote={onCreateNote}
+                        />
+                    ))}
+                </div>
+            )}
+        </>
     );
 }
 
