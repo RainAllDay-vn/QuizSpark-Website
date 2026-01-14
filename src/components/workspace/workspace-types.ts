@@ -6,6 +6,12 @@ export interface Tab {
     pdfPage?: number; // Track current PDF page
 }
 
+export interface LinkedGroup {
+    id: string; // unique group identifier
+    fileIds: Set<string>; // set of tab IDs in this group
+    currentPage: number; // synchronized page number
+}
+
 export type PaneId = 'left' | 'right';
 
 export interface WorkspaceState {
@@ -19,10 +25,11 @@ export interface WorkspaceState {
         right: string | null; // Tab ID
     };
     activePane: PaneId;
+    linkedGroups: LinkedGroup[];
 }
 
 export type WorkspaceAction =
-    | { type: 'OPEN_FILE'; file: DbFile; pane?: PaneId }
+    | { type: 'OPEN_FILE'; file: DbFile; pane?: PaneId; newTabId?: string }
     | { type: 'CLOSE_TAB'; tabId: string; pane: PaneId }
     | { type: 'SET_ACTIVE_TAB'; tabId: string; pane: PaneId }
     | { type: 'SET_ACTIVE_PANE'; pane: PaneId }
@@ -30,7 +37,10 @@ export type WorkspaceAction =
     | { type: 'CLOSE_SPLIT' }
     | { type: 'MOVE_TAB'; tabId: string; sourcePane: PaneId; targetPane: PaneId; index?: number }
     | { type: 'REORDER_TABS'; pane: PaneId; startIndex: number; endIndex: number }
-    | { type: 'SET_PDF_PAGE'; tabId: string; page: number };
+    | { type: 'SET_PDF_PAGE'; tabId: string; page: number }
+    | { type: 'LINK_FILES'; fileId1: string; fileId2: string }
+    | { type: 'UNLINK_FILE'; fileId: string }
+    | { type: 'SYNC_LINKED_PAGE'; fileId: string; page: number };
 
 export interface DragItemFile {
     type: 'FILE';

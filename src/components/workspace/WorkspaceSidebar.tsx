@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import { Search, Loader2, FileText, Upload, ChevronLeft, ChevronRight, File as FileIcon, Trash2, StickyNote } from 'lucide-react';
+import { Search, Loader2, FileText, Upload, ChevronLeft, ChevronRight, File as FileIcon, Trash2, StickyNote, Link2, Link2Off } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useWorkspace } from './useWorkspace';
 import type { DbFile } from '@/model/DbFile';
 import { uploadFileIndependent, deleteFilePermanent, createNoteForPdf } from '@/lib/api';
 import { ScrollArea } from '../ui/scroll-area';
@@ -179,6 +180,7 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, onD
                             <DraggableFileItem
                                 key={file.id}
                                 file={file}
+                                allFiles={files}
                                 isCollapsed={isCollapsed}
                                 selectedFileId={selectedFileId}
                                 onFileSelect={onFileSelect}
@@ -192,8 +194,9 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, onD
         </aside>
     );
 }
-function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect, onDelete, onCreateNote }: {
+function DraggableFileItem({ file, allFiles, isCollapsed, selectedFileId, onFileSelect, onDelete, onCreateNote }: {
     file: DbFile,
+    allFiles: DbFile[],
     isCollapsed: boolean,
     selectedFileId?: string,
     onFileSelect: (file: DbFile) => void,
@@ -201,6 +204,82 @@ function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect, on
     onCreateNote: (e: React.MouseEvent, file: DbFile) => void
 }) {
     const [isCreatingNote, setIsCreatingNote] = useState(false);
+    const { state, dispatch, linkFiles, unlinkFile, getLinkedGroup } = useWorkspace();
+
+    // Find active tabs for this file and its parent
+    const findTabId = (fileId: string) => {
+        const left = state.panes.left.find(t => t.file.id === fileId);
+        if (left) return left.id;
+        const right = state.panes.right.find(t => t.file.id === fileId);
+        if (right) return right.id;
+        return undefined;
+    };
+
+    const currentTabId = findTabId(file.id);
+    const parentTabId = file.parentId ? findTabId(file.parentId) : undefined;
+
+    // Check if this file is linked to its parent
+    const linkedGroup = currentTabId ? getLinkedGroup(currentTabId) : undefined;
+    const isLinkedToParent = !!(file.parentId && linkedGroup && parentTabId && linkedGroup.fileIds.has(parentTabId));
+
+    const handleToggleLink = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!file.parentId) return;
+
+        if (isLinkedToParent && currentTabId) {
+            unlinkFile(currentTabId);
+        } else {
+            // New logic: Ensure files are open then link
+            
+            // 1. Ensure Child (Current) Tab exists
+            let targetChildTabId = currentTabId;
+            let childPane: 'left' | 'right' = state.activePane;
+
+            if (!targetChildTabId) {
+                targetChildTabId = crypto.randomUUID();
+                dispatch({
+                    type: 'OPEN_FILE',
+                    file: file,
+                    pane: state.activePane,
+                    newTabId: targetChildTabId
+                });
+            } else {
+                // Identify pane of existing child tab
+                if (state.panes.left.some(t => t.id === targetChildTabId)) childPane = 'left';
+                else childPane = 'right';
+            }
+
+            // 2. Ensure Parent Tab exists
+            let targetParentTabId = parentTabId;
+            if (!targetParentTabId) {
+                const parentFile = allFiles.find(f => f.id === file.parentId);
+                
+                if (parentFile) {
+                    targetParentTabId = crypto.randomUUID();
+                    // Open in opposite pane
+                    const parentPane = childPane === 'left' ? 'right' : 'left';
+                    
+                    // If opening in right pane and layout is single, switch to split
+                    if (state.layout === 'single' && parentPane === 'right') {
+                        dispatch({ type: 'SPLIT_SCREEN' });
+                    }
+
+                    dispatch({
+                        type: 'OPEN_FILE',
+                        file: parentFile,
+                        pane: parentPane,
+                        newTabId: targetParentTabId
+                    });
+                }
+            }
+
+            // 3. Link them
+            if (targetChildTabId && targetParentTabId) {
+                linkFiles(targetChildTabId, targetParentTabId);
+            }
+        }
+    };
+
     const [{ isDragging }, drag] = useDrag(() => ({
         type: 'FILE',
         item: { type: 'FILE', file },
@@ -262,6 +341,24 @@ function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect, on
                                                 )}
                                             </div>
                                         )}
+                                        {file.parentId && (
+                                            <div
+                                                className={clsx(
+                                                    "p-1 rounded-md mr-1",
+                                                    isLinkedToParent
+                                                        ? "bg-violet-500/20 text-violet-400 hover:bg-violet-500/30"
+                                                        : "hover:bg-violet-500/20 text-zinc-500 hover:text-violet-400"
+                                                )}
+                                                onClick={handleToggleLink}
+                                                title={isLinkedToParent ? "Unlink from parent" : "Link to parent"}
+                                            >
+                                                {isLinkedToParent ? (
+                                                    <Link2Off className="h-4 w-4" />
+                                                ) : (
+                                                    <Link2 className="h-4 w-4" />
+                                                )}
+                                            </div>
+                                        )}
                                         <div
                                             className="p-1 hover:bg-red-500/20 rounded-md text-zinc-500 hover:text-red-400"
                                             onClick={(e) => onDelete(e, file.id)}
@@ -287,6 +384,7 @@ function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect, on
                         <DraggableFileItem
                             key={derivedFile.id}
                             file={derivedFile}
+                            allFiles={allFiles}
                             isCollapsed={isCollapsed}
                             selectedFileId={selectedFileId}
                             onFileSelect={onFileSelect}

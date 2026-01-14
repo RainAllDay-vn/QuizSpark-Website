@@ -4,4 +4,5 @@ export interface DbFile {
     fileType: string;
     uploadDate: string;
     derivedFiles: DbFile[];
+    parentId?: string;
 }

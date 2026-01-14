@@ -9,6 +9,7 @@ interface LiveMarkdownEditorProps {
     onSave?: (content: string) => void;
     className?: string;
     currentPage?: number;
+    externalPage?: number;
     onPageChange?: (page: number) => void;
     viewMode?: 'scroll' | 'page';
 }
@@ -19,10 +20,11 @@ interface Block {
     type: 'content' | 'pagebreak';
 }
 
-export function LiveMarkdownEditor({ initialContent, onSave, className, currentPage, onPageChange, viewMode = 'scroll' }: LiveMarkdownEditorProps) {
+export function LiveMarkdownEditor({ initialContent, onSave, className, currentPage, onPageChange, viewMode = 'scroll', externalPage }: LiveMarkdownEditorProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const blockRefs = useRef<(HTMLDivElement | null)[]>([]);
     const isScrollingRef = useRef(false);
+    const lastScrolledPageRef = useRef<number | undefined>(undefined);
 
     const [blocks, setBlocks] = useState<Block[]>(() => {
         return groupLinesIntoBlocks(initialContent);
@@ -146,6 +148,7 @@ export function LiveMarkdownEditor({ initialContent, onSave, className, currentP
                 const pageNum = parseInt(topMost.target.getAttribute('data-page') || '1');
                 
                 if (pageNum !== currentPage) {
+                    lastScrolledPageRef.current = pageNum;
                     onPageChange(pageNum);
                 }
             },
@@ -168,9 +171,16 @@ export function LiveMarkdownEditor({ initialContent, onSave, className, currentP
     useEffect(() => {
         if (viewMode === 'page') return;
 
-        if (currentPage !== undefined && !isScrollingRef.current) {
+        const targetPage = externalPage ?? currentPage;
+        
+        // Avoid snapping back if the update matches our recent manual scroll
+        if (targetPage === lastScrolledPageRef.current) {
+            return;
+        }
+
+        if (targetPage !== undefined && !isScrollingRef.current) {
             // Find the first block that belongs to this page
-            const targetIndex = blockPageNumbers.findIndex(p => p === currentPage);
+            const targetIndex = blockPageNumbers.findIndex(p => p === targetPage);
             if (targetIndex !== -1) {
                 const targetElement = blockRefs.current[targetIndex];
                 if (targetElement && containerRef.current) {
@@ -275,7 +285,8 @@ export function LiveMarkdownEditor({ initialContent, onSave, className, currentP
 
     // Get blocks for current page - Filter if viewMode is 'page'
     const getDisplayBlocks = () => {
-        if (viewMode === 'scroll' || currentPage === undefined) {
+        const targetPage = externalPage ?? currentPage;
+        if (viewMode === 'scroll' || targetPage === undefined) {
             return blocks.map((block, index) => ({ block, originalIndex: index }));
         }
 
@@ -284,12 +295,12 @@ export function LiveMarkdownEditor({ initialContent, onSave, className, currentP
 
         blocks.forEach((block, index) => {
             if (block.type === 'pagebreak') {
-                if (currentPageCounter === currentPage) {
+                if (currentPageCounter === targetPage) {
                     result.push({ block, originalIndex: index });
                 }
                 currentPageCounter++; // Move to next page after this break
             } else {
-                if (currentPageCounter === currentPage) {
+                if (currentPageCounter === targetPage) {
                     result.push({ block, originalIndex: index });
                 }
             }
@@ -352,7 +363,7 @@ export function LiveMarkdownEditor({ initialContent, onSave, className, currentP
                 
                 {/* Clickable area at the bottom to add new block */
                  /* Only show this if we are in scroll mode OR if we are on the very last page in page mode */}
-                {((viewMode === 'scroll') || (viewMode === 'page' && currentPage === blockPageNumbers[blockPageNumbers.length - 1])) && (
+                {((viewMode === 'scroll') || (viewMode === 'page' && (externalPage ?? currentPage) === blockPageNumbers[blockPageNumbers.length - 1])) && (
                     <div
                         className="flex-1 min-h-[200px] cursor-text"
                         onClick={() => {

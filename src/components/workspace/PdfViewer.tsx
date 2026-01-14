@@ -16,6 +16,7 @@ interface PdfViewerProps {
     fileName: string;
     isActive: boolean;
     onPageChange?: (page: number) => void;
+    externalPage?: number;
 }
 
 interface PageWithObserverProps {
@@ -96,7 +97,7 @@ function PageWithObserver({
     );
 }
 
-export function PdfViewer({ fileId, fileName, isActive, onPageChange }: PdfViewerProps) {
+export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPage }: PdfViewerProps) {
     const [numPages, setNumPages] = useState<number | null>(null);
     const [pageNumber, setPageNumber] = useState(1);
     const [scale, setScale] = useState(1.0);
@@ -109,6 +110,33 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange }: PdfViewe
 
     const containerRef = useRef<HTMLDivElement>(null);
     const resizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const isExternalUpdateRef = useRef(false);
+
+    // Callbacks defined first so they can be used in effects
+    const changePage = useCallback((offset: number) => {
+        const newPage = Math.min(Math.max(1, pageNumber + offset), numPages || 1);
+        setPageNumber(newPage);
+        if (viewMode === 'scroll') {
+            const element = document.getElementById(`pdf-page-${newPage}`);
+            element?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [pageNumber, numPages, viewMode]);
+
+    const goToPage = useCallback((page: number) => {
+        const newPage = Math.min(Math.max(1, page), numPages || 1);
+        setPageNumber(newPage);
+        if (viewMode === 'scroll') {
+            const element = document.getElementById(`pdf-page-${newPage}`);
+            element?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [numPages, viewMode]);
+
+    useEffect(() => {
+        if (externalPage !== undefined && externalPage !== pageNumber) {
+            isExternalUpdateRef.current = true;
+            goToPage(externalPage);
+        }
+    }, [externalPage, goToPage, pageNumber]);
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -154,24 +182,6 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange }: PdfViewe
         setPageNumber(1);
     };
 
-    const changePage = useCallback((offset: number) => {
-        const newPage = Math.min(Math.max(1, pageNumber + offset), numPages || 1);
-        setPageNumber(newPage);
-        if (viewMode === 'scroll') {
-            const element = document.getElementById(`pdf-page-${newPage}`);
-            element?.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [pageNumber, numPages, viewMode]);
-
-    const goToPage = useCallback((page: number) => {
-        const newPage = Math.min(Math.max(1, page), numPages || 1);
-        setPageNumber(newPage);
-        if (viewMode === 'scroll') {
-            const element = document.getElementById(`pdf-page-${newPage}`);
-            element?.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [numPages, viewMode]);
-
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (!isActive) return;
         if (e.target instanceof HTMLInputElement) return;
@@ -190,6 +200,10 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange }: PdfViewe
     }, [handleKeyDown, isActive]);
 
     useEffect(() => {
+        if (isExternalUpdateRef.current) {
+            isExternalUpdateRef.current = false;
+            return;
+        }
         onPageChange?.(pageNumber);
     }, [pageNumber, onPageChange]);
 
@@ -327,6 +341,7 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange }: PdfViewe
                         {fitToWidth ? "Auto" : `${Math.round(scale * 100)}%`}
                     </span>
                 </div>
+
             </div>
 
             {/* Content Area */}

@@ -14,8 +14,14 @@ import {cn} from '@/lib/utils';
 import {PdfViewer} from '@/components/workspace/PdfViewer';
 import {LiveMarkdownEditor} from '@/components/workspace/LiveMarkdownEditor';
 import {useChatBot} from '@/components/chatbot/ChatBotContext';
-import {AlertCircle, BookOpen, CheckCircle2, ChevronLeft, ChevronRight, LayoutList, Loader2} from 'lucide-react';
+import {AlertCircle, BookOpen, CheckCircle2, ChevronLeft, ChevronRight, LayoutList, Loader2, Link2, Link2Off} from 'lucide-react';
 import {Button} from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function WorkspacePage() {
     return (
@@ -121,16 +127,20 @@ interface DraggedTab {
 }
 
 function WorkspacePane({pane}: WorkspacePaneProps) {
-    const {state, dispatch} = useWorkspace();
+    const {state, dispatch, syncLinkedPage, getLinkedGroup} = useWorkspace();
     const activeTabId = state.activeTab[pane];
     const activeTab = state.panes[pane].find(t => t.id === activeTabId);
     const {registerContext, unregisterContext} = useChatBot();
 
+    const linkedGroup = activeTabId ? getLinkedGroup(activeTabId) : undefined;
+    const externalPage = linkedGroup?.currentPage;
+
     const handlePdfPageChange = useCallback((page: number) => {
         if (activeTabId) {
             dispatch({type: 'SET_PDF_PAGE', tabId: activeTabId, page});
+            syncLinkedPage(activeTabId, page);
         }
-    }, [activeTabId, dispatch]);
+    }, [activeTabId, dispatch, syncLinkedPage]);
 
     useEffect(() => {
         const contextId = `workspace-file-${pane}`;
@@ -204,6 +214,7 @@ function WorkspacePane({pane}: WorkspacePaneProps) {
                                 fileName={activeTab.file.fileName}
                                 isActive={state.activePane === pane}
                                 onPageChange={handlePdfPageChange}
+                                externalPage={externalPage}
                             />
                         ) : activeTab?.file.fileName.endsWith('.md') ? (
                             <MarkdownFileEditor file={activeTab.file}/>
@@ -236,6 +247,7 @@ function WorkspacePane({pane}: WorkspacePaneProps) {
 }
 
 function MarkdownFileEditor({file}: { file: DbFile }) {
+    const { state, linkFiles, unlinkFile, getLinkedGroup, syncLinkedPage } = useWorkspace();
     const [content, setContent] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -243,6 +255,47 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
     const [viewMode, setViewMode] = useState<'scroll' | 'page'>('scroll');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    const linkedGroup = getLinkedGroup(file.id);
+    const isLinked = !!linkedGroup;
+    const externalPage = linkedGroup?.currentPage;
+
+    // Handle user page change (updates local state AND syncs)
+    const handleUserPageChange = (page: number) => {
+        setCurrentPage(page);
+        if (isLinked) {
+            syncLinkedPage(file.id, page);
+        }
+    };
+
+    // Handle external page change (only updates local state)
+    useEffect(() => {
+        if (externalPage !== undefined) {
+             setCurrentPage(externalPage);
+        }
+    }, [externalPage]);
+
+    // Determine current pane based on where this file is active
+    // This is a bit indirect but works since we know which file we are
+    const pane = state.activeTab.left === file.id ? 'left' : (state.activeTab.right === file.id ? 'right' : null);
+    
+    // Fallback if not active (shouldn't happen for the editor view)
+    const currentPaneTabs = pane ? state.panes[pane] : [];
+
+    const handleLinkToggle = () => {
+        if (isLinked) {
+            unlinkFile(file.id);
+            return;
+        }
+
+        if (state.layout === 'split') {
+            const otherPane = pane === 'left' ? 'right' : 'left';
+            const otherTabId = state.activeTab[otherPane];
+            if (otherTabId) {
+                linkFiles(file.id, otherTabId);
+            }
+        }
+    };
 
     useEffect(() => {
         async function loadContent() {
@@ -325,7 +378,7 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-zinc-400 hover:text-white"
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            onClick={() => handleUserPageChange(Math.max(1, currentPage - 1))}
                             disabled={currentPage <= 1}
                         >
                             <ChevronLeft className="h-4 w-4"/>
@@ -337,7 +390,7 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
                                 onChange={(e) => {
                                     const val = parseInt(e.target.value);
                                     if (!isNaN(val) && val >= 1 && val <= totalPages) {
-                                        setCurrentPage(val);
+                                        handleUserPageChange(val);
                                     }
                                 }}
                                 className="w-8 bg-transparent text-center focus:outline-none focus:ring-1 focus:ring-violet-500 rounded"
@@ -348,7 +401,7 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-zinc-400 hover:text-white"
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            onClick={() => handleUserPageChange(Math.min(totalPages, currentPage + 1))}
                             disabled={currentPage >= totalPages}
                         >
                             <ChevronRight className="h-4 w-4"/>
@@ -372,6 +425,69 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
                         )}
                     </Button>
                 </div>
+
+                 {/* Link Button */}
+                 {pane && (
+                    state.layout === 'split' ? (
+                         <Button
+                            variant="ghost"
+                            size="icon"
+                            title={isLinked ? "Unlink Files" : "Link with other pane"}
+                            className={cn(
+                                "h-8 w-8 transition-colors",
+                                isLinked
+                                    ? "text-violet-400 bg-violet-500/10 hover:bg-violet-500/20"
+                                    : "text-zinc-400 hover:text-white"
+                            )}
+                            onClick={handleLinkToggle}
+                        >
+                            {isLinked ? <Link2Off className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+                        </Button>
+                    ) : (
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title={isLinked ? "Unlink Files" : "Link with other file"}
+                                    className={cn(
+                                        "h-8 w-8 transition-colors",
+                                        isLinked
+                                            ? "text-violet-400 bg-violet-500/10 hover:bg-violet-500/20"
+                                            : "text-zinc-400 hover:text-white"
+                                    )}
+                                >
+                                    {isLinked ? <Link2Off className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 bg-[#18181b] border-zinc-800 text-white">
+                                {isLinked && (
+                                    <DropdownMenuItem onClick={() => unlinkFile(file.id)}>
+                                        <Link2Off className="mr-2 h-4 w-4" />
+                                        <span>Unlink current file</span>
+                                    </DropdownMenuItem>
+                                )}
+                                {!isLinked && currentPaneTabs.length <= 1 && (
+                                     <DropdownMenuItem disabled>
+                                        <span className="text-zinc-500">No other tabs to link</span>
+                                    </DropdownMenuItem>
+                                )}
+                                {!isLinked && currentPaneTabs.map(tab => {
+                                    if(tab.id === state.activeTab[pane]) return null;
+                                    return (
+                                        <DropdownMenuItem
+                                            key={tab.id}
+                                            onClick={() => linkFiles(file.id, tab.id)}
+                                        >
+                                            <Link2 className="mr-2 h-4 w-4" />
+                                            <span className="truncate">{tab.file.fileName}</span>
+                                        </DropdownMenuItem>
+                                    )
+                                })}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )
+                )}
 
                 <div className="flex items-center space-x-3 px-2">
                     {saveStatus === 'saving' && (
@@ -406,7 +522,8 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
                     initialContent={content || ''}
                     onSave={onContentChange}
                     currentPage={currentPage}
-                    onPageChange={setCurrentPage}
+                    externalPage={externalPage}
+                    onPageChange={handleUserPageChange}
                     viewMode={viewMode}
                 />
             </div>

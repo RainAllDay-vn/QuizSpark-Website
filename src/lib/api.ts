@@ -30,6 +30,7 @@ import type ChatModelDTO from "@/dtos/ChatModelDTO.ts";
 import type ClassroomCreateDTO from "@/dtos/ClassroomCreateDTO.ts";
 import type ClassroomResponseDTO from "@/dtos/ClassroomResponseDTO.ts";
 import type UserDTO from "@/dtos/UserDTO.ts";
+import {linkDerivedFileWithParent} from "@/lib/utils.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "/api/v1";
 const auth = getAuth(app);
@@ -223,7 +224,9 @@ export async function uploadFileIndependent(file: File) {
 export async function getUserFiles() {
   try {
     const response = await api.get('/files');
-    return response.data as DbFile[];
+    const files = response.data as DbFile[];
+    linkDerivedFileWithParent(files);
+    return files;
   } catch (error) {
     console.error('Failed to fetch user files:', error);
     throw error;

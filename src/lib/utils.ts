@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type {DbFile} from "@/model/DbFile.ts";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -25,5 +26,13 @@ export function formatRelativeTime(dateString: string): string {
   } else {
     // For dates older than a week, return the formatted date
     return 'on ' + date.toLocaleDateString();
+  }
+}
+
+export function linkDerivedFileWithParent(files: DbFile[]) {
+  for (const file of files) {
+    for (const derivedFile of file.derivedFiles) {
+      derivedFile.parentId = file.id;
+    }
   }
 }
