@@ -1,21 +1,25 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useDrop } from 'react-dnd';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Panel, Group, Separator } from 'react-resizable-panels';
-import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
-import { getUserFiles } from '@/lib/api';
-import type { DbFile } from '@/model/DbFile';
-import { SideBar } from "@/components/custom/side_bar";
-import { WorkspaceProvider, useWorkspace, type PaneId } from '@/components/workspace/WorkspaceContext';
-import { WorkspaceTabs } from '@/components/workspace/WorkspaceTabs';
-import { cn } from '@/lib/utils';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {DndProvider, useDrop} from 'react-dnd';
+import {HTML5Backend} from 'react-dnd-html5-backend';
+import {Group, Panel, Separator} from 'react-resizable-panels';
+import {WorkspaceSidebar} from '@/components/workspace/WorkspaceSidebar';
+import {extractFile, getUserFiles, updateFileContent, viewFile} from '@/lib/api';
+import type {DbFile} from '@/model/DbFile';
+import {SideBar} from "@/components/custom/side_bar";
+import {type PaneId, useWorkspace, WorkspaceProvider} from '@/components/workspace/WorkspaceContext';
+import {WorkspaceTabs} from '@/components/workspace/WorkspaceTabs';
+import {cn} from '@/lib/utils';
+import {PdfViewer} from '@/components/workspace/PdfViewer';
+import {LiveMarkdownEditor} from '@/components/workspace/LiveMarkdownEditor';
+import {useChatBot} from '@/components/chatbot/ChatBotContext';
+import {AlertCircle, BookOpen, CheckCircle2, ChevronLeft, ChevronRight, LayoutList, Loader2} from 'lucide-react';
+import {Button} from '@/components/ui/button';
 
 export default function WorkspacePage() {
     return (
         <WorkspaceProvider>
             <DndProvider backend={HTML5Backend}>
-                <WorkspaceLayout />
+                <WorkspaceLayout/>
             </DndProvider>
         </WorkspaceProvider>
     );
@@ -35,7 +39,7 @@ function WorkspaceLayout() {
         setIsSideBarCollapsed(!isSideBarCollapsed);
     }
 
-    const { state, dispatch } = useWorkspace();
+    const {state, dispatch} = useWorkspace();
     const [files, setFiles] = useState<DbFile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -56,8 +60,21 @@ function WorkspaceLayout() {
     };
 
     const handleFileSelect = (file: DbFile) => {
-        dispatch({ type: 'OPEN_FILE', file: file, pane: state.activePane });
+        dispatch({type: 'OPEN_FILE', file: file, pane: state.activePane});
     };
+
+    const handleTestExtract = async () => {
+        const fileId = 'eaae7816-7ce4-4bd8-baf4-a22b9d0e6e01';
+        console.log("Starting extraction for file", fileId);
+        try {
+            await extractFile(fileId, (data) => {
+                console.log("Received chunk:", data);
+            });
+            console.log("Extraction started/completed");
+        } catch (e) {
+            console.error("Extraction error", e);
+        }
+    }
 
 
     return (
@@ -73,21 +90,27 @@ function WorkspaceLayout() {
                 onUpload={loadFiles}
                 selectedFileId={state.activeTab.left || undefined}
             />
+            
+            <div className="absolute top-2 right-2 z-50">
+                <Button onClick={handleTestExtract}>Test Extract</Button>
+            </div>
 
             <main className="flex-1 flex flex-col bg-[#0b0b0b] transition-all duration-300 ml-0 h-full overflow-hidden">
                 <div className="flex-1 overflow-hidden relative">
                     <Group orientation="horizontal" className="h-full">
                         <Panel defaultSize={state.layout === 'split' ? 50 : 100} minSize={20}>
-                            <WorkspacePane pane="left" />
+                            <WorkspacePane pane="left"/>
                         </Panel>
 
                         {state.layout === 'split' && (
                             <>
-                                <Separator className="w-1.5 bg-black hover:bg-violet-600/50 transition-colors flex items-center justify-center group">
-                                    <div className="w-[1px] h-8 bg-zinc-800 group-hover:bg-violet-400/50 rounded-full transition-colors" />
+                                <Separator
+                                    className="w-1.5 bg-black hover:bg-violet-600/50 transition-colors flex items-center justify-center group">
+                                    <div
+                                        className="w-[1px] h-8 bg-zinc-800 group-hover:bg-violet-400/50 rounded-full transition-colors"/>
                                 </Separator>
                                 <Panel defaultSize={50} minSize={20}>
-                                    <WorkspacePane pane="right" />
+                                    <WorkspacePane pane="right"/>
                                 </Panel>
                             </>
                         )}
@@ -102,22 +125,24 @@ interface WorkspacePaneProps {
     pane: PaneId;
 }
 
-import { PdfViewer } from '@/components/workspace/PdfViewer';
-import { LiveMarkdownEditor } from '@/components/workspace/LiveMarkdownEditor';
-import { useChatBot } from '@/components/chatbot/ChatBotContext';
-import { viewFile, updateFileContent } from '@/lib/api';
-import { Loader2, CheckCircle2, AlertCircle, Info, FileText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+interface DraggedFile {
+    file: DbFile;
+}
 
-function WorkspacePane({ pane }: WorkspacePaneProps) {
-    const { state, dispatch } = useWorkspace();
+interface DraggedTab {
+    id: string;
+    pane: PaneId;
+}
+
+function WorkspacePane({pane}: WorkspacePaneProps) {
+    const {state, dispatch} = useWorkspace();
     const activeTabId = state.activeTab[pane];
     const activeTab = state.panes[pane].find(t => t.id === activeTabId);
-    const { registerContext, unregisterContext } = useChatBot();
+    const {registerContext, unregisterContext} = useChatBot();
 
     const handlePdfPageChange = useCallback((page: number) => {
         if (activeTabId) {
-            dispatch({ type: 'SET_PDF_PAGE', tabId: activeTabId, page });
+            dispatch({type: 'SET_PDF_PAGE', tabId: activeTabId, page});
         }
     }, [activeTabId, dispatch]);
 
@@ -125,7 +150,7 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
         const contextId = `workspace-file-${pane}`;
         if (activeTab) {
             const isPdf = activeTab.file.fileName.toLowerCase().endsWith('.pdf');
-            const unregister = registerContext({
+            return registerContext({
                 id: contextId,
                 title: activeTab.file.fileName,
                 content: async () => [{
@@ -134,65 +159,68 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
                     fileId: activeTab.file.id,
                     fileName: activeTab.file.fileName,
                     fileType: activeTab.file.fileType,
-                    metadata: isPdf ? { page: activeTab.pdfPage || 0 } : undefined
+                    metadata: isPdf ? {page: activeTab.pdfPage || 0} : undefined
                 }],
                 metadata: {
                     fileId: activeTab.file.id,
                     pane,
-                    ...(isPdf && { currentPage: activeTab.pdfPage || 1 })
+                    ...(isPdf && {currentPage: activeTab.pdfPage || 1})
                 }
             });
-            return unregister;
         } else {
             unregisterContext(contextId);
         }
-    }, [activeTab?.id, activeTab?.file.id, activeTab?.pdfPage, pane, registerContext, unregisterContext]);
+    }, [activeTab?.id, activeTab?.file.id, activeTab?.pdfPage, pane, registerContext, unregisterContext, activeTab]);
 
-    const [{ isOver }, drop] = useDrop(() => ({
+    const [{isOver}, drop] = useDrop(() => ({
         accept: ['FILE', 'TAB'],
-        drop: (item: any, monitor) => {
+        drop: (item: DraggedFile | DraggedTab, monitor) => {
             if (monitor.didDrop()) return;
             const itemType = monitor.getItemType();
 
             if (itemType === 'FILE') {
-                dispatch({ type: 'OPEN_FILE', file: item.file, pane });
-            } else if (itemType === 'TAB' && item.pane !== pane) {
-                dispatch({ type: 'MOVE_TAB', tabId: item.id, sourcePane: item.pane, targetPane: pane });
+                const fileItem = item as DraggedFile;
+                dispatch({type: 'OPEN_FILE', file: fileItem.file, pane});
+            } else if (itemType === 'TAB') {
+                const tabItem = item as DraggedTab;
+                if (tabItem.pane !== pane) {
+                    dispatch({type: 'MOVE_TAB', tabId: tabItem.id, sourcePane: tabItem.pane, targetPane: pane});
+                }
             }
         },
         collect: (monitor) => ({
-            isOver: !!monitor.isOver({ shallow: true }),
+            isOver: monitor.isOver({shallow: true}),
         }),
     }), [pane]);
 
     return (
         <div
-            ref={drop as any}
+            ref={(node) => { drop(node); }}
             className={cn(
                 "h-full w-full flex flex-col bg-[#0f0f10] transition-colors duration-200 relative",
                 state.activePane === pane ? 'ring-1 ring-inset ring-violet-500/30' : '',
                 isOver && "bg-violet-600/5"
             )}
-            onClick={() => dispatch({ type: 'SET_ACTIVE_PANE', pane })}
+            onClick={() => dispatch({type: 'SET_ACTIVE_PANE', pane})}
         >
             {isOver && (
-                <div className="absolute inset-0 pointer-events-none border-2 border-violet-500/50 z-50 rounded-sm" />
+                <div className="absolute inset-0 pointer-events-none border-2 border-violet-500/50 z-50 rounded-sm"/>
             )}
 
-            <WorkspaceTabs pane={pane} />
+            <WorkspaceTabs pane={pane}/>
 
             <div className="flex-1 flex flex-col relative overflow-hidden">
                 {activeTab ? (
                     <div className="flex-1 h-full overflow-hidden">
-                        {activeTab.file.fileName.endsWith('.pdf') ? (
+                        {activeTab?.file.fileName.endsWith('.pdf') ? (
                             <PdfViewer
                                 fileId={activeTab.file.id}
                                 fileName={activeTab.file.fileName}
                                 isActive={state.activePane === pane}
                                 onPageChange={handlePdfPageChange}
                             />
-                        ) : activeTab.file.fileName.endsWith('.md') ? (
-                            <MarkdownFileEditor file={activeTab.file} />
+                        ) : activeTab?.file.fileName.endsWith('.md') ? (
+                            <MarkdownFileEditor file={activeTab.file}/>
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-zinc-500">
                                 <h3 className="text-lg text-white mb-2">
@@ -205,7 +233,8 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
                 ) : (
                     <div className="flex-1 flex items-center justify-center">
                         <div className="text-center p-8 max-w-sm">
-                            <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
+                            <div
+                                className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
                                 <span className="text-3xl">✨</span>
                             </div>
                             <h2 className="text-xl font-semibold text-zinc-200 mb-2">Workspace Ready</h2>
@@ -220,11 +249,14 @@ function WorkspacePane({ pane }: WorkspacePaneProps) {
     );
 }
 
-function MarkdownFileEditor({ file }: { file: DbFile }) {
+function MarkdownFileEditor({file}: { file: DbFile }) {
     const [content, setContent] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const [wordCount, setWordCount] = useState(0);
+    const [viewMode, setViewMode] = useState<'scroll' | 'page'>('scroll');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         async function loadContent() {
@@ -241,12 +273,16 @@ function MarkdownFileEditor({ file }: { file: DbFile }) {
                 setIsLoading(false);
             }
         }
+
         loadContent();
     }, [file.id]);
 
     const updateStats = (text: string) => {
         const words = text.trim() ? text.trim().split(/\s+/).length : 0;
         setWordCount(words);
+
+        const pages = text.split(/^---$/m);
+        setTotalPages(pages.length);
     };
 
     const handleSave = async (newContent: string) => {
@@ -279,7 +315,7 @@ function MarkdownFileEditor({ file }: { file: DbFile }) {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
-                <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
+                <Loader2 className="w-8 h-8 text-violet-500 animate-spin"/>
                 <p className="text-sm text-zinc-500">Loading {file.fileName}...</p>
             </div>
         );
@@ -288,51 +324,93 @@ function MarkdownFileEditor({ file }: { file: DbFile }) {
     return (
         <div className="flex flex-col h-full w-full bg-[#0b0b0b] relative">
             {/* Toolbar - Matching PdfViewer Style */}
-            <div className="flex items-center justify-between p-2 border-b border-zinc-800 bg-[#111112] z-10 space-x-4">
+            <div
+                className="flex items-center justify-between p-2 border-b border-zinc-800 bg-[#111112] z-10 space-x-4"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="flex items-center space-x-4">
-                    <div className="flex items-center text-zinc-400 space-x-2 px-2">
-                        <FileText className="h-4 w-4 text-violet-400" />
-                        <span className="text-[10px] font-semibold uppercase tracking-widest truncate max-w-[200px]">
-                            {file.fileName}
+                    <span
+                        className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest truncate max-w-[150px]">
+                        {file.fileName}
+                    </span>
+                    <div className="h-4 w-[1px] bg-zinc-800"/>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-zinc-400 hover:text-white"
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage <= 1}
+                        >
+                            <ChevronLeft className="h-4 w-4"/>
+                        </Button>
+                        <span className="text-xs text-zinc-400 font-medium whitespace-nowrap">
+                            <input
+                                type="text"
+                                value={currentPage}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    if (!isNaN(val) && val >= 1 && val <= totalPages) {
+                                        setCurrentPage(val);
+                                    }
+                                }}
+                                className="w-8 bg-transparent text-center focus:outline-none focus:ring-1 focus:ring-violet-500 rounded"
+                            />
+                             / {totalPages || '--'}
                         </span>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-zinc-400 hover:text-white"
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage >= totalPages}
+                        >
+                            <ChevronRight className="h-4 w-4"/>
+                        </Button>
                     </div>
-                    <div className="h-4 w-[1px] bg-zinc-800" />
-                    <div className="flex items-center space-x-2 text-[10px] font-medium text-zinc-500">
-                        <span>{wordCount} WORDS</span>
-                        <div className="h-3 w-[1px] bg-zinc-800/50" />
-                        <span>MD</span>
-                    </div>
+                    <div className="h-4 w-[1px] bg-zinc-800"/>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                            "h-8 w-8 text-zinc-400 hover:text-white transition-colors",
+                            viewMode === 'page' && "text-violet-400 bg-violet-400/10"
+                        )}
+                        onClick={() => setViewMode(viewMode === 'scroll' ? 'page' : 'scroll')}
+                        title={viewMode === 'scroll' ? "Switch to Page Mode" : "Switch to Scroll Mode"}
+                    >
+                        {viewMode === 'scroll' ? (
+                            <LayoutList className="h-4 w-4" />
+                        ) : (
+                            <BookOpen className="h-4 w-4" />
+                        )}
+                    </Button>
                 </div>
 
                 <div className="flex items-center space-x-3 px-2">
                     {saveStatus === 'saving' && (
                         <div className="flex items-center space-x-1.5 text-violet-400">
-                            <Loader2 className="h-3 w-3 animate-spin" />
+                            <Loader2 className="h-3 w-3 animate-spin"/>
                             <span className="text-[10px] font-bold uppercase tracking-wider">Saving...</span>
                         </div>
                     )}
                     {saveStatus === 'saved' && (
                         <div className="flex items-center space-x-1.5 text-emerald-500">
-                            <CheckCircle2 className="h-3 w-3" />
+                            <CheckCircle2 className="h-3 w-3"/>
                             <span className="text-[10px] font-bold uppercase tracking-wider">Saved</span>
                         </div>
                     )}
                     {saveStatus === 'error' && (
                         <div className="flex items-center space-x-1.5 text-rose-500">
-                            <AlertCircle className="h-3 w-3" />
+                            <AlertCircle className="h-3 w-3"/>
                             <span className="text-[10px] font-bold uppercase tracking-wider">Save Error</span>
                         </div>
                     )}
-
-                    <div className="h-4 w-[1px] bg-zinc-800" />
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-zinc-500 hover:text-white"
-                        title="Document Info"
-                    >
-                        <Info className="h-4 w-4" />
-                    </Button>
+                </div>
+                <div
+                    className="flex items-center space-x-2 text-[10px] font-medium text-zinc-500 uppercase tracking-widest">
+                    <span>{wordCount} WORDS</span>
+                    <div className="h-3 w-[1px] bg-zinc-800/50"/>
                 </div>
             </div>
 
@@ -341,6 +419,9 @@ function MarkdownFileEditor({ file }: { file: DbFile }) {
                 <LiveMarkdownEditor
                     initialContent={content || ''}
                     onSave={onContentChange}
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
+                    viewMode={viewMode}
                 />
             </div>
         </div>

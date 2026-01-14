@@ -545,6 +545,41 @@ export async function parseAiFile(fileId: string, onResponse: (data: AiResponseD
   });
 }
 
+export async function extractFile(fileId: string, onResponse: (data: any) => void) {
+  let lastSeenLength = 0;
+  let buffer = "";
+
+  await api.post(`/ai/extract/file/${fileId}`, {}, {
+    responseType: 'text',
+    onDownloadProgress: (progressEvent) => {
+      const fullResponse = progressEvent.event.target.responseText;
+      const newChunk = fullResponse.slice(lastSeenLength);
+      lastSeenLength = fullResponse.length;
+      buffer += newChunk;
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        let data = line.trim();
+        if (!data.startsWith('data:')) continue;
+        data = data.replace('data:', '').trim();
+        if (data.length === 0) continue;
+        if (data === '[DONE]') {
+            console.log("Stream finished");
+            return;
+        }
+        try {
+          const parsedData = JSON.parse(data);
+          onResponse(parsedData);
+        } catch (error) {
+          console.error('Error parsing SSE data:', error);
+        }
+      }
+    }
+  });
+}
+
 // ===== CHAT ENDPOINTS (/chat/) =====
 
 export async function streamChat(request: ChatRequestDTO, onChunk: (data: ChatResponseDTO) => void) {
