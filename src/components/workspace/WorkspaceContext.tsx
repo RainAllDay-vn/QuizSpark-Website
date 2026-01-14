@@ -1,39 +1,6 @@
-import { createContext, useContext, useReducer, type ReactNode } from 'react';
-import type { DbFile } from '@/model/DbFile';
-
-// --- Types ---
-
-export interface Tab {
-    id: string; // Unique tab ID
-    file: DbFile;
-    pdfPage?: number; // Track current PDF page
-}
-
-export type PaneId = 'left' | 'right';
-
-export interface WorkspaceState {
-    layout: 'single' | 'split';
-    panes: {
-        left: Tab[];
-        right: Tab[];
-    };
-    activeTab: {
-        left: string | null; // Tab ID
-        right: string | null; // Tab ID
-    };
-    activePane: PaneId;
-}
-
-export type WorkspaceAction =
-    | { type: 'OPEN_FILE'; file: DbFile; pane?: PaneId }
-    | { type: 'CLOSE_TAB'; tabId: string; pane: PaneId }
-    | { type: 'SET_ACTIVE_TAB'; tabId: string; pane: PaneId }
-    | { type: 'SET_ACTIVE_PANE'; pane: PaneId }
-    | { type: 'SPLIT_SCREEN'; file?: DbFile }
-    | { type: 'CLOSE_SPLIT' }
-    | { type: 'MOVE_TAB'; tabId: string; sourcePane: PaneId; targetPane: PaneId; index?: number }
-    | { type: 'REORDER_TABS'; pane: PaneId; startIndex: number; endIndex: number }
-    | { type: 'SET_PDF_PAGE'; tabId: string; page: number };
+import { useReducer, type ReactNode } from 'react';
+import type { Tab, WorkspaceState, WorkspaceAction } from './workspace-types';
+import { WorkspaceContext } from './useWorkspace';
 
 // --- Initial State ---
 
@@ -182,11 +149,6 @@ function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): Works
 
 // --- Context ---
 
-const WorkspaceContext = createContext<{
-    state: WorkspaceState;
-    dispatch: React.Dispatch<WorkspaceAction>;
-} | null>(null);
-
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const [state, dispatch] = useReducer(workspaceReducer, initialState);
 
@@ -195,10 +157,4 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             {children}
         </WorkspaceContext.Provider>
     );
-}
-
-export function useWorkspace() {
-    const context = useContext(WorkspaceContext);
-    if (!context) throw new Error("useWorkspace must be used within WorkspaceProvider");
-    return context;
 }

@@ -27,19 +27,7 @@ interface ChatBotProps {
 type ChatView = 'chat' | 'history' | 'workflows';
 
 export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
-    const { contexts, unregisterContext, registerTool, isTtsEnabled, setIsTtsEnabled } = useChatBot();
-
-    useEffect(() => {
-        return registerTool({
-            name: 'get_current_time',
-            description: 'Returns the current local time of the user.',
-            parameters: {},
-            call: async () => {
-                return new Date().toLocaleTimeString();
-            }
-        });
-    }, [registerTool]);
-
+    const { contexts, registerTool, isTtsEnabled, setIsTtsEnabled } = useChatBot();
     const [sessions, setSessions] = useState<ChatSessionDTO[]>([]);
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
     const [messages, setMessages] = useState<UiChatMessage[]>([]);
@@ -65,7 +53,46 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
     const sidebarRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const loadModels = useCallback(async () => {
+        try {
+            const data = await getChatModels();
+            setAvailableModels(data);
+            if (!selectedModelId && data.length > 0) {
+                setSelectedModelId(data[0].id);
+            }
+        } catch (error) {
+            console.error("Failed to load models:", error);
+        }
+    }, [selectedModelId]);
 
+    const loadSessions = useCallback(async () => {
+        try {
+            const data = await getChatSessions();
+            setSessions(data);
+        } catch (error) {
+            console.error("Failed to load sessions:", error);
+        }
+    }, []);
+
+    const loadMessages = async (sessionId: string) => {
+        try {
+            const data = await getSessionMessages(sessionId);
+            setMessages(data);
+        } catch (error) {
+            console.error("Failed to load messages:", error);
+        }
+    };
+
+    useEffect(() => {
+        return registerTool({
+            name: 'get_current_time',
+            description: 'Returns the current local time of the user.',
+            parameters: {},
+            call: async () => {
+                return new Date().toLocaleTimeString();
+            }
+        });
+    }, [registerTool]);
 
     useEffect(() => {
         localStorage.setItem('chatbot-width', width.toString());
@@ -81,7 +108,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
 
     useEffect(() => {
         loadModels();
-    }, []);
+    }, [loadModels]);
 
     useEffect(() => {
         if (selectedModelId) {
@@ -96,39 +123,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
         } else {
             setIsAnimating(false);
         }
-    }, [isOpen]);
-
-
-
-    const loadModels = async () => {
-        try {
-            const data = await getChatModels();
-            setAvailableModels(data);
-            if (!selectedModelId && data.length > 0) {
-                setSelectedModelId(data[0].id);
-            }
-        } catch (error) {
-            console.error("Failed to load models:", error);
-        }
-    };
-
-    const loadSessions = async () => {
-        try {
-            const data = await getChatSessions();
-            setSessions(data);
-        } catch (error) {
-            console.error("Failed to load sessions:", error);
-        }
-    };
-
-    const loadMessages = async (sessionId: string) => {
-        try {
-            const data = await getSessionMessages(sessionId);
-            setMessages(data);
-        } catch (error) {
-            console.error("Failed to load messages:", error);
-        }
-    };
+    }, [isOpen, loadSessions]);
 
     const handleSelectSession = (sessionId: string) => {
         setCurrentSessionId(sessionId);

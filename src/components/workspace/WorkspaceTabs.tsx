@@ -1,5 +1,6 @@
 import { X, FileText, File as FileIcon, Columns, Square } from 'lucide-react';
-import { useWorkspace, type PaneId, type Tab } from './WorkspaceContext';
+import { useWorkspace } from './useWorkspace';
+import { type PaneId, type Tab } from './workspace-types';
 import { cn } from '@/lib/utils';
 import { useDrag, useDrop } from 'react-dnd';
 import { useRef } from 'react';
