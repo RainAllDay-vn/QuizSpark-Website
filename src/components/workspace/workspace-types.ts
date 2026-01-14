@@ -31,3 +31,17 @@ export type WorkspaceAction =
     | { type: 'MOVE_TAB'; tabId: string; sourcePane: PaneId; targetPane: PaneId; index?: number }
     | { type: 'REORDER_TABS'; pane: PaneId; startIndex: number; endIndex: number }
     | { type: 'SET_PDF_PAGE'; tabId: string; page: number };
+
+export interface DragItemFile {
+    type: 'FILE';
+    file: DbFile;
+}
+
+export interface DragItemTab {
+    type: 'TAB';
+    id: string; // Tab ID
+    pane: PaneId;
+    index: number;
+}
+
+export type DragItem = DragItemFile | DragItemTab;

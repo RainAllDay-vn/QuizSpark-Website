@@ -1,9 +1,9 @@
 import { X, FileText, File as FileIcon, Columns, Square } from 'lucide-react';
 import { useWorkspace } from './useWorkspace';
-import { type PaneId, type Tab } from './workspace-types';
+import { type PaneId, type Tab, type DragItem } from './workspace-types';
 import { cn } from '@/lib/utils';
 import { useDrag, useDrop } from 'react-dnd';
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 
 interface WorkspaceTabsProps {
     pane: PaneId;
@@ -15,13 +15,13 @@ export function WorkspaceTabs({ pane }: WorkspaceTabsProps) {
 
     const [, drop] = useDrop(() => ({
         accept: ['FILE', 'TAB'],
-        drop: (item: any, monitor) => {
+        drop: (item: DragItem, monitor) => {
             if (monitor.didDrop()) return;
             const itemType = monitor.getItemType();
 
-            if (itemType === 'FILE') {
+            if (itemType === 'FILE' && item.type === 'FILE') {
                 dispatch({ type: 'OPEN_FILE', file: item.file, pane });
-            } else if (itemType === 'TAB' && item.pane !== pane) {
+            } else if (itemType === 'TAB' && item.type === 'TAB' && item.pane !== pane) {
                 dispatch({ type: 'MOVE_TAB', tabId: item.id, sourcePane: item.pane, targetPane: pane });
             }
         },
@@ -29,7 +29,7 @@ export function WorkspaceTabs({ pane }: WorkspaceTabsProps) {
 
     return (
         <div
-            ref={drop as any}
+            ref={drop as unknown as React.Ref<HTMLDivElement>}
             className="flex items-center h-10 w-full bg-[#111112] border-b border-zinc-800 overflow-x-auto no-scrollbar group/tabs"
         >
             {tabs.map((tab, index) => (
@@ -78,14 +78,14 @@ function DraggableTab({ tab, index, pane, isActive }: { tab: Tab; index: number;
         type: 'TAB',
         item: { type: 'TAB', id: tab.id, pane, index },
         collect: (monitor) => ({
-            isDragging: !!monitor.isDragging(),
+            isDragging: monitor.isDragging(),
         }),
     });
 
     const [, drop] = useDrop({
         accept: 'TAB',
-        hover(item: any) {
-            if (!ref.current) return;
+        hover(item: DragItem) {
+            if (!ref.current || item.type !== 'TAB') return;
             const dragIndex = item.index;
             const hoverIndex = index;
             if (dragIndex === hoverIndex && item.pane === pane) return;
@@ -93,11 +93,11 @@ function DraggableTab({ tab, index, pane, isActive }: { tab: Tab; index: number;
             // Immediate reorder if in same pane
             if (item.pane === pane) {
                 dispatch({ type: 'REORDER_TABS', pane, startIndex: dragIndex, endIndex: hoverIndex });
-                item.index = hoverIndex;
+                item.index = hoverIndex; // Mutate monitor item to keep sync
             }
         },
-        drop(item: any) {
-            if (item.pane !== pane) {
+        drop(item: DragItem) {
+            if (item.type === 'TAB' && item.pane !== pane) {
                 dispatch({ type: 'MOVE_TAB', tabId: item.id, sourcePane: item.pane, targetPane: pane, index });
             }
         }
