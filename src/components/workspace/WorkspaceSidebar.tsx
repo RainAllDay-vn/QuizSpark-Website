@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import { Search, Loader2, FileText, Upload, ChevronLeft, ChevronRight, File as FileIcon } from 'lucide-react';
+import { Search, Loader2, FileText, Upload, ChevronLeft, ChevronRight, File as FileIcon, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { DbFile } from '@/model/DbFile';
-import { uploadFileIndependent } from '@/lib/api';
+import { uploadFileIndependent, deleteFilePermanent } from '@/lib/api';
 import { ScrollArea } from '../ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import clsx from 'clsx';
@@ -14,10 +14,11 @@ interface WorkspaceSidebarProps {
     isLoading: boolean;
     onFileSelect: (file: DbFile) => void;
     onUpload?: () => void;
+    onDelete?: () => void;
     selectedFileId?: string;
 }
 
-export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, selectedFileId }: WorkspaceSidebarProps) {
+export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, onDelete, selectedFileId }: WorkspaceSidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(() => {
         const saved = sessionStorage.getItem("quizspark_workspace_sidebar_collapsed");
         return saved ? JSON.parse(saved) : false;
@@ -60,6 +61,19 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, sel
             alert("Failed to upload file");
         } finally {
             setIsUploading(false);
+        }
+    };
+
+    const handleDeleteFile = async (e: React.MouseEvent, fileId: string) => {
+        e.stopPropagation(); // Prevent opening the file
+        if (!confirm("Are you sure you want to delete this file? This cannot be undone.")) return;
+        
+        try {
+            await deleteFilePermanent(fileId);
+            if (onDelete) onDelete();
+        } catch (error) {
+            console.error("Failed to delete file", error);
+            alert("Failed to delete file");
         }
     };
 
@@ -156,6 +170,7 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, sel
                                 isCollapsed={isCollapsed}
                                 selectedFileId={selectedFileId}
                                 onFileSelect={onFileSelect}
+                                onDelete={handleDeleteFile}
                             />
                         ))
                     )}
@@ -164,12 +179,18 @@ export function WorkspaceSidebar({ files, isLoading, onFileSelect, onUpload, sel
         </aside>
     );
 }
-function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect }: { file: DbFile, isCollapsed: boolean, selectedFileId?: string, onFileSelect: (file: DbFile) => void }) {
+function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect, onDelete }: {
+    file: DbFile,
+    isCollapsed: boolean,
+    selectedFileId?: string,
+    onFileSelect: (file: DbFile) => void,
+    onDelete: (e: React.MouseEvent, fileId: string) => void
+}) {
     const [{ isDragging }, drag] = useDrag(() => ({
         type: 'FILE',
         item: { type: 'FILE', file },
         collect: (monitor) => ({
-            isDragging: !!monitor.isDragging(),
+            isDragging: monitor.isDragging(),
         }),
     }), [file]);
 
@@ -178,7 +199,7 @@ function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect }: 
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div
-                        ref={drag as any}
+                        ref={drag as never}
                         onClick={() => onFileSelect(file)}
                         className={clsx(
                             "flex items-center w-full min-w-0 overflow-hidden px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[#1a1a1c] hover:text-white cursor-pointer group",
@@ -202,10 +223,19 @@ function DraggableFileItem({ file, isCollapsed, selectedFileId, onFileSelect }: 
                         </div>
 
                         {!isCollapsed && (
-                            <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium truncate">{file.fileName}</p>
-                                <p className="text-[10px] text-zinc-500 truncate">{new Date(file.uploadDate).toLocaleDateString()}</p>
-                            </div>
+                            <>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium truncate">{file.fileName}</p>
+                                    <p className="text-[10px] text-zinc-500 truncate">{new Date(file.uploadDate).toLocaleDateString()}</p>
+                                </div>
+                                <div
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/20 rounded-md text-zinc-500 hover:text-red-400"
+                                    onClick={(e) => onDelete(e, file.id)}
+                                    title="Delete file"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </div>
+                            </>
                         )}
                     </div>
                 </TooltipTrigger>

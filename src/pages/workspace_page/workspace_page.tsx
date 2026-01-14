@@ -88,6 +88,7 @@ function WorkspaceLayout() {
                 isLoading={isLoading}
                 onFileSelect={handleFileSelect}
                 onUpload={loadFiles}
+                onDelete={loadFiles}
                 selectedFileId={state.activeTab.left || undefined}
             />
             

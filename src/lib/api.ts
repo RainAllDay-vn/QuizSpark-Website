@@ -73,16 +73,10 @@ export async function getUserInfo() {
 }
 
 export async function searchUsers(query: string) {
-  try {
-    const response = await api.get('/users', {
-      params: { query }
-    });
-    return response.data as UserDTO[];
-  } catch (error) {
-    // console.error('Failed to search users:', error);
-    // Silent fail or rethrow? Let's just return empty array on error or rethrow
-    throw error;
-  }
+  const response = await api.get('/users', {
+    params: { query }
+  });
+  return response.data as UserDTO[];
 }
 
 export async function getUserStatistic() {
@@ -545,7 +539,7 @@ export async function parseAiFile(fileId: string, onResponse: (data: AiResponseD
   });
 }
 
-export async function extractFile(fileId: string, onResponse: (data: any) => void) {
+export async function extractFile(fileId: string, onResponse: (data: AiResponseDTO) => void) {
   let lastSeenLength = 0;
   let buffer = "";
 
