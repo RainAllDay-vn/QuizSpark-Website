@@ -194,7 +194,7 @@ export function LiveMarkdownEditor({ initialContent, onSave, className, currentP
                 }
             }
         }
-    }, [blockPageNumbers, currentPage, viewMode]);
+    }, [blockPageNumbers, currentPage, viewMode, externalPage]);
 
     // Auto-focus the textarea when entering editing mode
     useEffect(() => {

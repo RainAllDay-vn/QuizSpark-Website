@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page, pdfjs, type PageProps } from 'react-pdf';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Search, Loader2, RotateCcw, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,7 +85,7 @@ function PageWithObserver({
                     className="pdf-page bg-white"
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
-                    customTextRenderer={makeTextRenderer(searchText) as any}
+                    customTextRenderer={makeTextRenderer(searchText) as PageProps['customTextRenderer']}
                 />
             ) : (
                 <div
@@ -111,6 +111,7 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
     const containerRef = useRef<HTMLDivElement>(null);
     const resizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isExternalUpdateRef = useRef(false);
+    const lastExternalPageRef = useRef<number | undefined>(externalPage);
 
     // Callbacks defined first so they can be used in effects
     const changePage = useCallback((offset: number) => {
@@ -132,9 +133,23 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
     }, [numPages, viewMode]);
 
     useEffect(() => {
-        if (externalPage !== undefined && externalPage !== pageNumber) {
-            isExternalUpdateRef.current = true;
-            goToPage(externalPage);
+        if (externalPage !== undefined) {
+             // If the external page has changed, update our tracker
+             // This prevents "stale" props from resetting user navigation
+            if (externalPage !== lastExternalPageRef.current) {
+                lastExternalPageRef.current = externalPage;
+                
+                // Only sync if strictly different
+                if (externalPage !== pageNumber) {
+                    isExternalUpdateRef.current = true;
+                    goToPage(externalPage);
+                }
+            } else if (externalPage !== pageNumber) {
+                // External matches last known, but pageNumber differs.
+                // This means USER navigated locally.
+                // We do NOT sync back to externalPage here, allowing the user to move freely.
+                // The parent will eventually be updated via onPageChange.
+            }
         }
     }, [externalPage, goToPage, pageNumber]);
 
@@ -175,11 +190,12 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
         return () => {
             if (fileBlob) URL.revokeObjectURL(fileBlob);
         };
-    }, [fileId]);
+    }, [fileBlob, fileId]);
 
     const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumPages(numPages);
-        setPageNumber(1);
+        // If we have an external page waiting, jump to it immediately upon load
+        setPageNumber(externalPage || 1);
     };
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -217,7 +233,7 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
             }, 50);
             return () => clearTimeout(timer);
         }
-    }, [viewMode]);
+    }, [pageNumber, viewMode]);
 
     const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 3.0));
     const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
@@ -377,7 +393,7 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
                                         className="pdf-page bg-white shadow-lg"
                                         renderTextLayer={true}
                                         renderAnnotationLayer={true}
-                                        customTextRenderer={makeTextRenderer(searchText) as any}
+                                        customTextRenderer={makeTextRenderer(searchText) as unknown as PageProps['customTextRenderer']}
                                     />
                                 ) : (
                                     Array.from(new Array(numPages), (_el, index) => (

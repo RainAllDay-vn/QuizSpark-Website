@@ -217,7 +217,7 @@ function WorkspacePane({pane}: WorkspacePaneProps) {
                                 externalPage={externalPage}
                             />
                         ) : activeTab?.file.fileName.endsWith('.md') ? (
-                            <MarkdownFileEditor file={activeTab.file}/>
+                            <MarkdownFileEditor file={activeTab.file} tabId={activeTab.id}/>
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-zinc-500">
                                 <h3 className="text-lg text-white mb-2">
@@ -246,7 +246,7 @@ function WorkspacePane({pane}: WorkspacePaneProps) {
     );
 }
 
-function MarkdownFileEditor({file}: { file: DbFile }) {
+function MarkdownFileEditor({file, tabId}: { file: DbFile, tabId: string }) {
     const { state, linkFiles, unlinkFile, getLinkedGroup, syncLinkedPage } = useWorkspace();
     const [content, setContent] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -256,7 +256,7 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    const linkedGroup = getLinkedGroup(file.id);
+    const linkedGroup = getLinkedGroup(tabId);
     const isLinked = !!linkedGroup;
     const externalPage = linkedGroup?.currentPage;
 
@@ -264,7 +264,7 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
     const handleUserPageChange = (page: number) => {
         setCurrentPage(page);
         if (isLinked) {
-            syncLinkedPage(file.id, page);
+            syncLinkedPage(tabId, page);
         }
     };
 
@@ -284,7 +284,7 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
 
     const handleLinkToggle = () => {
         if (isLinked) {
-            unlinkFile(file.id);
+            unlinkFile(tabId);
             return;
         }
 
@@ -292,7 +292,7 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
             const otherPane = pane === 'left' ? 'right' : 'left';
             const otherTabId = state.activeTab[otherPane];
             if (otherTabId) {
-                linkFiles(file.id, otherTabId);
+                linkFiles(tabId, otherTabId);
             }
         }
     };
@@ -462,7 +462,7 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 bg-[#18181b] border-zinc-800 text-white">
                                 {isLinked && (
-                                    <DropdownMenuItem onClick={() => unlinkFile(file.id)}>
+                                    <DropdownMenuItem onClick={() => unlinkFile(tabId)}>
                                         <Link2Off className="mr-2 h-4 w-4" />
                                         <span>Unlink current file</span>
                                     </DropdownMenuItem>
@@ -477,7 +477,7 @@ function MarkdownFileEditor({file}: { file: DbFile }) {
                                     return (
                                         <DropdownMenuItem
                                             key={tab.id}
-                                            onClick={() => linkFiles(file.id, tab.id)}
+                                            onClick={() => linkFiles(tabId, tab.id)}
                                         >
                                             <Link2 className="mr-2 h-4 w-4" />
                                             <span className="truncate">{tab.file.fileName}</span>
