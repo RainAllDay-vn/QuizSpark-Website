@@ -48,12 +48,14 @@ const ChatAttachment = ({ fileId }: { fileId: string }) => {
 
     React.useEffect(() => {
         let active = true;
+        let objectUrl: string | null = null;
+
         const fetchImage = async () => {
             try {
                 const blob = await viewFile(fileId);
                 if (active) {
-                    const url = URL.createObjectURL(blob);
-                    setSrc(url);
+                    objectUrl = URL.createObjectURL(blob);
+                    setSrc(objectUrl);
                 }
             } catch (error) {
                 console.error("Failed to load attachment image", error);
@@ -62,7 +64,7 @@ const ChatAttachment = ({ fileId }: { fileId: string }) => {
         fetchImage();
         return () => {
             active = false;
-            if (src) URL.revokeObjectURL(src);
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
         };
     }, [fileId]);
 

@@ -173,12 +173,14 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
     }, []);
 
     useEffect(() => {
+        let objectUrl: string | null = null;
+
         async function loadFile() {
             setIsLoading(true);
             try {
                 const blob = await viewFile(fileId);
-                const url = URL.createObjectURL(blob);
-                setFileBlob(url);
+                objectUrl = URL.createObjectURL(blob);
+                setFileBlob(objectUrl);
             } catch (error) {
                 console.error("Failed to load PDF:", error);
             } finally {
@@ -188,9 +190,9 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
         loadFile();
 
         return () => {
-            if (fileBlob) URL.revokeObjectURL(fileBlob);
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
         };
-    }, [fileBlob, fileId]);
+    }, [fileId]);
 
     const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumPages(numPages);
