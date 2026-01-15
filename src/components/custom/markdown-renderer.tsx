@@ -3,8 +3,9 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import 'katex/dist/katex.min.css';
-import { memo, useState } from "react"; // Import KaTeX styles
-import { ImageOff } from 'lucide-react';
+import { memo, useState, useEffect } from "react"; // Import KaTeX styles
+import { ImageOff, Loader2 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface MarkdownRendererProps {
   content: string;
@@ -13,6 +14,49 @@ interface MarkdownRendererProps {
 
 const WikiImage = ({ src, alt }: { src: string; alt: string }) => {
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [displaySrc, setDisplaySrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    let isMounted = true;
+
+    const isApiUrl = src.startsWith('/api/v1/files/') || src.includes('/api/v1/files/');
+
+    if (isApiUrl) {
+      const fetchImage = async () => {
+        setLoading(true);
+        try {
+          // Extract the path after /api/v1/ if present
+          let path = src;
+          const apiV1Index = src.indexOf('/api/v1/');
+          if (apiV1Index !== -1) {
+            path = src.substring(apiV1Index + 7); // Start after "/api/v1"
+          }
+
+          const response = await api.get(path, { responseType: 'blob' });
+          if (isMounted) {
+            objectUrl = URL.createObjectURL(response.data);
+            setDisplaySrc(objectUrl);
+            setError(false);
+          }
+        } catch (err) {
+          console.error("Failed to load authenticated image:", err);
+          if (isMounted) setError(true);
+        } finally {
+          if (isMounted) setLoading(false);
+        }
+      };
+      fetchImage();
+    } else {
+      setDisplaySrc(src);
+    }
+
+    return () => {
+      isMounted = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [src]);
 
   if (error) {
     return (
@@ -24,12 +68,20 @@ const WikiImage = ({ src, alt }: { src: string; alt: string }) => {
     );
   }
 
-  // Since these are often local-style paths in Obsidian, we might need to resolve them
-  // For now, let's assume they are either URLs or we need a resolver.
-  // If it's a relative path, we might need to append a base URL or skip.
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-500 space-y-2 my-4 animate-pulse">
+        <Loader2 className="h-6 w-6 animate-spin opacity-20" />
+        <span className="text-[10px] uppercase tracking-wider opacity-30">Loading image...</span>
+      </div>
+    );
+  }
+
+  if (!displaySrc) return null;
+
   return (
     <img
-      src={src}
+      src={displaySrc}
       alt={alt}
       onError={() => setError(true)}
       className="rounded-lg border border-zinc-800 my-4 max-w-full"

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Document, Page, pdfjs, type PageProps } from 'react-pdf';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Search, Loader2, RotateCcw, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Search, Loader2, RotateCcw, List, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { viewFile } from '@/lib/api';
+import { viewFile, extractFile } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -107,6 +107,7 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
     const [containerWidth, setContainerWidth] = useState<number>(0);
     const [fitToWidth, setFitToWidth] = useState(true);
     const [viewMode, setViewMode] = useState<'single' | 'scroll'>('single');
+    const [isExtracting, setIsExtracting] = useState(false);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const resizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -240,6 +241,20 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
     const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 3.0));
     const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
 
+    const handleExtract = async () => {
+        if (isExtracting) return;
+        setIsExtracting(true);
+        try {
+            await extractFile(fileId, (data) => {
+                console.log("Extraction update:", data);
+            });
+        } catch (error) {
+            console.error("Extraction failed:", error);
+        } finally {
+            setIsExtracting(false);
+        }
+    };
+
     const makeTextRenderer = useCallback((searchText: string) => {
         return (textItem: { str: string }) => {
             if (!searchText) return textItem.str;
@@ -312,6 +327,17 @@ export function PdfViewer({ fileId, fileName, isActive, onPageChange, externalPa
                 </div>
 
                 <div className="flex items-center space-x-1">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn("h-8 w-8 text-zinc-400 hover:text-white", isExtracting && "text-violet-400 bg-violet-400/10 animate-pulse")}
+                        onClick={handleExtract}
+                        disabled={isExtracting}
+                        title="Extract PDF Content with AI"
+                    >
+                        {isExtracting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    </Button>
+                    <div className="h-4 w-[1px] bg-zinc-800 mx-2" />
                     <Button
                         variant="ghost"
                         size="icon"

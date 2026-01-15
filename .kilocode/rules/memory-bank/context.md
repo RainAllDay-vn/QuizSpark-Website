@@ -4,6 +4,8 @@
 The project is in an active development phase, with a functional core for question banking, practicing, and classroom management. Recent efforts have focused on enhancing the AI capabilities (chatbot and file parsing) and building a more interactive workspace for students and teachers.
 
 ## Recent Changes
+-   **Bug Fix**: Fixed unauthenticated image loading issue in `MarkdownRenderer`. Updated `WikiImage` to fetch images via `api` (Axios) with proper Auth headers when an API URL is detected.
+-   **Infrastructure**: Configured Vite proxy in `vite.config.ts` to route `/api/v1` requests to the backend server (`http://localhost:8080`), ensuring consistent URL handling across environments.
 -   **Bug Fix**: Fixed an infinite request loop in `PdfViewer.tsx` where `viewFile` was called repeatedly due to incorrect `useEffect` dependencies.
 -   **Stability Improvement**: Refactored `ChatSection.tsx` to handle attachment image cleanup more reliably using local variables in `useEffect` rather than state-dependent cleanup.
 -   **AI Integration**: Implementation of `GlobalChatBot` and `ChatBotContext` to manage chat sessions and stream responses from the backend.
