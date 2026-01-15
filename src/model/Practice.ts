@@ -10,4 +10,5 @@ export interface Practice {
     closed: boolean;
     date: string;
     timeInSeconds: number;
+    endlessMode?: boolean;
 }

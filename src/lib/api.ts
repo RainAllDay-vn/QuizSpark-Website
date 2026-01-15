@@ -30,6 +30,8 @@ import type ChatModelDTO from "@/dtos/ChatModelDTO.ts";
 import type ClassroomCreateDTO from "@/dtos/ClassroomCreateDTO.ts";
 import type ClassroomResponseDTO from "@/dtos/ClassroomResponseDTO.ts";
 import type UserDTO from "@/dtos/UserDTO.ts";
+import type { PracticeQuestionsFetchDTO } from "@/dtos/PracticeQuestionsFetchDTO.ts";
+import type { PracticeQuestion } from "@/model/PracticeQuestion.ts";
 import {linkDerivedFileWithParent} from "@/lib/utils.ts";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_API || "/api/v1";
@@ -443,7 +445,7 @@ export async function startNewAnonymousPractice(bankId: string, size: number, sh
   }
 }
 
-export async function startNewPractice(bankId: string, size: number, shuffle: boolean, revealAnswer: boolean, tags: string[]) {
+export async function startNewPractice(bankId: string, size: number, shuffle: boolean, revealAnswer: boolean, tags: string[], endlessMode?: boolean) {
   try {
     const response = await api.get('/practice/new', {
       params: {
@@ -451,7 +453,8 @@ export async function startNewPractice(bankId: string, size: number, shuffle: bo
         size,
         shuffle,
         revealAnswer,
-        tags
+        tags,
+        ...(endlessMode ? { endlessMode: true } : {})
       }
     });
     return response.data as { id: string };
@@ -514,6 +517,25 @@ export async function duplicatePractice(practiceId: string) {
     return response.data as { id: string };
   } catch (error) {
     console.error('Failed to duplicate practice session:', error);
+    throw error;
+  }
+}
+
+export async function fetchMoreQuestions(practiceId: string, dto: PracticeQuestionsFetchDTO): Promise<PracticeQuestion[]> {
+  try {
+    const response = await api.post(`/practice/${practiceId}/fetch`, dto);
+    return response.data as PracticeQuestion[];
+  } catch (error) {
+    console.error('Failed to fetch more questions:', error);
+    throw error;
+  }
+}
+
+export async function discardQuestion(practiceId: string, index: number): Promise<void> {
+  try {
+    await api.delete(`/practice/${practiceId}/questions/${index}`);
+  } catch (error) {
+    console.error('Failed to discard question:', error);
     throw error;
   }
 }
