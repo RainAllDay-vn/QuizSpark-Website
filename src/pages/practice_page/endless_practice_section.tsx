@@ -1,15 +1,18 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import type { Practice } from "@/model/Practice.ts";
 import { correctMessages, wrongMessages, type EncouragementMessage } from "@/pages/practice_page/EncouragementMessage.ts";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import type { PracticeQuestion } from "@/model/PracticeQuestion";
 import SingleAnswerQuestionSection from "./single_answer_question_section";
 import MultipleAnswerQuestionSection from "./multiple_answer_question_section";
-import { answer } from "@/lib/api";
+import { answer, discardQuestion, fetchMoreQuestions } from "@/lib/api";
 import CommentSection from "@/pages/practice_page/comment_section.tsx";
 import type PracticeAnswerResponseDTO from "@/dtos/PracticeAnswerResponseDTO.ts";
 import { Button } from "@/components/ui/button";
 import { SkipForward, Trash2 } from "lucide-react";
+
+const FETCH_THRESHOLD = 3;
+const FETCH_COUNT = 5;
 
 interface EndlessPracticeSectionProps {
   practice: Practice;
@@ -28,18 +31,28 @@ export interface PracticeState {
   encouragement: EncouragementMessage | null;
   loading: boolean;
   currentQuestionIndex: number; // For compatibility, always 0
+  fetchingMore: boolean;
 }
 
 export type PracticeAction =
   | { type: "NEXT_QUESTION" }
   | { type: "SKIP_QUESTION" }
   | { type: "DISCARD_QUESTION" }
+  | { type: "APPEND_QUESTIONS"; payload: PracticeQuestion[] }
+  | { type: "SET_FETCHING"; payload: boolean }
   | { type: "ANSWER" }
   | { type: "SHOW_RESULT"; payload: { userAnswer: string[], response: PracticeAnswerResponseDTO|null } }
   | { type: "INCREASE_TIME" };
 
 function practiceReducer(state: PracticeState, action: PracticeAction): PracticeState {
   switch (action.type) {
+    case "APPEND_QUESTIONS":
+      return {
+        ...state,
+        questions: [...state.questions, ...action.payload],
+      };
+    case "SET_FETCHING":
+      return { ...state, fetchingMore: action.payload };
     case "NEXT_QUESTION":
       // Remove the current question from the queue
       return {
@@ -52,7 +65,7 @@ function practiceReducer(state: PracticeState, action: PracticeAction): Practice
       // Move the current question to the end of the queue
       return {
         ...state,
-        questions: [...state.questions.slice(1), state.questions[0]],
+        questions: [...state.questions.slice(1), { ...state.questions[0], userAnswer: undefined, correctAnswer: undefined }],
         encouragement: null,
       };
     case "DISCARD_QUESTION":
@@ -119,11 +132,13 @@ export default function EndlessPracticeSection({ practice }: EndlessPracticeSect
     encouragement: null,
     loading: false,
     currentQuestionIndex: 0,
+    fetchingMore: false,
   };
 
   const [state, dispatch] = useReducer(practiceReducer, initialState);
-  const { questions, timeInSeconds } = state;
+  const { questions, timeInSeconds, fetchingMore } = state;
   const question = questions[0];
+  const fetchingRef = useRef(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -131,6 +146,29 @@ export default function EndlessPracticeSection({ practice }: EndlessPracticeSect
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (questions.length < FETCH_THRESHOLD && !fetchingRef.current) {
+      const loadMore = async () => {
+        fetchingRef.current = true;
+        dispatch({ type: "SET_FETCHING", payload: true });
+        try {
+          const newQuestions = await fetchMoreQuestions(practice.id, {
+            numberOfQuestions: FETCH_COUNT,
+          });
+          if (newQuestions.length > 0) {
+            dispatch({ type: "APPEND_QUESTIONS", payload: newQuestions });
+          }
+        } catch (error) {
+          console.error("Failed to fetch more questions", error);
+        } finally {
+          fetchingRef.current = false;
+          dispatch({ type: "SET_FETCHING", payload: false });
+        }
+      };
+      loadMore();
+    }
+  }, [questions.length, practice.id]);
 
   const handleSubmitAnswer = async (userAnswer: string[]) => {
     if (!question) return;
@@ -151,8 +189,13 @@ export default function EndlessPracticeSection({ practice }: EndlessPracticeSect
     dispatch({ type: "SKIP_QUESTION" });
   }
 
-  const handleDiscardQuestion = () => {
-    dispatch({ type: "DISCARD_QUESTION" });
+  const handleDiscardQuestion = async () => {
+    try {
+        await discardQuestion(practice.id, 0);
+        dispatch({ type: "DISCARD_QUESTION" });
+    } catch (error) {
+        console.error("Failed to discard question", error);
+    }
   }
 
   const handleCompletePractice = () => {
@@ -165,7 +208,7 @@ export default function EndlessPracticeSection({ practice }: EndlessPracticeSect
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (questions.length === 0) {
+  if (questions.length === 0 && !fetchingMore) {
     return (
       <Card className="bg-gray-900/60 border border-gray-700 p-12 text-center text-white space-y-6">
         <h2 className="text-2xl font-bold">Queue Empty!</h2>
@@ -174,6 +217,14 @@ export default function EndlessPracticeSection({ practice }: EndlessPracticeSect
           Back to Overview
         </Button>
       </Card>
+    );
+  }
+
+  if (questions.length === 0 && fetchingMore) {
+    return (
+        <Card className="bg-gray-900/60 border border-gray-700 p-12 text-center text-white space-y-6">
+            <h2 className="text-2xl font-bold animate-pulse">Fetching more questions...</h2>
+        </Card>
     );
   }
 
@@ -213,6 +264,7 @@ export default function EndlessPracticeSection({ practice }: EndlessPracticeSect
                   variant="outline"
                   className="flex-1 border-gray-600 text-yellow-400 hover:bg-yellow-400/10 hover:text-yellow-300"
                   title="Move to the end of the queue"
+                  disabled={questions.length <= 1}
                 >
                   <SkipForward className="w-4 h-4 mr-2" />
                   Skip

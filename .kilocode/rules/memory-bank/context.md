@@ -8,6 +8,7 @@ The project is in an active development phase, with a functional core for questi
 -   **Workspace**: Creation of `WorkspacePage`, `WorkspaceContext`, and drag-and-drop pane management for multitasking (PDF viewing + Markdown editing).
 -   **DTOs**: Refactored `ChatItemDTO` to include a dedicated `metadata` field for structured data, moving PDF page information from `content` to `metadata` in `WorkspacePage`.
 -   **PdfViewer Improvement**: Enhanced mode switching between single-page and scroll view to maintain page context by automatically scrolling to the current page.
+-   **Endless Practice Mode**: Integrated routing for the new Endless Practice Mode. Updated `PracticeOptionsDialog`, `PracticeCard`, and `SummarySection` to handle conditional navigation to `/practice/endless/:practiceId`.
 
 ## Next Steps
 -   **Refinement**: Improve the stability and error handling of the real-time AI features (SSE integration).

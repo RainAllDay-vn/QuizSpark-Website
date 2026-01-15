@@ -12,11 +12,19 @@ export default function PracticeCard({practice}: PracticeCardProps) {
   const navigate = useNavigate();
   
   const handleContinuePractice = () => {
-    navigate(`/practice/${practice.id}`);
+    if (practice.endlessMode) {
+      navigate(`/practice/endless/${practice.id}`);
+    } else {
+      navigate(`/practice/${practice.id}`);
+    }
   };
   
   const handleViewResults = () => {
-    navigate(`/practice/${practice.id}`);
+    if (practice.endlessMode) {
+      navigate(`/practice/endless/${practice.id}`);
+    } else {
+      navigate(`/practice/${practice.id}`);
+    }
   };
   
   const statusColor = practice.closed

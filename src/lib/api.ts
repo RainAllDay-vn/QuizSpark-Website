@@ -429,13 +429,14 @@ export async function updateComment(commentId: string, payload: QuestionCommentU
 
 // ===== PRACTICE ENDPOINTS (/practice/) =====
 
-export async function startNewAnonymousPractice(bankId: string, size: number, shuffle: boolean) {
+export async function startNewAnonymousPractice(bankId: string, size: number, shuffle: boolean, endless?: boolean) {
   try {
     const response = await api.get('/practice/new/anonymous', {
       params: {
         bankId,
         size,
-        shuffle
+        shuffle,
+        ...(endless ? { endless: true } : {})
       }
     });
     return response.data as Practice;

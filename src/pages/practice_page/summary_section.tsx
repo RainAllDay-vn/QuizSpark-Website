@@ -36,7 +36,11 @@ export default function SummarySection({ practice }: SummarySectionProps) {
     try {
       setIsDuplicating(true);
       const newPractice = await duplicatePractice(practice.id);
-      navigate(`/practice/${newPractice.id}`);
+      if (practice.endlessMode) {
+        navigate(`/practice/endless/${newPractice.id}`);
+      } else {
+        navigate(`/practice/${newPractice.id}`);
+      }
       window.location.reload(); // Force reload to fetch new practice data
     } catch (error) {
       console.error("Failed to duplicate practice:", error);

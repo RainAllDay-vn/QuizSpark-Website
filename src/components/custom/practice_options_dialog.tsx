@@ -33,6 +33,7 @@ export default function PracticeOptionsDialog({
   const [practiceSize, setPracticeSize] = useState<number>(10);
   const [shuffleChoices, setShuffleChoices] = useState<boolean>(true);
   const [revealAnswer, setRevealAnswer] = useState<boolean>(true);
+  const [endlessMode, setEndlessMode] = useState<boolean>(false);
   const availableTags = questionBank.tags;
   const [selectedTags, setSelectedTags] = useState<string[]>(availableTags.map(t => t.name));
   const [isStarting, setIsStarting] = useState(false);
@@ -53,18 +54,29 @@ export default function PracticeOptionsDialog({
       setIsStarting(true);
       try {
         if (user) {
-          const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer, selectedTags);
+          const response = await startNewPractice(questionBank.id, practiceSize, shuffleChoices, revealAnswer, selectedTags, endlessMode);
           const practiceId = response.id;
-          navigate('/practice/' + practiceId);
+          if (endlessMode) {
+            navigate('/practice/endless/' + practiceId);
+          } else {
+            navigate('/practice/' + practiceId);
+          }
         } else {
           const searchParams = new URLSearchParams();
           searchParams.append("size", practiceSize.toString());
           searchParams.append("shuffle", shuffleChoices.toString());
+          if (endlessMode) {
+            searchParams.append("endless", "true");
+          }
           // Add selected tags as query parameters (will be used by API later)
           if (selectedTags.length > 0 && selectedTags.length < questionBank.tags.length) {
             searchParams.append("tags", selectedTags.join(","));
           }
-          navigate(`/practice/${questionBank.id}?${searchParams.toString()}`);
+          if (endlessMode) {
+              navigate(`/practice/endless/${questionBank.id}?${searchParams.toString()}`);
+          } else {
+              navigate(`/practice/${questionBank.id}?${searchParams.toString()}`);
+          }
         }
       } finally {
         setIsStarting(false);
@@ -100,6 +112,23 @@ export default function PracticeOptionsDialog({
               onValueChange={(value) => setPracticeSize(value || 1)}
               inputClassName="col-span-3 border-zinc-700 text-white"
             />
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="endless" className="text-right">
+              Endless Mode
+            </Label>
+            <div className="col-span-3 flex items-center space-x-2">
+              <Checkbox
+                id="endless"
+                checked={endlessMode}
+                onCheckedChange={(checked) => setEndlessMode(checked === true)}
+                className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+              />
+              <Label htmlFor="endless" className="text-sm text-zinc-400">
+                Practice without a fixed number of questions
+              </Label>
+            </div>
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">

@@ -33,11 +33,12 @@ export default function EndlessPracticePage() {
       } else {
         const size = params.get("size");
         const shuffle = params.get("shuffle");
+        const endless = params.get("endless");
         if (practiceId == null || size == null || shuffle == null) {
           setError("INVALID PRACTICE PARAMETERS");
         } else {
           try {
-            const newPractice = await startNewAnonymousPractice(practiceId, parseInt(size), shuffle === 'true');
+            const newPractice = await startNewAnonymousPractice(practiceId, parseInt(size), shuffle === 'true', endless === 'true');
             setPractice(newPractice);
           } catch (e) {
             setError("FAILED TO START ANONYMOUS PRACTICE");
