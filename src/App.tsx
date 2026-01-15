@@ -16,6 +16,7 @@ import SignUpSection from "@/pages/log_in_page/sign_up_section.tsx";
 import AdditionalInfoSection from "@/pages/log_in_page/additional_info_section.tsx";
 import useAuthStatus from "@/lib/use_auth_hook.ts";
 import PracticePage from "@/pages/practice_page/practice_page.tsx";
+import EndlessPracticePage from "@/pages/practice_page/endless_practice_page.tsx";
 import MyHeader from "@/components/custom/header.tsx";
 import MyFooter from "@/components/custom/footer.tsx";
 import BankEditPage from "./pages/bank_edit_page/bank_edit_page";
@@ -64,6 +65,7 @@ function App() {
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/practice/:id" element={<PracticePage />} />
+            <Route path="/practice/endless/:practiceId" element={<EndlessPracticePage />} />
             {/* 2. Anonymous routes — only for non-logged-in users */}
             <Route element={<AnonymousRoute />}>
               <Route path="/signup" element={<AccessPage Section={SignUpSection} />} />
