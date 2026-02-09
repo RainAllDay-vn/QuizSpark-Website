@@ -105,8 +105,7 @@ This frontend application can be run locally or deployed using Docker.
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/quizspark.git
-    cd quizspark/website
+    git clone https://github.com/RainAllDay-vn/QuizSpark-Website.git
     ```
 
 2.  **Install dependencies**
